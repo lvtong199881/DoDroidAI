@@ -28,7 +28,8 @@ data class ChatUiState(
     val messages: List<ChatMessage> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
-    val sessionId: String? = null
+    val sessionId: String? = null,
+    val sessionName: String? = null
 )
 
 /**
@@ -60,7 +61,8 @@ class ChatViewModel(
             session?.let {
                 _uiState.value = _uiState.value.copy(
                     messages = it.messages,
-                    sessionId = sessionId
+                    sessionId = sessionId,
+                    sessionName = it.title
                 )
             }
         }

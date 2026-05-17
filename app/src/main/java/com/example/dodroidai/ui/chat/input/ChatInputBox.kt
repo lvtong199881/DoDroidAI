@@ -10,6 +10,8 @@ import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.core.view.isVisible
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.dodroidai.R
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
@@ -31,17 +33,24 @@ class ChatInputBox @JvmOverloads constructor(
     private var btnAdd: ImageButton? = null
     private var btnModeSwitch: ImageButton? = null
     private var btnSend: ImageButton? = null
+    private var rvAttachments: RecyclerView? = null
 
     private var isVoiceMode = false
     private var isDeepThinkEnabled = false
     private var isAddOptionsVisible = false
     private var isKeyboardVisible = false
 
+    private val attachments = mutableListOf<AttachmentItem>()
+    private val attachmentAdapter = AttachmentAdapter { item ->
+        removeAttachment(item)
+    }
+
     var onDeepThinkToggle: ((Boolean) -> Unit)? = null
     var onModeSwitch: (() -> Unit)? = null
     var onAddClick: (() -> Unit)? = null
     var onFocusChange: ((Boolean) -> Unit)? = null
-    var onSendClick: ((String) -> Unit)? = null
+    var onSendClick: ((String, List<AttachmentItem>) -> Unit)? = null
+    var onAttachmentsChange: ((List<AttachmentItem>) -> Unit)? = null
 
     init {
         LayoutInflater.from(context).inflate(R.layout.view_chat_input_box, this, true)
@@ -57,6 +66,10 @@ class ChatInputBox @JvmOverloads constructor(
         btnAdd = findViewById(R.id.btnAdd)
         btnModeSwitch = findViewById(R.id.btnModeSwitch)
         btnSend = findViewById(R.id.btnSend)
+        rvAttachments = findViewById(R.id.rvAttachments)
+
+        rvAttachments?.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+        rvAttachments?.adapter = attachmentAdapter
     }
 
     private fun setupListeners() {
@@ -78,8 +91,8 @@ class ChatInputBox @JvmOverloads constructor(
 
         btnSend?.setOnClickListener {
             val text = inputText?.text?.toString() ?: ""
-            if (text.isNotBlank()) {
-                onSendClick?.invoke(text)
+            if (text.isNotBlank() || attachments.isNotEmpty()) {
+                onSendClick?.invoke(text, attachments.toList())
             }
         }
 
@@ -109,12 +122,6 @@ class ChatInputBox @JvmOverloads constructor(
         }
     }
 
-    private fun updateSendButtonVisibility() {
-        val hasText = inputText?.text?.isNotBlank() == true
-        btnModeSwitch?.isVisible = !hasText
-        btnSend?.isVisible = hasText
-    }
-
     fun setAddOptionsVisible(visible: Boolean) {
         isAddOptionsVisible = visible
         btnAdd?.setImageResource(if (visible) R.drawable.ic_close else R.drawable.ic_add)
@@ -126,5 +133,33 @@ class ChatInputBox @JvmOverloads constructor(
 
     fun clearInput() {
         inputText?.text?.clear()
+    }
+
+    fun addAttachment(item: AttachmentItem) {
+        attachments.add(item)
+        updateAttachmentsUi()
+    }
+
+    private fun removeAttachment(item: AttachmentItem) {
+        attachments.remove(item)
+        updateAttachmentsUi()
+    }
+
+    private fun updateAttachmentsUi() {
+        val hasAttachments = attachments.isNotEmpty()
+        rvAttachments?.isVisible = hasAttachments
+        attachmentAdapter.submitList(attachments.toList())
+        onAttachmentsChange?.invoke(attachments.toList())
+        updateSendButtonVisibility()
+        rvAttachments?.post {
+            rvAttachments?.scrollToPosition(attachments.size - 1)
+        }
+    }
+
+    private fun updateSendButtonVisibility() {
+        val hasText = inputText?.text?.isNotBlank() == true
+        val hasAttachments = attachments.isNotEmpty()
+        btnModeSwitch?.isVisible = !hasText && !hasAttachments
+        btnSend?.isVisible = hasText || hasAttachments
     }
 }

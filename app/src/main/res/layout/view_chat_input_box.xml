@@ -7,11 +7,21 @@
     android:background="@drawable/bg_input_container"
     android:padding="12dp">
 
+    <!-- 附件列表（横向可滑动） -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvAttachments"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:clipToPadding="false"
+        android:paddingEnd="8dp" />
+
     <!-- 第一行：输入框 或 语音提示 -->
     <FrameLayout
         android:id="@+id/firstRowContainer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp">
 
         <!-- 打字模式：输入框 -->
         <com.google.android.material.textfield.TextInputLayout

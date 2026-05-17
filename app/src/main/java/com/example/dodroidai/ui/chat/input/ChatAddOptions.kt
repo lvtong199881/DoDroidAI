@@ -3,6 +3,7 @@ package com.example.dodroidai.ui.chat.input
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.LinearLayout
 import androidx.core.view.isVisible
 import com.example.dodroidai.R
@@ -19,15 +20,30 @@ class ChatAddOptions @JvmOverloads constructor(
     private var addOptionsContainer: LinearLayout? = null
     private var ocrHintContainer: LinearLayout? = null
 
+    var onCameraClick: (() -> Unit)? = null
+    var onPhotoAlbumClick: (() -> Unit)? = null
+    var onFileClick: (() -> Unit)? = null
+
     init {
         orientation = VERTICAL
         LayoutInflater.from(context).inflate(R.layout.view_chat_add_options, this, true)
         initViews()
+        setupListeners()
     }
 
     private fun initViews() {
         addOptionsContainer = findViewById(R.id.addOptionsContainer)
         ocrHintContainer = findViewById(R.id.ocrHintContainer)
+    }
+
+    private fun setupListeners() {
+        val cameraItem = addOptionsContainer?.getChildAt(0)
+        val photoItem = addOptionsContainer?.getChildAt(1)
+        val fileItem = addOptionsContainer?.getChildAt(2)
+
+        cameraItem?.setOnClickListener { onCameraClick?.invoke() }
+        photoItem?.setOnClickListener { onPhotoAlbumClick?.invoke() }
+        fileItem?.setOnClickListener { onFileClick?.invoke() }
     }
 
     fun setVisible(visible: Boolean) {

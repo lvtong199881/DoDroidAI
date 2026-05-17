@@ -47,4 +47,7 @@
     <string name="ocr_text">仅识别图片中的文字</string>
     <string name="user_avatar">User avatar</string>
     <string name="ai_avatar">AI avatar</string>
+    <string name="delete">Delete</string>
+    <string name="camera_permission_denied">Camera permission denied</string>
+    <string name="file_format_unsupported">File format not supported</string>
 </resources>
