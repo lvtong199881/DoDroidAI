@@ -58,4 +58,7 @@ dependencies {
 
   // DataStore
   implementation(libs.datastore.preferences)
+
+  // Markdown
+  implementation("io.noties.markwon:core:4.6.2")
 }

@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dodroidai.R
 import com.example.dodroidai.ai.model.ChatMessage
+import io.noties.markwon.Markwon
 
 /**
  * 聊天消息适配器
@@ -57,6 +58,7 @@ class ChatMessageAdapter : ListAdapter<ChatMessage, RecyclerView.ViewHolder>(Dif
     class AssistantMessageViewHolder(view: android.view.View) : RecyclerView.ViewHolder(view) {
         private val textMessage: TextView = view.findViewById(R.id.textMessage)
         private val progressBar: ProgressBar = view.findViewById(R.id.progressBar)
+        private val markwon = Markwon.create(view.context)
 
         fun bind(message: ChatMessage) {
             if (message.isLoading) {
@@ -65,7 +67,7 @@ class ChatMessageAdapter : ListAdapter<ChatMessage, RecyclerView.ViewHolder>(Dif
             } else {
                 textMessage.visibility = View.VISIBLE
                 progressBar.visibility = View.GONE
-                textMessage.text = message.content
+                markwon.setMarkdown(textMessage, message.content)
             }
         }
     }
