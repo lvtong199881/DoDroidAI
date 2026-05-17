@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.MyApplication" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="android:colorBackground">#1A1A1A</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="colorSurface">#202020</item>
+        <item name="colorOnSurface">#FFFFFF</item>
+        <item name="colorCardBackground">#80303030</item>
+    </style>
+</resources>

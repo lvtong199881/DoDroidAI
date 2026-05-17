@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.example.dodroidai.ui.common.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <RadioGroup
+        android:id="@+id/languageRadioGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintTop_toBottomOf="@id/toolbar">
+
+        <RadioButton
+            android:id="@+id/radioEnglish"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/language_english"
+            android:padding="8dp" />
+
+        <RadioButton
+            android:id="@+id/radioChineseSimplified"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/language_chinese_simplified"
+            android:padding="8dp" />
+
+        <RadioButton
+            android:id="@+id/radioChineseTraditional"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/language_chinese_traditional"
+            android:padding="8dp" />
+
+    </RadioGroup>
+
+</LinearLayout>

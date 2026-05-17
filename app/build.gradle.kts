@@ -44,19 +44,18 @@ dependencies {
   implementation(libs.androidx.constraintlayout)
 
   // Material Design
-  implementation(libs.androidx.appcompat)
   implementation("com.google.android.material:material:1.12.0")
 
   // Lifecycle
   implementation(libs.androidx.lifecycle.runtime.ktx)
   implementation(libs.androidx.lifecycle.viewmodel.ktx)
 
-  // Local tests: jUnit
-  testImplementation(libs.junit)
+  // Network
+  implementation(libs.okhttp)
+  implementation(libs.okhttp.logging)
+  implementation(libs.retrofit)
+  implementation(libs.kotlinx.serialization.json)
 
-  // Instrumented tests: jUnit rules and runners
-  androidTestImplementation(libs.androidx.test.core)
-  androidTestImplementation(libs.androidx.test.ext.junit)
-  androidTestImplementation(libs.androidx.test.runner)
-  androidTestImplementation(libs.androidx.test.espresso.core)
+  // DataStore
+  implementation(libs.datastore.preferences)
 }
