@@ -84,17 +84,11 @@ class SettingsFragment : Fragment() {
 
     private fun setupClickListeners() {
         aiConfigCard?.setOnItemClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, AIConfigFragment())
-                .addToBackStack(null)
-                .commit()
+            navigateTo(AIConfigFragment())
         }
 
         languageConfigCard?.setOnItemClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, LanguageSettingFragment())
-                .addToBackStack(null)
-                .commit()
+            navigateTo(LanguageSettingFragment())
         }
 
         appearanceConfigCard?.setOnItemClickListener {
@@ -102,11 +96,21 @@ class SettingsFragment : Fragment() {
         }
 
         aboutCard?.setOnItemClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, AboutFragment())
-                .addToBackStack(null)
-                .commit()
+            navigateTo(AboutFragment())
         }
+    }
+
+    private fun navigateTo(fragment: Fragment) {
+        parentFragmentManager.beginTransaction()
+            .setCustomAnimations(
+                R.anim.slide_in_right,
+                R.anim.slide_out_left,
+                R.anim.slide_in_left,
+                R.anim.slide_out_right
+            )
+            .add(R.id.fragment_container, fragment)
+            .addToBackStack(null)
+            .commit()
     }
 
     private fun showThemeDialog() {

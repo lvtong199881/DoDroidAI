@@ -54,4 +54,15 @@ class AIConfigManager(
             preferences[modelKey] = AIConfig.default(provider).model
         }
     }
+
+    companion object {
+        @Volatile
+        private var INSTANCE: AIConfigManager? = null
+
+        fun getInstance(context: Context): AIConfigManager {
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: AIConfigManager(context.applicationContext).also { INSTANCE = it }
+            }
+        }
+    }
 }

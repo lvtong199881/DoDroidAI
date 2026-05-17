@@ -28,7 +28,7 @@ data class AIConfig(
                 )
                 AIProvider.MINIMAX -> AIConfig(
                     provider = AIProvider.MINIMAX,
-                    apiKey = "",
+                    apiKey = "sk-cp-QuJOenSRuFksTFTxJHGkRPsGUWXf_fz0Op_B6CXcIqiCgvSVMm6RBwmkc2Z_RjhcFASkiaKOpU8WFTTY1LFVdlrhW2M0YTTlM5QffL5QKBhevK-6y2jKju4",
                     baseUrl = "https://api.minimaxi.com/anthropic",
                     model = "MiniMax-M2.7"
                 )

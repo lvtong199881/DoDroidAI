@@ -11,11 +11,15 @@ class DoDroidAIApplication : android.app.Application() {
     lateinit var appConfigManager: com.example.dodroidai.ai.config.AppConfigManager
         private set
 
+    lateinit var chatRepository: com.example.dodroidai.data.repository.ChatRepository
+        private set
+
     override fun onCreate() {
         super.onCreate()
         instance = this
         configManager = com.example.dodroidai.ai.config.AIConfigManager(this)
         appConfigManager = com.example.dodroidai.ai.config.AppConfigManager(this)
+        chatRepository = com.example.dodroidai.data.repository.ChatRepository(this)
     }
 
     companion object {

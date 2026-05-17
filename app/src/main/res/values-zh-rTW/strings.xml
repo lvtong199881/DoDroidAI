@@ -37,4 +37,14 @@
     <string name="send">發送</string>
     <string name="new_chat">新對話</string>
     <string name="voice_input">語音</string>
+    <string name="voice_hold_to_speak">按住說話</string>
+    <string name="deep_think">深度思考</string>
+    <string name="switch_mode">切換模式</string>
+    <string name="add">添加</string>
+    <string name="camera">拍照</string>
+    <string name="photo_album">相冊</string>
+    <string name="file">文件</string>
+    <string name="ocr_text">僅識別圖片中的文字</string>
+    <string name="user_avatar">用戶頭像</string>
+    <string name="ai_avatar">AI 頭像</string>
 </resources>

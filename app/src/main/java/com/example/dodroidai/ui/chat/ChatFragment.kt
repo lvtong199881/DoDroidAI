@@ -1,14 +1,24 @@
 package com.example.dodroidai.ui.chat
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
-import android.widget.TextView
+import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.dodroidai.DoDroidAIApplication
 import com.example.dodroidai.R
+import com.example.dodroidai.ui.chat.adapter.ChatMessageAdapter
+import com.example.dodroidai.ui.chat.input.ChatAddOptions
+import com.example.dodroidai.ui.chat.input.ChatInputBox
 import com.example.dodroidai.ui.common.Toolbar
+import kotlinx.coroutines.launch
 
 /**
  * 聊天页面 Fragment，显示对话内容
@@ -16,9 +26,23 @@ import com.example.dodroidai.ui.common.Toolbar
 class ChatFragment : Fragment() {
 
     private var toolbar: Toolbar? = null
-    private var inputText: com.google.android.material.textfield.TextInputEditText? = null
-    private var btnSend: ImageButton? = null
-    private var btnVoice: ImageButton? = null
+    private var chatInputBox: ChatInputBox? = null
+    private var chatAddOptions: ChatAddOptions? = null
+    private var recyclerView: androidx.recyclerview.widget.RecyclerView? = null
+    private var adapter: ChatMessageAdapter? = null
+
+    private val sessionId: String? by lazy { arguments?.getString(ARG_SESSION_ID) }
+
+    private val viewModel: ChatViewModel by lazy {
+        androidx.lifecycle.ViewModelProvider(
+            this,
+            ChatViewModel.Factory(
+                DoDroidAIApplication.instance.configManager,
+                DoDroidAIApplication.instance.chatRepository,
+                sessionId
+            )
+        )[ChatViewModel::class.java]
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -30,15 +54,93 @@ class ChatFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        initViews(view)
+        setupListeners()
+        observeState()
+    }
+
+    private fun initViews(view: View) {
         toolbar = view.findViewById(R.id.toolbar)
-        inputText = view.findViewById(R.id.inputText)
-        btnSend = view.findViewById(R.id.btnSend)
-        btnVoice = view.findViewById(R.id.btnVoice)
+        chatInputBox = view.findViewById(R.id.chatInputBox)
+        chatAddOptions = view.findViewById(R.id.chatAddOptions)
+        recyclerView = view.findViewById(R.id.recyclerView)
+
+        adapter = ChatMessageAdapter()
+        recyclerView?.layoutManager = LinearLayoutManager(context).apply {
+            stackFromEnd = true
+        }
+        recyclerView?.adapter = adapter
 
         toolbar?.setTitle(R.string.new_chat)
         toolbar?.setOnBackClickListener {
             parentFragmentManager.popBackStack()
         }
         toolbar?.setRightVisible(false)
+    }
+
+    private fun setupListeners() {
+        chatInputBox?.onDeepThinkToggle = { _ ->
+            hideKeyboard()
+        }
+
+        chatInputBox?.onModeSwitch = {
+            hideKeyboard()
+        }
+
+        chatInputBox?.onAddClick = {
+            hideKeyboard()
+            val isVisible = !chatInputBox!!.isAddOptionsVisible()
+            chatInputBox?.setAddOptionsVisible(isVisible)
+            chatAddOptions?.setVisible(isVisible)
+        }
+
+        chatInputBox?.onFocusChange = { hasFocus ->
+            if (hasFocus) {
+                hideKeyboard()
+                chatInputBox?.setAddOptionsVisible(false)
+                chatAddOptions?.setVisible(false)
+            }
+        }
+
+        chatInputBox?.onSendClick = { message ->
+            viewModel.sendMessage(message)
+            hideKeyboard()
+            chatInputBox?.clearInput()
+        }
+    }
+
+    private fun observeState() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    adapter?.submitList(state.messages) {
+                        if (state.messages.isNotEmpty()) {
+                            recyclerView?.scrollToPosition(state.messages.size - 1)
+                        }
+                    }
+                    state.error?.let { error ->
+                        Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                        viewModel.clearError()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun hideKeyboard() {
+        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(view?.windowToken, 0)
+    }
+
+    companion object {
+        private const val ARG_SESSION_ID = "session_id"
+
+        fun newInstance(sessionId: String? = null): ChatFragment {
+            return ChatFragment().apply {
+                arguments = Bundle().apply {
+                    putString(ARG_SESSION_ID, sessionId)
+                }
+            }
+        }
     }
 }

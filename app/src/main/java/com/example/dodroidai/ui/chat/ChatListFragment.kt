@@ -1,14 +1,21 @@
 package com.example.dodroidai.ui.chat
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.dodroidai.DoDroidAIApplication
 import com.example.dodroidai.R
 import com.example.dodroidai.ui.common.Toolbar
 import com.example.dodroidai.ui.setting.SettingsFragment
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 /**
  * 对话列表页面 Fragment，显示聊天历史记录
@@ -17,6 +24,8 @@ class ChatListFragment : Fragment() {
 
     private var toolbar: Toolbar? = null
     private var tvEmpty: TextView? = null
+    private var recyclerView: RecyclerView? = null
+    private var adapter: ChatSessionAdapter? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -28,23 +37,59 @@ class ChatListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        initViews(view)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        refreshSessions()
+    }
+
+    private fun refreshSessions() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val sessions = DoDroidAIApplication.instance.chatRepository.sessionsFlow.first()
+            val sortedSessions = sessions.sortedByDescending { it.updatedAt }
+            Log.d("ChatListFragment", "refreshSessions: ${sortedSessions.size} sessions, adapter=$adapter")
+            sortedSessions.forEach { Log.d("ChatListFragment", "  session: ${it.id}, title=${it.title}") }
+            adapter?.submitList(sortedSessions)
+            Log.d("ChatListFragment", "submitList called, itemCount=${adapter?.itemCount}")
+            tvEmpty?.visibility = if (sortedSessions.isEmpty()) View.VISIBLE else View.GONE
+            recyclerView?.visibility = if (sortedSessions.isEmpty()) View.GONE else View.VISIBLE
+        }
+    }
+
+    private fun initViews(view: View) {
         toolbar = view.findViewById(R.id.toolbar)
         tvEmpty = view.findViewById(R.id.tvEmpty)
+        recyclerView = view.findViewById(R.id.recyclerView)
+
+        adapter = ChatSessionAdapter { sessionId ->
+            navigateTo(ChatFragment.newInstance(sessionId))
+        }
+        recyclerView?.layoutManager = LinearLayoutManager(context)
+        recyclerView?.adapter = adapter
 
         toolbar?.setTitle(R.string.app_name)
         toolbar?.setBackIcon(R.drawable.ic_add)
         toolbar?.setOnBackClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, ChatFragment())
-                .addToBackStack(null)
-                .commit()
+            navigateTo(ChatFragment.newInstance(null))
         }
         toolbar?.setRightIcon(R.drawable.ic_settings)
         toolbar?.setOnRightClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, SettingsFragment())
-                .addToBackStack(null)
-                .commit()
+            navigateTo(SettingsFragment())
         }
+    }
+
+    private fun navigateTo(fragment: Fragment) {
+        parentFragmentManager.beginTransaction()
+            .setCustomAnimations(
+                R.anim.slide_in_right,
+                R.anim.slide_out_left,
+                R.anim.slide_in_left,
+                R.anim.slide_out_right
+            )
+            .add(R.id.fragment_container, fragment)
+            .addToBackStack(null)
+            .commit()
     }
 }
