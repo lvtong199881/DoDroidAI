@@ -19,6 +19,7 @@ import com.example.dodroidai.ui.common.SettingsItemView
 import com.example.dodroidai.ui.common.Toolbar
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 /**
  * 设置页面 Fragment，显示 AI 配置和语言设置入口
@@ -118,7 +119,7 @@ class SettingsFragment : Fragment() {
         val radioGroup = dialogView.findViewById<android.widget.RadioGroup>(R.id.themeRadioGroup)
 
         val currentTheme = runCatching {
-            kotlinx.coroutines.runBlocking { configManager?.themeFlow?.first() }
+            runBlocking { configManager?.themeFlow?.first() }
         }.getOrDefault(AppConfigManager.THEME_SYSTEM)
 
         when (currentTheme) {

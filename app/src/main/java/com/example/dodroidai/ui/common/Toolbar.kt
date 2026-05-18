@@ -72,7 +72,7 @@ class Toolbar @JvmOverloads constructor(
         val marginStart = titleLeft
         val marginEnd = toolbarWidth - titleLeft - titleWidth
 
-        val params = title.layoutParams as? android.widget.FrameLayout.LayoutParams
+        val params = title.layoutParams as? FrameLayout.LayoutParams
         if (params != null) {
             params.marginStart = marginStart
             params.marginEnd = marginEnd

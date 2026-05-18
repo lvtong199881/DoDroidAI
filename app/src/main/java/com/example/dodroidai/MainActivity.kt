@@ -4,9 +4,11 @@ import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import com.example.dodroidai.ai.config.AppConfigManager
 import com.example.dodroidai.ui.chat.ChatListFragment
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import java.util.Locale
 
 /**
@@ -14,7 +16,7 @@ import java.util.Locale
  */
 class MainActivity : AppCompatActivity() {
 
-    private var appConfigManager: com.example.dodroidai.ai.config.AppConfigManager? = null
+    private var appConfigManager: AppConfigManager? = null
 
     override fun attachBaseContext(newBase: Context) {
         val app = newBase.applicationContext as DoDroidAIApplication
@@ -22,13 +24,13 @@ class MainActivity : AppCompatActivity() {
 
         // 先应用主题
         val theme = runCatching {
-            kotlinx.coroutines.runBlocking { appConfigManager?.themeFlow?.first() }
+            runBlocking { appConfigManager?.themeFlow?.first() }
         }.getOrNull() ?: AppConfigManager.THEME_SYSTEM
         applyTheme(theme)
 
         // 再应用语言
         val language = runCatching {
-            kotlinx.coroutines.runBlocking { appConfigManager?.languageFlow?.first() }
+            runBlocking { appConfigManager?.languageFlow?.first() }
         }.getOrDefault("en") ?: "en"
         val context = updateLocale(newBase, language)
         super.attachBaseContext(context)
@@ -36,11 +38,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun applyTheme(theme: String) {
         val mode = when (theme) {
-            AppConfigManager.THEME_LIGHT -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
-            AppConfigManager.THEME_DARK -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
-            else -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+            AppConfigManager.THEME_LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
+            AppConfigManager.THEME_DARK -> AppCompatDelegate.MODE_NIGHT_YES
+            else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
         }
-        androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(mode)
+        AppCompatDelegate.setDefaultNightMode(mode)
     }
 
     private fun updateLocale(context: Context, language: String): Context {

@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.dodroidai.ai.model.AIProvider
+import com.example.dodroidai.ai.model.ApiFormat
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -22,6 +23,14 @@ class AIConfigManager(
     private val apiKeyKey = stringPreferencesKey("api_key")
     private val baseUrlKey = stringPreferencesKey("base_url")
     private val modelKey = stringPreferencesKey("model")
+    private val providerNameKey = stringPreferencesKey("provider_name")
+    private val descriptionKey = stringPreferencesKey("description")
+    private val officialUrlKey = stringPreferencesKey("official_url")
+    private val apiFormatKey = stringPreferencesKey("api_format")
+    private val mainModelKey = stringPreferencesKey("main_model")
+    private val haikuModelKey = stringPreferencesKey("haiku_model")
+    private val sonnetModelKey = stringPreferencesKey("sonnet_model")
+    private val opusModelKey = stringPreferencesKey("opus_model")
 
     val configFlow: Flow<AIConfig> = context.dataStore.data.map { preferences ->
         val providerStr = preferences[providerKey] ?: AIProvider.OPENAI.name
@@ -30,11 +39,26 @@ class AIConfigManager(
         } catch (e: Exception) {
             AIProvider.OPENAI
         }
+        val defaultConfig = AIConfig.default(provider)
+        val apiFormatStr = preferences[apiFormatKey] ?: ApiFormat.ANTHROPIC_MESSAGES.name
+        val apiFormat = try {
+            ApiFormat.valueOf(apiFormatStr)
+        } catch (e: Exception) {
+            ApiFormat.ANTHROPIC_MESSAGES
+        }
         AIConfig(
             provider = provider,
             apiKey = preferences[apiKeyKey] ?: "",
-            baseUrl = preferences[baseUrlKey] ?: AIConfig.default(provider).baseUrl,
-            model = preferences[modelKey] ?: AIConfig.default(provider).model
+            baseUrl = preferences[baseUrlKey] ?: defaultConfig.baseUrl,
+            model = preferences[modelKey] ?: defaultConfig.model,
+            providerName = preferences[providerNameKey] ?: defaultConfig.providerName,
+            description = preferences[descriptionKey] ?: "",
+            officialUrl = preferences[officialUrlKey] ?: "",
+            apiFormat = apiFormat,
+            mainModel = preferences[mainModelKey] ?: defaultConfig.mainModel,
+            haikuModel = preferences[haikuModelKey] ?: defaultConfig.haikuModel,
+            sonnetModel = preferences[sonnetModelKey] ?: defaultConfig.sonnetModel,
+            opusModel = preferences[opusModelKey] ?: defaultConfig.opusModel
         )
     }
 
@@ -44,14 +68,29 @@ class AIConfigManager(
             preferences[apiKeyKey] = config.apiKey
             preferences[baseUrlKey] = config.baseUrl
             preferences[modelKey] = config.model
+            preferences[providerNameKey] = config.providerName
+            preferences[descriptionKey] = config.description
+            preferences[officialUrlKey] = config.officialUrl
+            preferences[apiFormatKey] = config.apiFormat.name
+            preferences[mainModelKey] = config.mainModel
+            preferences[haikuModelKey] = config.haikuModel
+            preferences[sonnetModelKey] = config.sonnetModel
+            preferences[opusModelKey] = config.opusModel
         }
     }
 
     suspend fun updateProvider(provider: AIProvider) {
+        val defaultConfig = AIConfig.default(provider)
         context.dataStore.edit { preferences ->
             preferences[providerKey] = provider.name
-            preferences[baseUrlKey] = AIConfig.default(provider).baseUrl
-            preferences[modelKey] = AIConfig.default(provider).model
+            preferences[baseUrlKey] = defaultConfig.baseUrl
+            preferences[modelKey] = defaultConfig.model
+            preferences[providerNameKey] = defaultConfig.providerName
+            preferences[apiFormatKey] = defaultConfig.apiFormat.name
+            preferences[mainModelKey] = defaultConfig.mainModel
+            preferences[haikuModelKey] = defaultConfig.haikuModel
+            preferences[sonnetModelKey] = defaultConfig.sonnetModel
+            preferences[opusModelKey] = defaultConfig.opusModel
         }
     }
 

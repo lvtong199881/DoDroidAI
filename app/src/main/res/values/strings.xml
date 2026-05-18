@@ -50,4 +50,22 @@
     <string name="delete">Delete</string>
     <string name="camera_permission_denied">Camera permission denied</string>
     <string name="file_format_unsupported">File format not supported</string>
+
+    <!-- AI Config -->
+    <string name="group_basic_info">Basic Info</string>
+    <string name="group_api_config">API Configuration</string>
+    <string name="group_model_config">Model Configuration</string>
+    <string name="ai_provider_name">Provider Name</string>
+    <string name="ai_description">Description (Optional)</string>
+    <string name="ai_official_url">Official URL (Optional)</string>
+    <string name="ai_api_format">API Format</string>
+    <string name="ai_main_model">Main Model</string>
+    <string name="ai_haiku_model">Haiku Default Model</string>
+    <string name="ai_sonnet_model">Sonnet Default Model</string>
+    <string name="ai_opus_model">Opus Default Model</string>
+    <string name="api_format_anthropic">Anthropic Messages</string>
+    <string name="error_fields_required">Please fill in: %s</string>
+    <string name="save_success">Saved successfully</string>
+    <string name="copy">Copy</string>
+    <string name="copy_success">Copied to clipboard</string>
 </resources>

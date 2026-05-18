@@ -8,18 +8,23 @@ import com.example.dodroidai.ai.config.AIConfig
 import com.example.dodroidai.ai.config.AIConfigManager
 import com.example.dodroidai.ai.model.AIProvider
 import com.example.dodroidai.ai.model.ChatMessage
+import com.example.dodroidai.ai.model.ChatMessage.Companion.LOADING_THINKING
+import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_ASSISTANT
+import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_USER
 import com.example.dodroidai.data.model.ChatSession
 import com.example.dodroidai.data.repository.ChatRepository
 import com.example.dodroidai.ai.repository.DeepSeekModel
 import com.example.dodroidai.ai.repository.MiniMaxModel
 import com.example.dodroidai.ai.repository.OpenAIModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.UUID
 
 /**
  * 聊天列表 UI 状态
@@ -40,6 +45,10 @@ class ChatViewModel(
     private val chatRepository: ChatRepository,
     private val sessionId: String? = null
 ) : ViewModel() {
+
+    companion object {
+        private const val MAX_CONTEXT_MESSAGES = 20
+    }
 
     private val _uiState = MutableStateFlow(ChatUiState())
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
@@ -73,14 +82,16 @@ class ChatViewModel(
 
         viewModelScope.launch {
             val userMessage = ChatMessage(
-                role = ChatMessage.ROLE_USER,
+                role = ROLE_USER,
                 content = content.trim()
             )
 
             val loadingMessage = ChatMessage(
-                role = ChatMessage.ROLE_ASSISTANT,
+                role = ROLE_ASSISTANT,
                 content = "",
-                isLoading = true
+                isLoading = true,
+                loadingState = LOADING_THINKING,
+                loadingSeconds = 0
             )
 
             _uiState.value = _uiState.value.copy(
@@ -89,22 +100,50 @@ class ChatViewModel(
                 error = null
             )
 
+            var seconds = 0
+            val loadingJob = launch {
+                while (true) {
+                    delay(1000L)
+                    seconds++
+
+                    val currentMessages = _uiState.value.messages.toMutableList()
+                    val lastIndex = currentMessages.lastIndex
+                    if (lastIndex >= 0 && currentMessages[lastIndex].isLoading) {
+                        currentMessages[lastIndex] = currentMessages[lastIndex].copy(
+                            loadingSeconds = seconds
+                        )
+                        _uiState.value = _uiState.value.copy(messages = currentMessages)
+                    } else {
+                        break
+                    }
+                }
+            }
+
             try {
                 val config = getCurrentConfig()
+                val historyMessages = _uiState.value.messages.filter { !it.isLoading }
+                val recentMessages = if (historyMessages.size > MAX_CONTEXT_MESSAGES) {
+                    historyMessages.takeLast(MAX_CONTEXT_MESSAGES)
+                } else {
+                    historyMessages
+                }
+                val allMessages = recentMessages + userMessage
                 val response = withContext(Dispatchers.IO) {
                     when (config.provider) {
-                        AIProvider.OPENAI -> openAIModel.executeChat(config, listOf(userMessage))
-                        AIProvider.DEEPSEEK -> deepSeekModel.executeChat(config, listOf(userMessage))
-                        AIProvider.MINIMAX -> miniMaxModel.executeChat(config, listOf(userMessage))
+                        AIProvider.OPENAI -> openAIModel.executeChat(config, allMessages)
+                        AIProvider.DEEPSEEK -> deepSeekModel.executeChat(config, allMessages)
+                        AIProvider.MINIMAX -> miniMaxModel.executeChat(config, allMessages)
                         AIProvider.CUSTOM -> throw IllegalStateException("Custom provider not supported")
                     }
                 }
+
+                loadingJob.cancel()
 
                 val currentMessages = _uiState.value.messages.toMutableList()
                 val lastIndex = currentMessages.lastIndex
                 if (lastIndex >= 0 && currentMessages[lastIndex].isLoading) {
                     currentMessages[lastIndex] = ChatMessage(
-                        role = ChatMessage.ROLE_ASSISTANT,
+                        role = ROLE_ASSISTANT,
                         content = response.content
                     )
                 }
@@ -116,11 +155,13 @@ class ChatViewModel(
 
                 saveCurrentSession()
             } catch (e: Exception) {
+                loadingJob.cancel()
+
                 val currentMessages = _uiState.value.messages.toMutableList()
                 val lastIndex = currentMessages.lastIndex
                 if (lastIndex >= 0 && currentMessages[lastIndex].isLoading) {
                     currentMessages[lastIndex] = ChatMessage(
-                        role = ChatMessage.ROLE_ASSISTANT,
+                        role = ROLE_ASSISTANT,
                         content = e.message ?: "Unknown error",
                         isLoading = false
                     )
@@ -153,13 +194,13 @@ class ChatViewModel(
         } else {
             val firstMessage = messages.first().content
             val newSession = ChatSession(
-                id = java.util.UUID.randomUUID().toString(),
+                id = UUID.randomUUID().toString(),
                 title = firstMessage.take(20),
                 messages = messages,
                 createdAt = System.currentTimeMillis(),
                 updatedAt = System.currentTimeMillis()
             )
-            android.util.Log.d("ChatViewModel", "Creating new session: ${newSession.id}, title: ${newSession.title}")
+            Log.d("ChatViewModel", "Creating new session: ${newSession.id}, title: ${newSession.title}")
             newSession
         }
 

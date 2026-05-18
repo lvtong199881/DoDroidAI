@@ -47,4 +47,25 @@
     <string name="ocr_text">仅识别图片中的文字</string>
     <string name="user_avatar">用户头像</string>
     <string name="ai_avatar">AI 头像</string>
+    <string name="delete">删除</string>
+    <string name="camera_permission_denied">相机权限被拒绝</string>
+    <string name="file_format_unsupported">不支持的文件格式</string>
+
+    <!-- AI Config -->
+    <string name="group_basic_info">基本信息</string>
+    <string name="group_api_config">API 配置</string>
+    <string name="group_model_config">模型配置</string>
+    <string name="ai_provider_name">供应商名称</string>
+    <string name="ai_description">备注（选填）</string>
+    <string name="ai_official_url">官网链接（选填）</string>
+    <string name="ai_api_format">API 格式</string>
+    <string name="ai_main_model">主模型</string>
+    <string name="ai_haiku_model">Haiku 默认模型</string>
+    <string name="ai_sonnet_model">Sonnet 默认模型</string>
+    <string name="ai_opus_model">Opus 默认模型</string>
+    <string name="api_format_anthropic">Anthropic Messages</string>
+    <string name="error_fields_required">请填写：%s</string>
+    <string name="save_success">保存成功</string>
+    <string name="copy">复制</string>
+    <string name="copy_success">已复制到剪贴板</string>
 </resources>

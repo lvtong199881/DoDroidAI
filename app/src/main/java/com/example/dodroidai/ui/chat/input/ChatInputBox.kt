@@ -108,6 +108,18 @@ class ChatInputBox @JvmOverloads constructor(
             isKeyboardVisible = hasFocus
             onFocusChange?.invoke(hasFocus)
         }
+
+        inputText?.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEND) {
+                val text = inputText?.text?.toString() ?: ""
+                if (text.isNotBlank() || attachments.isNotEmpty()) {
+                    onSendClick?.invoke(text, attachments.toList())
+                }
+                true
+            } else {
+                false
+            }
+        }
     }
 
     private fun updateMode() {

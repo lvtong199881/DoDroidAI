@@ -54,12 +54,16 @@ data class ChatMessage(
     val role: String,
     val content: String,
     val timestamp: Long = System.currentTimeMillis(),
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val loadingState: String? = null,
+    val loadingSeconds: Int = 0
 ) {
     companion object {
         const val ROLE_USER = "user"
         const val ROLE_ASSISTANT = "assistant"
         const val ROLE_SYSTEM = "system"
+
+        const val LOADING_THINKING = "thinking"
     }
 }
 
