@@ -17,6 +17,7 @@ class MiniMaxModel : AIModel {
         val response = gson.fromJson(body, MiniMaxResponse::class.java)
 
         var content = ""
+        var reasoningContent: String? = null
         val toolCalls = mutableListOf<ToolCall>()
 
         for (item in response.content) {
@@ -32,6 +33,7 @@ class MiniMaxModel : AIModel {
                         )
                     )
                 }
+                "thinking" -> reasoningContent = item.thinking
             }
         }
 
@@ -39,7 +41,8 @@ class MiniMaxModel : AIModel {
             content = content,
             provider = AIProvider.MINIMAX,
             model = response.model,
-            toolCalls = toolCalls
+            toolCalls = toolCalls,
+            reasoningContent = reasoningContent
         )
     }
 }
@@ -69,5 +72,7 @@ private data class MiniMaxContent(
     @SerializedName("name")
     val name: String? = null,
     @SerializedName("input")
-    val input: Map<String, Any>? = null
+    val input: Map<String, Any>? = null,
+    @SerializedName("thinking")
+    val thinking: String? = null
 )

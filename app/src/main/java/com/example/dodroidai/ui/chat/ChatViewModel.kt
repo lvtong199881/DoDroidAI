@@ -249,7 +249,8 @@ class ChatViewModel(
                 val assistantMessage = ChatMessage(
                     role = ROLE_ASSISTANT,
                     content = finalResponse.content,
-                    toolCalls = toolDisplays
+                    toolCalls = toolDisplays,
+                    reasoningContent = finalResponse.reasoningContent
                 )
 
                 val currentMessages = _uiState.value.messages.toMutableList()
@@ -542,17 +543,14 @@ class ChatViewModel(
             )
         } else {
             val firstMessage = messages.first().content
-            val newSession = ChatSession(
+            ChatSession(
                 id = UUID.randomUUID().toString(),
                 title = firstMessage.take(20),
                 messages = messages,
                 createdAt = System.currentTimeMillis(),
                 updatedAt = System.currentTimeMillis()
             )
-            Log.d("ChatViewModel", "Creating new session: ${newSession.id}, title: ${newSession.title}")
-            newSession
         }
-
         chatRepository.saveSession(session)
         _uiState.value = _uiState.value.copy(sessionId = session.id)
     }

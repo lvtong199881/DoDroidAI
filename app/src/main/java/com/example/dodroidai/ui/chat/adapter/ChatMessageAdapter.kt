@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -18,13 +19,16 @@ import com.example.dodroidai.R
 import com.example.dodroidai.ai.model.ChatMessage
 import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_ASSISTANT
 import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_USER
-import com.example.dodroidai.ai.tools.ToolCallDisplay
 import io.noties.markwon.Markwon
 
 /**
  * 聊天消息适配器
  */
-class ChatMessageAdapter : ListAdapter<ChatMessage, RecyclerView.ViewHolder>(DiffCallback()) {
+class ChatMessageAdapter(
+    private val onReasoningToggle: (Int, Boolean) -> Unit
+) : ListAdapter<ChatMessage, RecyclerView.ViewHolder>(DiffCallback()) {
+
+    private val expandedStates = mutableMapOf<Long, Boolean>()
 
     override fun getItemViewType(position: Int): Int {
         return when (getItem(position).role) {
@@ -43,7 +47,9 @@ class ChatMessageAdapter : ListAdapter<ChatMessage, RecyclerView.ViewHolder>(Dif
             }
             else -> {
                 val view = inflater.inflate(R.layout.item_message_assistant, parent, false)
-                AssistantMessageViewHolder(view)
+                AssistantMessageViewHolder(view) { pos, expanded ->
+                    onReasoningToggle(pos, expanded)
+                }
             }
         }
     }
@@ -74,13 +80,20 @@ class ChatMessageAdapter : ListAdapter<ChatMessage, RecyclerView.ViewHolder>(Dif
         }
     }
 
-    class AssistantMessageViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+    class AssistantMessageViewHolder(
+        view: View,
+        private val onReasoningToggle: (Int, Boolean) -> Unit
+    ) : RecyclerView.ViewHolder(view) {
         private val textMessage: TextView = view.findViewById(R.id.textMessage)
         private val progressBar: ProgressBar = view.findViewById(R.id.progressBar)
         private val textLoading: TextView = view.findViewById(R.id.textLoading)
         private val actionBar: LinearLayout = view.findViewById(R.id.actionBar)
         private val btnCopy: ImageButton = view.findViewById(R.id.btnCopy)
         private val toolCallContainer: LinearLayout = view.findViewById(R.id.toolCallContainer)
+        private val reasoningCard: LinearLayout = view.findViewById(R.id.reasoningCard)
+        private val reasoningHeader: LinearLayout = view.findViewById(R.id.reasoningHeader)
+        private val reasoningArrow: ImageView = view.findViewById(R.id.reasoningArrow)
+        private val textReasoning: TextView = view.findViewById(R.id.textReasoning)
         private val markwon = Markwon.create(view.context)
 
         fun bind(message: ChatMessage, showActions: Boolean) {
@@ -89,6 +102,7 @@ class ChatMessageAdapter : ListAdapter<ChatMessage, RecyclerView.ViewHolder>(Dif
                 progressBar.visibility = View.VISIBLE
                 textLoading.visibility = View.VISIBLE
                 actionBar.visibility = View.GONE
+                reasoningCard.visibility = View.GONE
 
                 if (message.loadingState == "tool_call") {
                     textLoading.text = "正在调用工具..."
@@ -103,6 +117,25 @@ class ChatMessageAdapter : ListAdapter<ChatMessage, RecyclerView.ViewHolder>(Dif
 
                 markwon.setMarkdown(textMessage, message.content)
                 textMessage.visibility = if (message.content.isBlank()) View.GONE else View.VISIBLE
+
+                // 显示思考过程
+                if (!message.reasoningContent.isNullOrEmpty()) {
+                    reasoningCard.visibility = View.VISIBLE
+                    textReasoning.text = message.reasoningContent
+                    val isExpanded = message.isReasoningExpanded
+                    updateReasoningUI(isExpanded)
+
+                    reasoningHeader.setOnClickListener {
+                        val pos = adapterPosition
+                        if (pos != RecyclerView.NO_POSITION) {
+                            val newExpanded = !message.isReasoningExpanded
+                            updateReasoningUI(newExpanded)
+                            onReasoningToggle(pos, newExpanded)
+                        }
+                    }
+                } else {
+                    reasoningCard.visibility = View.GONE
+                }
 
                 // 显示工具调用结果
                 if (message.toolCalls.isNotEmpty()) {
@@ -143,6 +176,20 @@ class ChatMessageAdapter : ListAdapter<ChatMessage, RecyclerView.ViewHolder>(Dif
                     }
                 }
             }
+        }
+
+        private fun updateReasoningUI(expanded: Boolean) {
+            if (expanded) {
+                reasoningArrow.rotation = 90f
+                textReasoning.visibility = View.VISIBLE
+            } else {
+                reasoningArrow.rotation = 0f
+                textReasoning.visibility = View.GONE
+            }
+        }
+
+        companion object {
+            const val PAYLOAD_REASONING_EXPANDED = "reasoning_expanded"
         }
     }
 

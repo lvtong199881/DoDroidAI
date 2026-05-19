@@ -118,7 +118,11 @@ data class ChatMessage(
     @SerializedName("toolCalls")
     val toolCalls: List<ToolCallDisplay> = emptyList(),
     @SerializedName("toolCallId")
-    val toolCallId: String? = null
+    val toolCallId: String? = null,
+    @SerializedName("reasoningContent")
+    val reasoningContent: String? = null,
+    @SerializedName("isReasoningExpanded")
+    val isReasoningExpanded: Boolean = false
 ) {
     companion object {
         const val ROLE_USER = "user"
@@ -141,5 +145,7 @@ data class ChatResponse(
     @SerializedName("model")
     val model: String,
     @SerializedName("toolCalls")
-    val toolCalls: List<com.example.dodroidai.ai.tools.ToolCall> = emptyList()
+    val toolCalls: List<com.example.dodroidai.ai.tools.ToolCall> = emptyList(),
+    @SerializedName("reasoningContent")
+    val reasoningContent: String? = null
 )

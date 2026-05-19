@@ -29,7 +29,8 @@ class OpenAIModel : AIModel {
             content = message?.content ?: "",
             provider = AIProvider.OPENAI,
             model = response.model,
-            toolCalls = toolCalls
+            toolCalls = toolCalls,
+            reasoningContent = message?.reasoning
         )
     }
 }
@@ -52,7 +53,9 @@ private data class OpenAIMessage(
     @SerializedName("content")
     val content: String?,
     @SerializedName("tool_calls")
-    val toolCalls: List<OpenAIToolCall>?
+    val toolCalls: List<OpenAIToolCall>?,
+    @SerializedName("reasoning")
+    val reasoning: String? = null
 )
 
 private data class OpenAIToolCall(

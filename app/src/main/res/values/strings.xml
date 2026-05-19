@@ -69,4 +69,5 @@
     <string name="copy">Copy</string>
     <string name="copy_success">Copied to clipboard</string>
     <string name="confirm">Confirm</string>
+    <string name="thinking_process">Thinking Process</string>
 </resources>

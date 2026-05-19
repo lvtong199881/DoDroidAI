@@ -68,4 +68,5 @@
     <string name="save_success">保存成功</string>
     <string name="copy">复制</string>
     <string name="copy_success">已复制到剪贴板</string>
+    <string name="thinking_process">思考过程</string>
 </resources>

@@ -39,7 +39,8 @@ class DeepSeekModel : AIModel {
             content = content,
             provider = AIProvider.DEEPSEEK,
             model = response.model,
-            toolCalls = toolCalls
+            toolCalls = toolCalls,
+            reasoningContent = response.reasoningContent
         )
     }
 }
@@ -56,7 +57,9 @@ private data class DeepSeekResponse(
     @SerializedName("model")
     val model: String,
     @SerializedName("stop_reason")
-    val stopReason: String?
+    val stopReason: String?,
+    @SerializedName("reasoning_content")
+    val reasoningContent: String? = null
 )
 
 private data class DeepSeekContent(

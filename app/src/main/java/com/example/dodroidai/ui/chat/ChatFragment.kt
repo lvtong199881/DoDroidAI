@@ -133,7 +133,14 @@ class ChatFragment : Fragment() {
         chatAddOptions = view.findViewById(R.id.chatAddOptions)
         recyclerView = view.findViewById(R.id.recyclerView)
 
-        adapter = ChatMessageAdapter()
+        adapter = ChatMessageAdapter { position, expanded ->
+            val messages = adapter?.currentList?.toMutableList() ?: return@ChatMessageAdapter
+            if (position in messages.indices) {
+                val message = messages[position]
+                messages[position] = message.copy(isReasoningExpanded = expanded)
+                adapter?.submitList(messages)
+            }
+        }
         recyclerView?.layoutManager = LinearLayoutManager(context).apply {
             stackFromEnd = true
         }

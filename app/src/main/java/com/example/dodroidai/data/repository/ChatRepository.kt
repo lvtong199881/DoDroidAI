@@ -7,10 +7,10 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.dodroidai.data.model.ChatSession
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import java.util.UUID
 
 private val Context.chatDataStore: DataStore<Preferences> by preferencesDataStore(name = "chat_sessions")
@@ -20,17 +20,15 @@ private val Context.chatDataStore: DataStore<Preferences> by preferencesDataStor
  */
 class ChatRepository(private val context: Context) {
 
-    private val json = Json {
-        ignoreUnknownKeys = true
-        encodeDefaults = true
-    }
+    private val gson = Gson()
 
     private val sessionsKey = stringPreferencesKey("sessions")
 
     val sessionsFlow: Flow<List<ChatSession>> = context.chatDataStore.data.map { preferences ->
         val sessionsJson = preferences[sessionsKey] ?: "[]"
         try {
-            json.decodeFromString<List<ChatSession>>(sessionsJson)
+            val type = object : TypeToken<List<ChatSession>>() {}.type
+            gson.fromJson<List<ChatSession>>(sessionsJson, type) ?: emptyList()
         } catch (e: Exception) {
             emptyList()
         }
@@ -39,38 +37,28 @@ class ChatRepository(private val context: Context) {
     suspend fun saveSession(session: ChatSession) {
         context.chatDataStore.edit { preferences ->
             val currentSessions = try {
-                json.decodeFromString<List<ChatSession>>(preferences[sessionsKey] ?: "[]")
+                val type = object : TypeToken<List<ChatSession>>() {}.type
+                gson.fromJson<List<ChatSession>>(preferences[sessionsKey] ?: "[]", type) ?: emptyList()
             } catch (e: Exception) {
                 emptyList()
             }
 
             val updatedSessions = currentSessions.filter { it.id != session.id } + session
-            preferences[sessionsKey] = json.encodeToString(updatedSessions)
+            preferences[sessionsKey] = gson.toJson(updatedSessions)
         }
-    }
-
-    suspend fun createNewSession(firstMessage: String): ChatSession {
-        val session = ChatSession(
-            id = UUID.randomUUID().toString(),
-            title = firstMessage.take(20),
-            messages = emptyList(),
-            createdAt = System.currentTimeMillis(),
-            updatedAt = System.currentTimeMillis()
-        )
-        saveSession(session)
-        return session
     }
 
     suspend fun deleteSession(sessionId: String) {
         context.chatDataStore.edit { preferences ->
             val currentSessions = try {
-                json.decodeFromString<List<ChatSession>>(preferences[sessionsKey] ?: "[]")
+                val type = object : TypeToken<List<ChatSession>>() {}.type
+                gson.fromJson<List<ChatSession>>(preferences[sessionsKey] ?: "[]", type) ?: emptyList()
             } catch (e: Exception) {
                 emptyList()
             }
 
             val updatedSessions = currentSessions.filter { it.id != sessionId }
-            preferences[sessionsKey] = json.encodeToString(updatedSessions)
+            preferences[sessionsKey] = gson.toJson(updatedSessions)
         }
     }
 

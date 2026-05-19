@@ -7,7 +7,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dodroidai.DoDroidAIApplication
@@ -38,21 +40,34 @@ class ChatListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initViews(view)
+        observeSessions()
+        setupBackStackListener()
     }
 
-    override fun onResume() {
-        super.onResume()
-        refreshSessions()
+    private fun setupBackStackListener() {
+        parentFragmentManager.addOnBackStackChangedListener {
+            refreshSessions()
+        }
+    }
+
+    private fun observeSessions() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                DoDroidAIApplication.instance.chatRepository.sessionsFlow.collect { sessions ->
+                    val sortedSessions = sessions.sortedByDescending { it.updatedAt }
+                    adapter?.submitList(sortedSessions)
+                    tvEmpty?.visibility = if (sortedSessions.isEmpty()) View.VISIBLE else View.GONE
+                    recyclerView?.visibility = if (sortedSessions.isEmpty()) View.GONE else View.VISIBLE
+                }
+            }
+        }
     }
 
     private fun refreshSessions() {
         viewLifecycleOwner.lifecycleScope.launch {
             val sessions = DoDroidAIApplication.instance.chatRepository.sessionsFlow.first()
             val sortedSessions = sessions.sortedByDescending { it.updatedAt }
-            Log.d("ChatListFragment", "refreshSessions: ${sortedSessions.size} sessions, adapter=$adapter")
-            sortedSessions.forEach { Log.d("ChatListFragment", "  session: ${it.id}, title=${it.title}") }
             adapter?.submitList(sortedSessions)
-            Log.d("ChatListFragment", "submitList called, itemCount=${adapter?.itemCount}")
             tvEmpty?.visibility = if (sortedSessions.isEmpty()) View.VISIBLE else View.GONE
             recyclerView?.visibility = if (sortedSessions.isEmpty()) View.GONE else View.VISIBLE
         }
