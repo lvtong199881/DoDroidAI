@@ -26,7 +26,9 @@ import com.example.dodroidai.ui.chat.adapter.ChatMessageAdapter
 import com.example.dodroidai.ui.chat.input.ChatAddOptions
 import com.example.dodroidai.ui.chat.input.ChatInputBox
 import com.example.dodroidai.ui.chat.input.AttachmentItem
+import com.example.dodroidai.ui.common.CustomDialog
 import com.example.dodroidai.ui.common.Toolbar
+import com.example.dodroidai.ai.tools.ToolCall
 import kotlinx.coroutines.launch
 
 /**
@@ -48,10 +50,17 @@ class ChatFragment : Fragment() {
             ChatViewModel.Factory(
                 DoDroidAIApplication.instance.configManager,
                 DoDroidAIApplication.instance.chatRepository,
+                DoDroidAIApplication.instance.toolManager,
                 sessionId
             )
         )[ChatViewModel::class.java]
     }
+
+    // 当前等待确认的工具调用
+    private var pendingToolCall: ToolCall? = null
+
+    // 当前等待权限的工具调用
+    private var pendingPermissionToolCall: ToolCall? = null
 
     // 拍照
     private var tempCameraUri: Uri? = null
@@ -88,6 +97,21 @@ class ChatFragment : Fragment() {
         }
     }
 
+    // 工具权限请求
+    private val toolPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        val toolCall = pendingPermissionToolCall
+        if (toolCall != null) {
+            if (isGranted) {
+                viewModel.onPermissionResult(ToolPermissionResult.Granted(toolCall))
+            } else {
+                viewModel.onPermissionResult(ToolPermissionResult.Denied(toolCall.id))
+            }
+        }
+        pendingPermissionToolCall = null
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -114,6 +138,14 @@ class ChatFragment : Fragment() {
             stackFromEnd = true
         }
         recyclerView?.adapter = adapter
+
+        // 打印当前 AI 配置
+        viewLifecycleOwner.lifecycleScope.launch {
+            val config = DoDroidAIApplication.instance.configManager.configFlow
+            config.collect { cfg ->
+                android.util.Log.d("ChatFragment", "Current AI config: provider=${cfg.provider}, baseUrl=${cfg.baseUrl}, model=${cfg.model}, apiKey=${cfg.apiKey.take(10)}...")
+            }
+        }
 
         toolbar?.setTitle(R.string.new_chat)
         toolbar?.setOnBackClickListener {
@@ -188,6 +220,110 @@ class ChatFragment : Fragment() {
                 }
             }
         }
+
+        // 监听工具调用确认请求
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.toolConfirmation.collect { request ->
+                    showToolConfirmationDialog(request)
+                }
+            }
+        }
+
+        // 监听工具权限请求
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.toolPermission.collect { request ->
+                    showPermissionRequestDialog(request)
+                }
+            }
+        }
+    }
+
+    private fun showPermissionRequestDialog(request: ToolPermissionRequest) {
+        pendingPermissionToolCall = request.toolCall
+
+        val title = "需要权限"
+        val description = request.rationale + "\n\n工具: ${request.toolName}\n参数: ${summarizeArgs(request.toolCall.arguments)}"
+
+        val dialog = CustomDialog.Builder(requireContext())
+            .setTitle(title)
+            .setDescription(description)
+            .setButtons(
+                CustomDialog.ButtonInfo(
+                    text = getString(R.string.cancel),
+                    onClick = {
+                        val toolCall = pendingPermissionToolCall
+                        if (toolCall != null) {
+                            viewModel.onPermissionResult(ToolPermissionResult.Denied(toolCall.id))
+                        }
+                        pendingPermissionToolCall = null
+                    },
+                    dismissOnClick = false
+                ),
+                CustomDialog.ButtonInfo(
+                    text = "授权",
+                    onClick = {
+                        val toolCall = pendingPermissionToolCall
+                        if (toolCall != null) {
+                            toolPermissionLauncher.launch(request.permission)
+                        }
+                    },
+                    dismissOnClick = false
+                )
+            )
+            .setCancelable(false)
+            .build()
+
+        dialog.show()
+    }
+
+    private fun summarizeArgs(argsJson: String): String {
+        return try {
+            val map = com.google.gson.Gson().fromJson(argsJson, Map::class.java)
+            map.entries.joinToString(", ") { "${it.key}: ${it.value}" }
+        } catch (e: Exception) {
+            argsJson.take(50)
+        }
+    }
+
+    private fun showToolConfirmationDialog(request: ToolConfirmationRequest) {
+        pendingToolCall = request.toolCall
+
+        val title = "工具调用确认"
+        val description = "是否允许执行以下操作？\n\n工具: ${request.toolName}\n参数: ${request.argsSummary}"
+
+        val dialog = CustomDialog.Builder(requireContext())
+            .setTitle(title)
+            .setDescription(description)
+            .setButtons(
+                CustomDialog.ButtonInfo(
+                    text = getString(R.string.cancel),
+                    onClick = {
+                        val toolCall = pendingToolCall
+                        if (toolCall != null) {
+                            viewModel.onToolConfirmationResult(ToolConfirmationResult.Rejected(toolCall.id))
+                        }
+                        pendingToolCall = null
+                    },
+                    dismissOnClick = false
+                ),
+                CustomDialog.ButtonInfo(
+                    text = getString(R.string.confirm),
+                    onClick = {
+                        val toolCall = pendingToolCall
+                        if (toolCall != null) {
+                            viewModel.onToolConfirmationResult(ToolConfirmationResult.Approved(toolCall))
+                        }
+                        pendingToolCall = null
+                    },
+                    dismissOnClick = false
+                )
+            )
+            .setCancelable(false)
+            .build()
+
+        dialog.show()
     }
 
     private fun hideKeyboard() {

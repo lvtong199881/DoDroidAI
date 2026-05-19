@@ -6,6 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.RadioButton
 import android.widget.RadioGroup
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.fragment.app.Fragment
 import com.example.dodroidai.ui.common.Toolbar
 import com.example.dodroidai.DoDroidAIApplication
@@ -67,7 +69,9 @@ class LanguageSettingFragment : Fragment() {
             }
             CoroutineScope(Dispatchers.Main).launch {
                 configManager?.updateLanguage(language)
-                activity?.recreate()
+                val localeList = LocaleListCompat.forLanguageTags(language)
+                AppCompatDelegate.setApplicationLocales(localeList)
+                parentFragmentManager.popBackStack()
             }
         }
     }

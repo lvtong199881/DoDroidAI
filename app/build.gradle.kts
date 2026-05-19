@@ -59,6 +59,9 @@ dependencies {
   // DataStore
   implementation(libs.datastore.preferences)
 
+  // Gson for JSON parsing
+  implementation(libs.gson)
+
   // Markdown
   implementation("io.noties.markwon:core:4.6.2")
 }

@@ -7,6 +7,7 @@ import com.example.dodroidai.ai.model.ChatMessage
 import com.example.dodroidai.ai.model.ChatRequestBody
 import com.example.dodroidai.ai.model.ChatResponse
 import com.example.dodroidai.ai.model.ChatResponseBody
+import com.example.dodroidai.ai.tools.ToolDefinition
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -32,10 +33,11 @@ class OpenAIModel : AIModel {
         return executeChat(config, messages)
     }
 
-    fun executeChat(config: AIConfig, messages: List<ChatMessage>): ChatResponse {
+    fun executeChat(config: AIConfig, messages: List<ChatMessage>, tools: List<ToolDefinition>? = null): ChatResponse {
         val requestBody = ChatRequestBody(
             model = config.model,
-            messages = messages
+            messages = messages,
+            tools = tools
         )
 
         val request = Request.Builder()
@@ -50,10 +52,12 @@ class OpenAIModel : AIModel {
         val body = response.body?.string() ?: throw RuntimeException("Empty response")
 
         val chatResponse = json.decodeFromString<ChatResponseBody>(body)
+        val message = chatResponse.choices.firstOrNull()?.message
         return ChatResponse(
-            content = chatResponse.choices.firstOrNull()?.message?.content ?: "",
+            content = message?.content ?: "",
             provider = provider,
-            model = chatResponse.model
+            model = chatResponse.model,
+            toolCalls = message?.toolCalls ?: emptyList()
         )
     }
 

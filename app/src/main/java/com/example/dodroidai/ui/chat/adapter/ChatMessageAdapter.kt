@@ -18,6 +18,7 @@ import com.example.dodroidai.R
 import com.example.dodroidai.ai.model.ChatMessage
 import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_ASSISTANT
 import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_USER
+import com.example.dodroidai.ai.tools.ToolCallDisplay
 import io.noties.markwon.Markwon
 
 /**
@@ -57,7 +58,6 @@ class ChatMessageAdapter : ListAdapter<ChatMessage, RecyclerView.ViewHolder>(Dif
     }
 
     private fun isLastAssistantMessage(position: Int): Boolean {
-        // 找到最后一个 assistant 消息的位置
         for (i in itemCount - 1 downTo 0) {
             if (getItem(i).role == ROLE_ASSISTANT) {
                 return i == position
@@ -80,6 +80,7 @@ class ChatMessageAdapter : ListAdapter<ChatMessage, RecyclerView.ViewHolder>(Dif
         private val textLoading: TextView = view.findViewById(R.id.textLoading)
         private val actionBar: LinearLayout = view.findViewById(R.id.actionBar)
         private val btnCopy: ImageButton = view.findViewById(R.id.btnCopy)
+        private val toolCallContainer: LinearLayout = view.findViewById(R.id.toolCallContainer)
         private val markwon = Markwon.create(view.context)
 
         fun bind(message: ChatMessage, showActions: Boolean) {
@@ -89,13 +90,48 @@ class ChatMessageAdapter : ListAdapter<ChatMessage, RecyclerView.ViewHolder>(Dif
                 textLoading.visibility = View.VISIBLE
                 actionBar.visibility = View.GONE
 
-                textLoading.text = "AI思考中...${message.loadingSeconds}秒"
+                if (message.loadingState == "tool_call") {
+                    textLoading.text = "正在调用工具..."
+                } else {
+                    textLoading.text = "AI思考中...${message.loadingSeconds}秒"
+                }
             } else {
                 textMessage.visibility = View.VISIBLE
                 progressBar.visibility = View.GONE
                 textLoading.visibility = View.GONE
                 actionBar.visibility = if (showActions) View.VISIBLE else View.GONE
+
                 markwon.setMarkdown(textMessage, message.content)
+                textMessage.visibility = if (message.content.isBlank()) View.GONE else View.VISIBLE
+
+                // 显示工具调用结果
+                if (message.toolCalls.isNotEmpty()) {
+                    toolCallContainer.visibility = View.VISIBLE
+                    toolCallContainer.removeAllViews()
+
+                    val inflater = LayoutInflater.from(itemView.context)
+                    for (toolCall in message.toolCalls) {
+                        val toolView = inflater.inflate(R.layout.item_tool_call, toolCallContainer, false)
+                        val textToolName = toolView.findViewById<TextView>(R.id.textToolName)
+                        val textToolArgs = toolView.findViewById<TextView>(R.id.textToolArgs)
+                        val textToolStatus = toolView.findViewById<TextView>(R.id.textToolStatus)
+
+                        textToolName.text = toolCall.name
+                        textToolArgs.text = toolCall.argsSummary
+
+                        val statusText = when {
+                            toolCall.isRunning -> "🔄"
+                            toolCall.isSuccess == true -> "✅"
+                            toolCall.isSuccess == false -> "❌"
+                            else -> ""
+                        }
+                        textToolStatus.text = statusText
+
+                        toolCallContainer.addView(toolView)
+                    }
+                } else {
+                    toolCallContainer.visibility = View.GONE
+                }
 
                 if (showActions) {
                     btnCopy.setOnClickListener {

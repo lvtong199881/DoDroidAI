@@ -1,6 +1,7 @@
 package com.example.dodroidai.ui.setting
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -181,19 +182,22 @@ class AIConfigFragment : Fragment() {
     }
 
     private fun saveConfig() {
-        val config = viewModel?.config?.value ?: return
-        val newConfig = config.copy(
+        val provider = AIProvider.valueOf(providerNameInput?.text.toString().trim().uppercase())
+        val newConfig = AIConfig(
+            provider = provider,
+            apiKey = apiKeyInput?.text.toString().trim(),
+            baseUrl = baseUrlInput?.text.toString().trim(),
+            model = mainModelInput?.text.toString().trim(),
             providerName = providerNameInput?.text.toString().trim(),
             description = descriptionInput?.text.toString().trim(),
             officialUrl = officialUrlInput?.text.toString().trim(),
-            apiKey = apiKeyInput?.text.toString().trim(),
-            baseUrl = baseUrlInput?.text.toString().trim(),
             apiFormat = currentApiFormat,
             mainModel = mainModelInput?.text.toString().trim(),
             haikuModel = haikuModelInput?.text.toString().trim(),
             sonnetModel = sonnetModelInput?.text.toString().trim(),
             opusModel = opusModelInput?.text.toString().trim()
         )
+        android.util.Log.d("AIConfigFragment", "Saving config: provider=${newConfig.provider}, baseUrl=${newConfig.baseUrl}, model=${newConfig.model}, apiKey=${newConfig.apiKey.take(10)}...")
         viewModel?.updateConfig(newConfig)
         Toast.makeText(context, R.string.save_success, Toast.LENGTH_SHORT).show()
         parentFragmentManager.popBackStack()

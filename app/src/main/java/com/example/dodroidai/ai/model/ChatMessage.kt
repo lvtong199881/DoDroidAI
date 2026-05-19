@@ -1,6 +1,8 @@
 package com.example.dodroidai.ai.model
 
+import com.example.dodroidai.ai.tools.ToolCallDisplay
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 /**
  * AI 提供商枚举
@@ -56,12 +58,17 @@ data class ChatMessage(
     val timestamp: Long = System.currentTimeMillis(),
     val isLoading: Boolean = false,
     val loadingState: String? = null,
-    val loadingSeconds: Int = 0
+    val loadingSeconds: Int = 0,
+    @Transient
+    val toolCalls: List<ToolCallDisplay> = emptyList(),
+    @Transient
+    val toolCallId: String? = null // 工具消息关联的 tool_call_id
 ) {
     companion object {
         const val ROLE_USER = "user"
         const val ROLE_ASSISTANT = "assistant"
         const val ROLE_SYSTEM = "system"
+        const val ROLE_TOOL = "tool"
 
         const val LOADING_THINKING = "thinking"
     }
@@ -70,9 +77,9 @@ data class ChatMessage(
 /**
  * 聊天响应结构
  */
-@Serializable
 data class ChatResponse(
     val content: String,
     val provider: AIProvider,
-    val model: String
+    val model: String,
+    val toolCalls: List<com.example.dodroidai.ai.tools.ToolCall> = emptyList()
 )
