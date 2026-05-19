@@ -2,42 +2,49 @@ package com.example.dodroidai.ai.model
 
 import com.example.dodroidai.ai.tools.ToolCall
 import com.example.dodroidai.ai.tools.ToolDefinition
-import kotlinx.serialization.Serializable
+import com.google.gson.annotations.SerializedName
 
 /**
  * API 请求/响应数据模型，内部使用
  */
-@Serializable
-internal data class ChatRequestBody(
+data class ChatRequestBody(
+    @SerializedName("model")
     val model: String,
+    @SerializedName("messages")
     val messages: List<ChatMessage>,
+    @SerializedName("tools")
     val tools: List<ToolDefinition>? = null
 )
 
-@Serializable
-internal data class ChatResponseBody(
+data class ChatResponseBody(
+    @SerializedName("id")
     val id: String = "",
+    @SerializedName("model")
     val model: String = "",
+    @SerializedName("choices")
     val choices: List<Choice> = emptyList()
 )
 
-@Serializable
-internal data class Choice(
+data class Choice(
+    @SerializedName("message")
     val message: Message
 )
 
-@Serializable
-internal data class Message(
+data class Message(
+    @SerializedName("content")
     val content: String = "",
+    @SerializedName("toolCalls")
     val toolCalls: List<ToolCall>? = null
 )
 
 /**
  * 工具调用结果消息（用于继续对话）
  */
-@Serializable
-internal data class ToolMessage(
+data class ToolMessage(
+    @SerializedName("role")
     val role: String = "tool",
+    @SerializedName("toolCallId")
     val toolCallId: String,
+    @SerializedName("content")
     val content: String
 )

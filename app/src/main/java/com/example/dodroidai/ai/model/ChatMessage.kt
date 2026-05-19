@@ -1,8 +1,7 @@
 package com.example.dodroidai.ai.model
 
 import com.example.dodroidai.ai.tools.ToolCallDisplay
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
+import com.google.gson.annotations.SerializedName
 
 /**
  * AI 提供商枚举
@@ -17,52 +16,109 @@ enum class AIProvider {
 /**
  * AI 配置数据类
  */
-@Serializable
 data class AIConfig(
-    val provider: AIProvider = AIProvider.OPENAI,
-    val apiKey: String = "",
-    val baseUrl: String = "",
-    val model: String = "",
-    val temperature: Float = 0.7f
+    @SerializedName("provider")
+    val provider: AIProvider,
+    @SerializedName("apiKey")
+    val apiKey: String,
+    @SerializedName("baseUrl")
+    val baseUrl: String,
+    @SerializedName("model")
+    val model: String,
+    @SerializedName("providerName")
+    val providerName: String = "",
+    @SerializedName("description")
+    val description: String = "",
+    @SerializedName("officialUrl")
+    val officialUrl: String = "",
+    @SerializedName("apiFormat")
+    val apiFormat: ApiFormat = ApiFormat.ANTHROPIC_MESSAGES,
+    @SerializedName("mainModel")
+    val mainModel: String = "",
+    @SerializedName("haikuModel")
+    val haikuModel: String = "",
+    @SerializedName("sonnetModel")
+    val sonnetModel: String = "",
+    @SerializedName("opusModel")
+    val opusModel: String = ""
 ) {
-    fun isValid(): Boolean = apiKey.isNotBlank() && model.isNotBlank()
-
     companion object {
-        val DEFAULT_OPENAI = AIConfig(
-            provider = AIProvider.OPENAI,
-            baseUrl = "https://api.openai.com/v1",
-            model = "gpt-4o"
-        )
-
-        val DEFAULT_DEEPSEEK = AIConfig(
-            provider = AIProvider.DEEPSEEK,
-            baseUrl = "https://api.deepseek.com/v1",
-            model = "deepseek-chat"
-        )
-
-        val DEFAULT_MINIMAX = AIConfig(
-            provider = AIProvider.MINIMAX,
-            baseUrl = "https://api.minimaxi.com/anthropic",
-            model = "abab6.5s-chat"
-        )
+        fun default(provider: AIProvider): AIConfig {
+            return when (provider) {
+                AIProvider.OPENAI -> AIConfig(
+                    provider = AIProvider.OPENAI,
+                    apiKey = "",
+                    baseUrl = "https://api.openai.com/v1",
+                    model = "gpt-4o",
+                    providerName = "OpenAI",
+                    officialUrl = "https://openai.com",
+                    apiFormat = ApiFormat.ANTHROPIC_MESSAGES,
+                    mainModel = "gpt-4o",
+                    haikuModel = "gpt-4o",
+                    sonnetModel = "gpt-4o",
+                    opusModel = "gpt-4o"
+                )
+                AIProvider.DEEPSEEK -> AIConfig(
+                    provider = AIProvider.DEEPSEEK,
+                    apiKey = "",
+                    baseUrl = "https://api.deepseek.com/v1",
+                    model = "deepseek-chat",
+                    providerName = "DeepSeek",
+                    officialUrl = "https://platform.deepseek.com",
+                    apiFormat = ApiFormat.ANTHROPIC_MESSAGES,
+                    mainModel = "deepseek-chat",
+                    haikuModel = "deepseek-chat",
+                    sonnetModel = "deepseek-chat",
+                    opusModel = "deepseek-chat"
+                )
+                AIProvider.MINIMAX -> AIConfig(
+                    provider = AIProvider.MINIMAX,
+                    apiKey = "",
+                    baseUrl = "https://api.minimaxi.com/anthropic",
+                    model = "MiniMax-M2.7",
+                    providerName = "MiniMax",
+                    officialUrl = "https://platform.minimaxi.com",
+                    apiFormat = ApiFormat.ANTHROPIC_MESSAGES,
+                    mainModel = "MiniMax-M2.7",
+                    haikuModel = "MiniMax-M2.7",
+                    sonnetModel = "MiniMax-M2.7",
+                    opusModel = "MiniMax-M2.7"
+                )
+                AIProvider.CUSTOM -> AIConfig(
+                    provider = AIProvider.CUSTOM,
+                    apiKey = "",
+                    baseUrl = "",
+                    model = "",
+                    providerName = "",
+                    apiFormat = ApiFormat.ANTHROPIC_MESSAGES
+                )
+            }
+        }
     }
+
+    fun isValid(): Boolean = apiKey.isNotBlank() && model.isNotBlank()
 }
 
 /**
  * 聊天消息结构
  */
-@Serializable
 data class ChatMessage(
+    @SerializedName("role")
     val role: String,
+    @SerializedName("content")
     val content: String,
+    @SerializedName("timestamp")
     val timestamp: Long = System.currentTimeMillis(),
+    @SerializedName("isLoading")
     val isLoading: Boolean = false,
+    @SerializedName("loadingState")
     val loadingState: String? = null,
+    @SerializedName("loadingSeconds")
     val loadingSeconds: Int = 0,
-    @Transient
+    @SerializedName("toolCalls")
     val toolCalls: List<ToolCallDisplay> = emptyList(),
-    @Transient
-    val toolCallId: String? = null // 工具消息关联的 tool_call_id
+    @SerializedName("toolCallId")
+    val toolCallId: String? = null
 ) {
     companion object {
         const val ROLE_USER = "user"
@@ -78,8 +134,12 @@ data class ChatMessage(
  * 聊天响应结构
  */
 data class ChatResponse(
+    @SerializedName("content")
     val content: String,
+    @SerializedName("provider")
     val provider: AIProvider,
+    @SerializedName("model")
     val model: String,
+    @SerializedName("toolCalls")
     val toolCalls: List<com.example.dodroidai.ai.tools.ToolCall> = emptyList()
 )

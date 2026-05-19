@@ -2,34 +2,35 @@ package com.example.dodroidai.ai.config
 
 import com.example.dodroidai.ai.model.AIProvider
 import com.example.dodroidai.ai.model.ApiFormat
+import com.google.gson.annotations.SerializedName
 
 /**
  * AI 配置数据类
  */
 data class AIConfig(
-    /** AI 提供商类型 */
+    @SerializedName("provider")
     val provider: AIProvider,
-    /** API 密钥 */
+    @SerializedName("apiKey")
     val apiKey: String,
-    /** API 请求地址 */
+    @SerializedName("baseUrl")
     val baseUrl: String,
-    /** 默认模型 */
+    @SerializedName("model")
     val model: String,
-    /** 供应商名称 */
+    @SerializedName("providerName")
     val providerName: String = "",
-    /** 备注说明 */
+    @SerializedName("description")
     val description: String = "",
-    /** 官网链接 */
+    @SerializedName("officialUrl")
     val officialUrl: String = "",
-    /** API 格式 */
+    @SerializedName("apiFormat")
     val apiFormat: ApiFormat = ApiFormat.ANTHROPIC_MESSAGES,
-    /** 主模型名称 */
+    @SerializedName("mainModel")
     val mainModel: String = "",
-    /** Haiku 默认模型 */
+    @SerializedName("haikuModel")
     val haikuModel: String = "",
-    /** Sonnet 默认模型 */
+    @SerializedName("sonnetModel")
     val sonnetModel: String = "",
-    /** Opus 默认模型 */
+    @SerializedName("opusModel")
     val opusModel: String = ""
 ) {
     companion object {
@@ -85,4 +86,6 @@ data class AIConfig(
             }
         }
     }
+
+    fun isValid(): Boolean = apiKey.isNotBlank() && model.isNotBlank()
 }

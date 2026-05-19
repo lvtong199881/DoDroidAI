@@ -1,65 +1,73 @@
 package com.example.dodroidai.ai.repository
 
-import com.example.dodroidai.ai.config.AIConfig
 import com.example.dodroidai.ai.model.AIModel
 import com.example.dodroidai.ai.model.AIProvider
-import com.example.dodroidai.ai.model.ChatMessage
-import com.example.dodroidai.ai.model.ChatRequestBody
 import com.example.dodroidai.ai.model.ChatResponse
-import com.example.dodroidai.ai.model.ChatResponseBody
-import com.example.dodroidai.ai.tools.ToolDefinition
-import kotlinx.serialization.json.Json
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import java.util.concurrent.TimeUnit
+import com.example.dodroidai.ai.tools.ToolCall
+import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 
 /**
- * DeepSeek 模型实现
+ * DeepSeek 模型响应解析
  */
 class DeepSeekModel : AIModel {
-    override val provider: AIProvider = AIProvider.DEEPSEEK
+    private val gson = Gson()
 
-    private val client = OkHttpClient.Builder()
-        .connectTimeout(30L, TimeUnit.SECONDS)
-        .readTimeout(120L, TimeUnit.SECONDS)
-        .build()
+    override fun parseResponse(body: String): ChatResponse {
+        val response = gson.fromJson(body, DeepSeekResponse::class.java)
 
-    private val json = Json { ignoreUnknownKeys = true }
+        var content = ""
+        val toolCalls = mutableListOf<ToolCall>()
 
-    override suspend fun chat(messages: List<ChatMessage>): ChatResponse {
-        val config = AIConfig.default(provider)
-        return executeChat(config, messages)
-    }
+        for (item in response.content) {
+            when (item.type) {
+                "text" -> content = item.text ?: ""
+                "tool_use" -> {
+                    val argumentsJson = gson.toJson(item.input)
+                    toolCalls.add(
+                        ToolCall(
+                            id = item.toolUseId ?: "",
+                            name = item.name ?: "",
+                            arguments = argumentsJson
+                        )
+                    )
+                }
+            }
+        }
 
-    fun executeChat(config: AIConfig, messages: List<ChatMessage>, tools: List<ToolDefinition>? = null): ChatResponse {
-        val requestBody = ChatRequestBody(
-            model = config.model,
-            messages = messages,
-            tools = tools
-        )
-
-        val request = Request.Builder()
-            .url("${config.baseUrl}/chat/completions")
-            .addHeader("Content-Type", "application/json")
-            .addHeader("Authorization", "Bearer ${config.apiKey}")
-            .post(json.encodeToString(ChatRequestBody.serializer(), requestBody)
-                .toRequestBody("application/json".toMediaType()))
-            .build()
-
-        val response = client.newCall(request).execute()
-        val body = response.body?.string() ?: throw RuntimeException("Empty response")
-
-        val chatResponse = json.decodeFromString<ChatResponseBody>(body)
-        val message = chatResponse.choices.firstOrNull()?.message
         return ChatResponse(
-            content = message?.content ?: "",
-            provider = provider,
-            model = chatResponse.model,
-            toolCalls = message?.toolCalls ?: emptyList()
+            content = content,
+            provider = AIProvider.DEEPSEEK,
+            model = response.model,
+            toolCalls = toolCalls
         )
     }
-
-    override fun getDefaultConfig(): AIConfig = AIConfig.default(provider)
 }
+
+private data class DeepSeekResponse(
+    @SerializedName("id")
+    val id: String,
+    @SerializedName("type")
+    val type: String,
+    @SerializedName("role")
+    val role: String,
+    @SerializedName("content")
+    val content: List<DeepSeekContent>,
+    @SerializedName("model")
+    val model: String,
+    @SerializedName("stop_reason")
+    val stopReason: String?
+)
+
+private data class DeepSeekContent(
+    @SerializedName("type")
+    val type: String,
+    @SerializedName("text")
+    val text: String? = null,
+    @SerializedName("tool_use_id")
+    val toolUseId: String? = null,
+    @SerializedName("name")
+    val name: String? = null,
+    @SerializedName("input")
+    val input: Map<String, Any>? = null
+)
