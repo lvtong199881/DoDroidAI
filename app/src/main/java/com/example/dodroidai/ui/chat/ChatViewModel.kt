@@ -6,19 +6,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.dodroidai.ai.config.AIConfig
 import com.example.dodroidai.ai.config.AIConfigManager
-import com.example.dodroidai.ai.model.AIModel
-import com.example.dodroidai.ai.model.AIProvider
-import com.example.dodroidai.ai.model.ApiFormat
 import com.example.dodroidai.ai.model.ChatMessage
 import com.example.dodroidai.ai.model.ChatMessage.Companion.LOADING_THINKING
 import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_ASSISTANT
 import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_USER
 import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_TOOL
-import com.example.dodroidai.ai.model.ChatResponse
-import com.example.dodroidai.ai.model.createRequest
-import com.example.dodroidai.ai.repository.AnthropicModel
-import com.example.dodroidai.ai.repository.OpenAIModel
-import com.example.dodroidai.util.GsonUtil
+import com.example.dodroidai.ai.model.StreamingCallback
+import com.example.dodroidai.ai.streaming.StreamingChatClient
 import com.example.dodroidai.ai.tools.RiskLevel
 import com.example.dodroidai.ai.tools.ToolCall
 import com.example.dodroidai.ai.tools.ToolCallDisplay
@@ -27,14 +21,11 @@ import com.example.dodroidai.ai.tools.ToolManager
 import com.example.dodroidai.ai.tools.ToolResult
 import com.example.dodroidai.data.model.ChatSession
 import com.example.dodroidai.data.repository.ChatRepository
-import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
-import okhttp3.MediaType.Companion.toMediaType
+import com.example.dodroidai.util.GsonUtil
 import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,7 +35,6 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.UUID
 
 /**
@@ -61,6 +51,15 @@ data class ChatUiState(
     val sessionId: String? = null,
     @SerializedName("sessionName")
     val sessionName: String? = null
+)
+
+/**
+ * 流式响应结果
+ */
+private data class StreamingResult(
+    val content: String,
+    val reasoningContent: String?,
+    val toolCalls: List<ToolCall>
 )
 
 /**
@@ -118,12 +117,25 @@ class ChatViewModel(
 ) : ViewModel() {
 
     companion object {
+        private const val TAG = "ChatViewModel"
         private const val MAX_CONTEXT_MESSAGES = 20
         private const val MAX_TOOL_CALL_DEPTH = 5
     }
 
     private val _uiState = MutableStateFlow(ChatUiState())
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
+
+    /**
+     * 流式消息位置的 Flow，用于通知 Fragment 直接更新 ViewHolder
+     */
+    private val _streamingMessagePosition = MutableStateFlow(-1)
+    val streamingMessagePosition: StateFlow<Int> = _streamingMessagePosition.asStateFlow()
+
+    /**
+     * 流式内容更新 Flow
+     */
+    private val _streamingContentUpdate = MutableStateFlow<Pair<Int, String>?>(null)
+    val streamingContentUpdate: StateFlow<Pair<Int, String>?> = _streamingContentUpdate.asStateFlow()
 
     /**
      * 发送工具调用确认请求给 UI
@@ -157,13 +169,12 @@ class ChatViewModel(
      */
     private var isAwaitingPermission = false
 
-    private val openAIModel = OpenAIModel()
-    private val anthropicModel = AnthropicModel()
-
     private val httpClient = OkHttpClient.Builder()
         .connectTimeout(30L, java.util.concurrent.TimeUnit.SECONDS)
         .readTimeout(120L, java.util.concurrent.TimeUnit.SECONDS)
         .build()
+
+    private val streamingClient = StreamingChatClient(httpClient)
 
     init {
         if (sessionId != null) {
@@ -229,28 +240,42 @@ class ChatViewModel(
 
             try {
                 val config = getCurrentConfig()
-                val historyMessages = getRecentMessages()
-                val allMessages = historyMessages + userMessage
+                // 获取历史消息（已包含新添加的 userMessage）
+                val allMessages = getRecentMessages()
                 val tools = toolManager.getToolDefinitions()
 
-                var finalResponse = sendMessageWithTools(config, allMessages, tools)
+                // 使用流式发送
+                Log.i(TAG, "sendMessageStreaming messages count: ${allMessages.size}")
+                Log.i(TAG, "sendMessageStreaming messages: ${allMessages.map { it.role to it.content.take(30) }}")
+                var streamingResult = sendMessageStreaming(config, allMessages, tools)
 
                 // 处理工具调用循环
                 var toolCallDepth = 0
-                while (finalResponse.toolCalls.isNotEmpty() && toolCallDepth < MAX_TOOL_CALL_DEPTH) {
+                var currentToolCalls = streamingResult.toolCalls
+                while (currentToolCalls.isNotEmpty() && toolCallDepth < MAX_TOOL_CALL_DEPTH) {
                     toolCallDepth++
-                    finalResponse = processToolCallsAndContinue(config, allMessages, userMessage, finalResponse.toolCalls, tools)
+                    // 执行工具调用
+                    val toolResults = executeToolCalls(currentToolCalls)
+                    // 添加工具结果消息
+                    val toolMessages = buildToolMessages(currentToolCalls, toolResults)
+                    val messagesWithResults = allMessages + toolMessages
+                    Log.i(TAG, "Second request messages count: ${messagesWithResults.size}")
+                    Log.i(TAG, "Second request messages: ${messagesWithResults.map { it.role to it.content.take(30) }}")
+                    // 继续流式请求
+                    val nextResult = sendMessageStreaming(config, messagesWithResults, tools)
+                    currentToolCalls = nextResult.toolCalls
+                    streamingResult = nextResult
                 }
 
                 loadingJob.cancel()
 
-                Log.d("ChatViewModel", "Final response: content='${finalResponse.content}', toolCalls=${finalResponse.toolCalls.size}")
-                val toolDisplays = buildToolDisplays(finalResponse.toolCalls, emptyList())
+                Log.d("ChatViewModel", "Final response: content='${streamingResult.content}', toolCalls=${streamingResult.toolCalls.size}")
+                val toolDisplays = buildToolDisplays(streamingResult.toolCalls, emptyList())
                 val assistantMessage = ChatMessage(
                     role = ROLE_ASSISTANT,
-                    content = finalResponse.content,
+                    content = streamingResult.content,
                     toolCalls = toolDisplays,
-                    reasoningContent = finalResponse.reasoningContent
+                    reasoningContent = streamingResult.reasoningContent
                 )
 
                 val currentMessages = _uiState.value.messages.toMutableList()
@@ -320,132 +345,72 @@ class ChatViewModel(
         }
     }
 
-    private suspend fun sendMessageWithTools(
+    /**
+     * 流式发送消息并返回结果
+     */
+    private suspend fun sendMessageStreaming(
         config: AIConfig,
         messages: List<ChatMessage>,
         tools: List<ToolDefinition>
-    ): ChatResponse {
-        return withContext(Dispatchers.IO) {
-            Log.d("ChatViewModel", "Sending ${messages.size} messages to LLM, tools: ${tools?.size ?: 0}")
+    ): StreamingResult {
+        val result = CompletableDeferred<StreamingResult>()
 
-            val request = createRequest(config, messages, tools)
-            val response = httpClient.newCall(request).execute()
-            val body = response.body?.string() ?: throw RuntimeException("Empty response")
-            Log.d("ChatViewModel", "Response body: $body")
+        streamingClient.stream(config, messages, tools, object : StreamingCallback {
+            private val contentBuilder = StringBuilder()
+            private val reasoningBuilder = StringBuilder()
+            private val toolCalls = mutableListOf<ToolCall>()
 
-            val model = when (config.apiFormat) {
-                ApiFormat.ANTHROPIC_MESSAGES -> anthropicModel
+            override fun onContentDelta(content: String) {
+                // 更新 UI 显示增量内容（不更新 messages，只通过 streamingContentUpdate 更新 ViewHolder）
+                updateLoadingMessageContent(content)
             }
 
-            model.parseResponse(body)
+            override fun onReasoningDelta(content: String) {
+                // 更新思考内容（不更新 messages）
+                updateLoadingMessageReasoning(content)
+            }
+
+            override fun onToolCallDelta(toolCallId: String, name: String, argumentsDelta: String) {
+                // 工具调用增量
+            }
+
+            override fun onToolCallComplete(toolCallId: String, name: String, arguments: String) {
+                toolCalls.add(ToolCall(id = toolCallId, name = name, arguments = arguments))
+            }
+
+            override fun onComplete(fullContent: String, reasoningContent: String?, toolCalls: List<ToolCall>) {
+                result.complete(StreamingResult(
+                    content = fullContent,
+                    reasoningContent = reasoningContent,
+                    toolCalls = toolCalls
+                ))
+            }
+
+            override fun onError(error: Throwable) {
+                result.completeExceptionally(error)
+            }
+        })
+
+        return result.await()
+    }
+
+    /**
+     * 执行工具调用
+     */
+    private fun executeToolCalls(toolCalls: List<ToolCall>): List<ToolResult> {
+        return toolCalls.map { toolCall ->
+            toolManager.executeTool(toolCall)
         }
     }
 
-    private suspend fun processToolCallsAndContinue(
-        config: AIConfig,
-        allMessages: List<ChatMessage>,
-        userMessage: ChatMessage,
+    /**
+     * 构建工具消息列表
+     */
+    private fun buildToolMessages(
         toolCalls: List<ToolCall>,
-        tools: List<ToolDefinition>
-    ): ChatResponse {
-        // 显示正在执行的工具调用
-        val toolDisplaysInProgress = toolCalls.map { call ->
-            ToolCallDisplay(
-                name = call.name,
-                argsSummary = summarizeArgs(call.arguments),
-                isRunning = true
-            )
-        }
-
-        val loadingMessage = ChatMessage(
-            role = ROLE_ASSISTANT,
-            content = "",
-            isLoading = true,
-            loadingState = "tool_call",
-            toolCalls = toolDisplaysInProgress
-        )
-
-        val currentMessages = _uiState.value.messages.toMutableList()
-        val lastIndex = currentMessages.lastIndex
-        if (lastIndex >= 0 && currentMessages[lastIndex].isLoading) {
-            currentMessages[lastIndex] = loadingMessage
-            _uiState.value = _uiState.value.copy(messages = currentMessages)
-        }
-
-        // 清空已确认的工具调用和权限状态
-        confirmedToolCalls.clear()
-        grantedPermissions.clear()
-        deniedPermissionToolCalls.clear()
-
-        // 检查每个工具的权限，对需要权限但未授权的工具发送权限请求
-        for (toolCall in toolCalls) {
-            if (!toolManager.hasRequiredPermissions(toolCall.name)) {
-                val permissions = toolManager.getRequiredPermissions(toolCall.name)
-                if (permissions.isNotEmpty()) {
-                    _toolPermission.emit(
-                        ToolPermissionRequest(
-                            toolCall = toolCall,
-                            toolName = toolCall.name,
-                            permission = permissions.first(),
-                            rationale = getPermissionRationale(toolCall.name)
-                        )
-                    )
-                }
-            }
-        }
-
-        // 等待权限授予（简化处理，实际应该等待用户响应）
-        // 这里需要 UI 层调用 onPermissionResult
-        delay(100)
-        while (isAwaitingPermission) {
-            delay(100)
-        }
-        delay(300) // 等待 UI 处理
-
-        // 执行有权限的工具调用
-        val toolResults = mutableListOf<ToolResult>()
-        for (toolCall in toolCalls) {
-            if (deniedPermissionToolCalls.contains(toolCall.id)) {
-                // 权限被拒绝
-                toolResults.add(
-                    ToolResult(
-                        toolCallId = toolCall.id,
-                        toolName = toolCall.name,
-                        success = false,
-                        result = "",
-                        error = "权限被拒绝"
-                    )
-                )
-            } else if (!toolManager.hasRequiredPermissions(toolCall.name)) {
-                // 没有权限且未授予
-                toolResults.add(
-                    ToolResult(
-                        toolCallId = toolCall.id,
-                        toolName = toolCall.name,
-                        success = false,
-                        result = "",
-                        error = "缺少必要权限"
-                    )
-                )
-            } else {
-                // 执行工具
-                val result = toolManager.executeTool(toolCall)
-                toolResults.add(result)
-            }
-        }
-
-        // 更新 UI 显示工具结果
-        val toolDisplays = buildToolDisplays(toolCalls, toolResults)
-        val messageAfterTools = ChatMessage(
-            role = ROLE_ASSISTANT,
-            content = "",
-            toolCalls = toolDisplays
-        )
-
-        updateLastAssistantMessage(messageAfterTools)
-
-        // 构建工具消息
-        val toolMessages = toolResults.map { result ->
+        results: List<ToolResult>
+    ): List<ChatMessage> {
+        return results.map { result ->
             ChatMessage(
                 role = ROLE_TOOL,
                 content = if (result.success) result.result else "Error: ${result.error}",
@@ -460,12 +425,35 @@ class ChatViewModel(
                 )
             )
         }
+    }
 
-        // 将工具结果追加到消息中，继续对话获取最终回复
-        val messagesWithResults = allMessages + userMessage + messageAfterTools + toolMessages
-        Log.d("ChatViewModel", "Sending ${toolMessages.size} tool messages to LLM, total messages: ${messagesWithResults.size}")
+    /**
+     * 更新 loading 消息的内容
+     */
+    private fun updateLoadingMessageContent(content: String) {
+        val messages = _uiState.value.messages.toMutableList()
+        for (i in messages.indices.reversed()) {
+            if (messages[i].role == ROLE_ASSISTANT && messages[i].isLoading) {
+                messages[i] = messages[i].copy(content = content)
+                _uiState.value = _uiState.value.copy(messages = messages)
+                _streamingContentUpdate.value = Pair(i, content)
+                break
+            }
+        }
+    }
 
-        return sendMessageWithTools(config, messagesWithResults, tools)
+    /**
+     * 更新 loading 消息的思考内容
+     */
+    private fun updateLoadingMessageReasoning(reasoning: String) {
+        val messages = _uiState.value.messages.toMutableList()
+        for (i in messages.indices.reversed()) {
+            if (messages[i].role == ROLE_ASSISTANT && messages[i].isLoading) {
+                messages[i] = messages[i].copy(reasoningContent = reasoning)
+                _uiState.value = _uiState.value.copy(messages = messages)
+                break
+            }
+        }
     }
 
     private fun getPermissionRationale(toolName: String): String {

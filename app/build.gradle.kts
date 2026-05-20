@@ -52,6 +52,7 @@ dependencies {
 
   // Network
   implementation(libs.okhttp)
+  implementation(libs.okhttp.sse)
   implementation(libs.okhttp.logging)
   implementation(libs.retrofit)
   implementation(libs.kotlinx.serialization.json)

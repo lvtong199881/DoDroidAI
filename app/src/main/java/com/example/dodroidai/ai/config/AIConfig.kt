@@ -52,15 +52,15 @@ data class AIConfig(
                 AIProvider.DEEPSEEK -> AIConfig(
                     provider = AIProvider.DEEPSEEK,
                     apiKey = "",
-                    baseUrl = "https://api.deepseek.com/v1",
-                    model = "deepseek-chat",
+                    baseUrl = "https://api.deepseek.com/anthropic",
+                    model = "DeepSeek-V4-Flash",
                     providerName = "DeepSeek",
                     officialUrl = "https://platform.deepseek.com",
                     apiFormat = ApiFormat.ANTHROPIC_MESSAGES,
-                    mainModel = "deepseek-chat",
-                    haikuModel = "deepseek-chat",
-                    sonnetModel = "deepseek-chat",
-                    opusModel = "deepseek-chat"
+                    mainModel = "DeepSeek-V4-Flash",
+                    haikuModel = "DeepSeek-V4-Flash",
+                    sonnetModel = "DeepSeek-V4-Flash",
+                    opusModel = "DeepSeek-V4-Flash"
                 )
                 AIProvider.MINIMAX -> AIConfig(
                     provider = AIProvider.MINIMAX,

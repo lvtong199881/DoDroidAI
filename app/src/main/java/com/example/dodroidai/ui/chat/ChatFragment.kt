@@ -147,6 +147,7 @@ class ChatFragment : Fragment() {
             stackFromEnd = true
         }
         recyclerView?.adapter = adapter
+        adapter?.recyclerView = recyclerView
 
         // 打印当前 AI 配置
         viewLifecycleOwner.lifecycleScope.launch {
@@ -225,6 +226,17 @@ class ChatFragment : Fragment() {
                     state.error?.let { error ->
                         Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
                         viewModel.clearError()
+                    }
+                }
+            }
+        }
+
+        // 监听流式内容更新，直接更新 ViewHolder
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.streamingContentUpdate.collect { update ->
+                    update?.let { (position, content) ->
+                        adapter?.updateStreamingContent(position, content, null)
                     }
                 }
             }

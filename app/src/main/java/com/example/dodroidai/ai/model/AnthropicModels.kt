@@ -20,7 +20,9 @@ data class AnthropicRequestBody(
     @SerializedName("messages")
     val messages: List<AnthropicMessage>,
     @SerializedName("tools")
-    val tools: List<AnthropicTool>? = null
+    val tools: List<AnthropicTool>? = null,
+    @SerializedName("stream")
+    val stream: Boolean = false
 )
 
 /**
@@ -105,4 +107,62 @@ data class AnthropicContent(
     val input: Map<String, Any>? = null,
     @SerializedName("thinking")
     val thinking: String? = null
+)
+
+/**
+ * Anthropic SSE 块
+ */
+data class AnthropicSseChunk(
+    @SerializedName("type")
+    val type: String?,
+    @SerializedName("index")
+    val index: Int?,
+    @SerializedName("delta")
+    val delta: AnthropicDelta?,
+    @SerializedName("content_block")
+    val contentBlock: AnthropicContentBlock?
+)
+
+/**
+ * Anthropic SSE content_block_start 的 content_block 字段
+ */
+data class AnthropicContentBlock(
+    @SerializedName("type")
+    val type: String?,
+    @SerializedName("id")
+    val id: String?,
+    @SerializedName("name")
+    val name: String?,
+    @SerializedName("input")
+    val input: Map<String, Any>?
+)
+
+/**
+ * Anthropic SSE Delta
+ */
+data class AnthropicDelta(
+    @SerializedName("type")
+    val type: String?,
+    @SerializedName("text")
+    val text: String?,
+    @SerializedName("thinking")
+    val thinking: String?,
+    @SerializedName("partial_json")
+    val partialJson: String?,
+    @SerializedName("id")
+    val id: String?,
+    @SerializedName("name")
+    val name: String?
+)
+
+/**
+ * Anthropic 流式工具调用缓冲项
+ */
+data class AnthropicToolCallBuffer(
+    @SerializedName("id")
+    val id: String = "",
+    @SerializedName("name")
+    val name: String = "",
+    @SerializedName("inputBuilder")
+    val inputBuilder: StringBuilder = StringBuilder()
 )

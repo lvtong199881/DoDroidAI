@@ -30,6 +30,14 @@ class ChatMessageAdapter(
 
     private val expandedStates = mutableMapOf<Long, Boolean>()
 
+    /**
+     * RecyclerView 引用，用于直接更新 ViewHolder
+     */
+    var recyclerView: RecyclerView? = null
+        set(value) {
+            field = value
+        }
+
     override fun getItemViewType(position: Int): Int {
         return when (getItem(position).role) {
             ROLE_USER -> VIEW_TYPE_USER
@@ -60,6 +68,18 @@ class ChatMessageAdapter(
         when (holder) {
             is UserMessageViewHolder -> holder.bind(message)
             is AssistantMessageViewHolder -> holder.bind(message, isLastAssistantMessage)
+        }
+    }
+
+    /**
+     * 流式更新内容，直接更新 ViewHolder，不触发 submitList
+     */
+    fun updateStreamingContent(position: Int, content: String, reasoning: String?) {
+        if (position < 0 || position >= itemCount) return
+
+        val holder = recyclerView?.findViewHolderForAdapterPosition(position)
+        if (holder is AssistantMessageViewHolder) {
+            holder.updateStreamingContent(content, reasoning)
         }
     }
 
@@ -96,18 +116,42 @@ class ChatMessageAdapter(
         private val textReasoning: TextView = view.findViewById(R.id.textReasoning)
         private val markwon = Markwon.create(view.context)
 
+        /**
+         * 当前内容，用于比较是否变化
+         */
+        private var currentContent: String = ""
+        private var currentReasoning: String? = null
+
         fun bind(message: ChatMessage, showActions: Boolean) {
+            currentContent = message.content
+            currentReasoning = message.reasoningContent
+
             if (message.isLoading) {
-                textMessage.visibility = View.GONE
-                progressBar.visibility = View.VISIBLE
-                textLoading.visibility = View.VISIBLE
+                // 流式输出时显示内容
+                if (message.content.isNotEmpty()) {
+                    textMessage.visibility = View.VISIBLE
+                    markwon.setMarkdown(textMessage, message.content)
+                    progressBar.visibility = View.GONE
+                    textLoading.visibility = View.GONE
+                } else {
+                    textMessage.visibility = View.GONE
+                    progressBar.visibility = View.VISIBLE
+                    textLoading.visibility = View.VISIBLE
+                }
                 actionBar.visibility = View.GONE
-                reasoningCard.visibility = View.GONE
 
                 if (message.loadingState == "tool_call") {
                     textLoading.text = "正在调用工具..."
                 } else {
-                    textLoading.text = "AI思考中...${message.loadingSeconds}秒"
+                    textLoading.text = "AI思考中..."
+                }
+
+                // 显示思考过程（流式）
+                if (!message.reasoningContent.isNullOrEmpty()) {
+                    reasoningCard.visibility = View.VISIBLE
+                    textReasoning.text = message.reasoningContent
+                } else {
+                    reasoningCard.visibility = View.GONE
                 }
             } else {
                 textMessage.visibility = View.VISIBLE
@@ -188,8 +232,52 @@ class ChatMessageAdapter(
             }
         }
 
-        companion object {
-            const val PAYLOAD_REASONING_EXPANDED = "reasoning_expanded"
+        /**
+         * 直接更新流式内容，不触发 bind
+         */
+        fun updateStreamingContent(content: String, reasoning: String?) {
+            if (content != currentContent) {
+                currentContent = content
+                markwon.setMarkdown(textMessage, content)
+            }
+            if (reasoning != currentReasoning) {
+                currentReasoning = reasoning
+                if (!reasoning.isNullOrEmpty()) {
+                    reasoningCard.visibility = View.VISIBLE
+                    textReasoning.text = reasoning
+                }
+            }
+        }
+
+        /**
+         * 更新思考过程展开状态
+         */
+        fun updateReasoningExpanded(expanded: Boolean) {
+            updateReasoningUI(expanded)
+        }
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int, payloads: MutableList<Any>) {
+        if (payloads.isEmpty()) {
+            super.onBindViewHolder(holder, position, payloads)
+        } else {
+            // 处理 payload 更新
+            for (payload in payloads) {
+                when (payload) {
+                    PAYLOAD_STREAMING -> {
+                        if (holder is AssistantMessageViewHolder) {
+                            val message = getItem(position)
+                            holder.updateStreamingContent(message.content, message.reasoningContent)
+                        }
+                    }
+                    PAYLOAD_REASONING_EXPANDED -> {
+                        if (holder is AssistantMessageViewHolder) {
+                            val message = getItem(position)
+                            holder.updateReasoningExpanded(message.isReasoningExpanded)
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -206,5 +294,7 @@ class ChatMessageAdapter(
     companion object {
         private const val VIEW_TYPE_USER = 0
         private const val VIEW_TYPE_ASSISTANT = 1
+        const val PAYLOAD_STREAMING = "streaming"
+        const val PAYLOAD_REASONING_EXPANDED = "reasoning_expanded"
     }
 }
