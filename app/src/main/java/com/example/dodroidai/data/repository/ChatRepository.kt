@@ -7,7 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.dodroidai.data.model.ChatSession
-import com.google.gson.Gson
+import com.example.dodroidai.util.GsonUtil
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -20,15 +20,13 @@ private val Context.chatDataStore: DataStore<Preferences> by preferencesDataStor
  */
 class ChatRepository(private val context: Context) {
 
-    private val gson = Gson()
-
     private val sessionsKey = stringPreferencesKey("sessions")
 
     val sessionsFlow: Flow<List<ChatSession>> = context.chatDataStore.data.map { preferences ->
         val sessionsJson = preferences[sessionsKey] ?: "[]"
         try {
             val type = object : TypeToken<List<ChatSession>>() {}.type
-            gson.fromJson<List<ChatSession>>(sessionsJson, type) ?: emptyList()
+            GsonUtil.fromJsonWithTypeToken(sessionsJson, object : TypeToken<List<ChatSession>>() {}) ?: emptyList()
         } catch (e: Exception) {
             emptyList()
         }
@@ -38,13 +36,13 @@ class ChatRepository(private val context: Context) {
         context.chatDataStore.edit { preferences ->
             val currentSessions = try {
                 val type = object : TypeToken<List<ChatSession>>() {}.type
-                gson.fromJson<List<ChatSession>>(preferences[sessionsKey] ?: "[]", type) ?: emptyList()
+                GsonUtil.fromJsonWithTypeToken(preferences[sessionsKey] ?: "[]", object : TypeToken<List<ChatSession>>() {}) ?: emptyList()
             } catch (e: Exception) {
                 emptyList()
             }
 
             val updatedSessions = currentSessions.filter { it.id != session.id } + session
-            preferences[sessionsKey] = gson.toJson(updatedSessions)
+            preferences[sessionsKey] = GsonUtil.toJson(updatedSessions) ?: "[]"
         }
     }
 
@@ -52,13 +50,13 @@ class ChatRepository(private val context: Context) {
         context.chatDataStore.edit { preferences ->
             val currentSessions = try {
                 val type = object : TypeToken<List<ChatSession>>() {}.type
-                gson.fromJson<List<ChatSession>>(preferences[sessionsKey] ?: "[]", type) ?: emptyList()
+                GsonUtil.fromJsonWithTypeToken(preferences[sessionsKey] ?: "[]", object : TypeToken<List<ChatSession>>() {}) ?: emptyList()
             } catch (e: Exception) {
                 emptyList()
             }
 
             val updatedSessions = currentSessions.filter { it.id != sessionId }
-            preferences[sessionsKey] = gson.toJson(updatedSessions)
+            preferences[sessionsKey] = GsonUtil.toJson(updatedSessions) ?: "[]"
         }
     }
 

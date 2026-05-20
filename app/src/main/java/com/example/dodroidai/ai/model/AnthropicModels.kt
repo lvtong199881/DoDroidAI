@@ -3,6 +3,15 @@ package com.example.dodroidai.ai.model
 import com.google.gson.annotations.SerializedName
 
 /**
+ * Anthropic Content 类型枚举
+ */
+enum class ContentType(val value: String) {
+    TEXT("text"),
+    TOOL_USE("tool_use"),
+    THINKING("thinking")
+}
+
+/**
  * Anthropic 兼容 API 的请求格式
  */
 data class AnthropicRequestBody(
@@ -14,6 +23,9 @@ data class AnthropicRequestBody(
     val tools: List<AnthropicTool>? = null
 )
 
+/**
+ * Anthropic 消息结构
+ */
 data class AnthropicMessage(
     @SerializedName("role")
     val role: String,
@@ -23,6 +35,9 @@ data class AnthropicMessage(
     val toolCallId: String? = null
 )
 
+/**
+ * Anthropic 工具定义
+ */
 data class AnthropicTool(
     @SerializedName("name")
     val name: String,
@@ -32,6 +47,9 @@ data class AnthropicTool(
     val inputSchema: AnthropicInputSchema
 )
 
+/**
+ * Anthropic 工具输入参数结构
+ */
 data class AnthropicInputSchema(
     @SerializedName("type")
     val type: String = "object",
@@ -41,6 +59,9 @@ data class AnthropicInputSchema(
     val required: List<String> = emptyList()
 )
 
+/**
+ * Anthropic 工具属性定义
+ */
 data class AnthropicToolProperty(
     @SerializedName("type")
     val type: String,
@@ -66,6 +87,9 @@ data class AnthropicResponse(
     val stopReason: String?
 )
 
+/**
+ * Anthropic Content 内容项
+ */
 data class AnthropicContent(
     @SerializedName("type")
     val type: String,
@@ -78,5 +102,7 @@ data class AnthropicContent(
     @SerializedName("tool_use_id")
     val toolUseId: String? = null,
     @SerializedName("input")
-    val input: Map<String, Any>? = null
+    val input: Map<String, Any>? = null,
+    @SerializedName("thinking")
+    val thinking: String? = null
 )

@@ -7,7 +7,7 @@ import android.provider.CalendarContract
 import android.provider.AlarmClock
 import android.telephony.SmsManager
 import android.util.Log
-import com.google.gson.Gson
+import com.example.dodroidai.util.GsonUtil
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -17,8 +17,6 @@ import java.util.TimeZone
  * 工具执行器
  */
 class ToolExecutor(private val context: Context) {
-
-    private val gson = Gson()
 
     /**
      * 检查工具的风险等级
@@ -178,7 +176,7 @@ class ToolExecutor(private val context: Context) {
 
     private fun <T> parseArgs(json: String, clazz: Class<T>): T? {
         return try {
-            gson.fromJson(json, clazz)
+            GsonUtil.fromJson(json, clazz)
         } catch (e: Exception) {
             null
         }

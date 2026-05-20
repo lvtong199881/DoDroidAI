@@ -29,6 +29,8 @@ import com.example.dodroidai.ui.chat.input.AttachmentItem
 import com.example.dodroidai.ui.common.CustomDialog
 import com.example.dodroidai.ui.common.Toolbar
 import com.example.dodroidai.ai.tools.ToolCall
+import com.example.dodroidai.util.GsonUtil
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.launch
 
 /**
@@ -287,8 +289,8 @@ class ChatFragment : Fragment() {
 
     private fun summarizeArgs(argsJson: String): String {
         return try {
-            val map = com.google.gson.Gson().fromJson(argsJson, Map::class.java)
-            map.entries.joinToString(", ") { "${it.key}: ${it.value}" }
+            val map = GsonUtil.fromJsonWithTypeToken(argsJson, object : TypeToken<Map<String, Any>>() {})
+            map?.entries?.joinToString(", ") { "${it.key}: ${it.value}" } ?: argsJson.take(50)
         } catch (e: Exception) {
             argsJson.take(50)
         }

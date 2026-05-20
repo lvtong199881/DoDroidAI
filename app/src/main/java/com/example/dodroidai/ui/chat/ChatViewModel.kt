@@ -8,6 +8,7 @@ import com.example.dodroidai.ai.config.AIConfig
 import com.example.dodroidai.ai.config.AIConfigManager
 import com.example.dodroidai.ai.model.AIModel
 import com.example.dodroidai.ai.model.AIProvider
+import com.example.dodroidai.ai.model.ApiFormat
 import com.example.dodroidai.ai.model.ChatMessage
 import com.example.dodroidai.ai.model.ChatMessage.Companion.LOADING_THINKING
 import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_ASSISTANT
@@ -15,9 +16,9 @@ import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_USER
 import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_TOOL
 import com.example.dodroidai.ai.model.ChatResponse
 import com.example.dodroidai.ai.model.createRequest
-import com.example.dodroidai.ai.repository.DeepSeekModel
-import com.example.dodroidai.ai.repository.MiniMaxModel
+import com.example.dodroidai.ai.repository.AnthropicModel
 import com.example.dodroidai.ai.repository.OpenAIModel
+import com.example.dodroidai.util.GsonUtil
 import com.example.dodroidai.ai.tools.RiskLevel
 import com.example.dodroidai.ai.tools.ToolCall
 import com.example.dodroidai.ai.tools.ToolCallDisplay
@@ -28,6 +29,7 @@ import com.example.dodroidai.data.model.ChatSession
 import com.example.dodroidai.data.repository.ChatRepository
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
+import com.google.gson.reflect.TypeToken
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -156,10 +158,8 @@ class ChatViewModel(
     private var isAwaitingPermission = false
 
     private val openAIModel = OpenAIModel()
-    private val deepSeekModel = DeepSeekModel()
-    private val miniMaxModel = MiniMaxModel()
+    private val anthropicModel = AnthropicModel()
 
-    private val gson = Gson()
     private val httpClient = OkHttpClient.Builder()
         .connectTimeout(30L, java.util.concurrent.TimeUnit.SECONDS)
         .readTimeout(120L, java.util.concurrent.TimeUnit.SECONDS)
@@ -333,11 +333,8 @@ class ChatViewModel(
             val body = response.body?.string() ?: throw RuntimeException("Empty response")
             Log.d("ChatViewModel", "Response body: $body")
 
-            val model = when (config.provider) {
-                AIProvider.OPENAI -> openAIModel
-                AIProvider.DEEPSEEK -> deepSeekModel
-                AIProvider.MINIMAX -> miniMaxModel
-                AIProvider.CUSTOM -> throw IllegalStateException("Custom provider not supported")
+            val model = when (config.apiFormat) {
+                ApiFormat.ANTHROPIC_MESSAGES -> anthropicModel
             }
 
             model.parseResponse(body)
@@ -498,8 +495,8 @@ class ChatViewModel(
 
     private fun summarizeArgs(argsJson: String): String {
         return try {
-            val map: Map<String, Any> = gson.fromJson(argsJson, object : com.google.gson.reflect.TypeToken<Map<String, Any>>() {}.type)
-            map.entries.joinToString(", ") { "${it.key}: ${it.value}" }
+            val map = GsonUtil.fromJsonWithTypeToken(argsJson, object : TypeToken<Map<String, Any>>() {})
+            map?.entries?.joinToString(", ") { "${it.key}: ${it.value}" } ?: argsJson.take(50)
         } catch (e: Exception) {
             argsJson.take(50)
         }

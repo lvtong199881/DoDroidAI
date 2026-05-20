@@ -4,24 +4,30 @@ import com.example.dodroidai.ai.model.AIModel
 import com.example.dodroidai.ai.model.AIProvider
 import com.example.dodroidai.ai.model.ChatResponse
 import com.example.dodroidai.ai.tools.ToolCall
-import com.google.gson.Gson
+import com.example.dodroidai.util.GsonUtil
 import com.google.gson.annotations.SerializedName
 
 /**
  * OpenAI 模型响应解析
  */
 class OpenAIModel : AIModel {
-    private val gson = Gson()
 
     override fun parseResponse(body: String): ChatResponse {
-        val response = gson.fromJson(body, OpenAIResponse::class.java)
+        val response = GsonUtil.fromJson(body, OpenAIResponse::class.java)
+            ?: return ChatResponse(
+                content = "",
+                provider = AIProvider.OPENAI,
+                model = "",
+                toolCalls = emptyList(),
+                reasoningContent = null
+            )
 
         val message = response.choices.firstOrNull()?.message
         val toolCalls = message?.toolCalls?.map { tc ->
             ToolCall(
                 id = tc.id,
                 name = tc.name,
-                arguments = gson.toJson(tc.input)
+                arguments = GsonUtil.toJson(tc.input) ?: "{}"
             )
         } ?: emptyList()
 

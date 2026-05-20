@@ -2,7 +2,7 @@ package com.example.dodroidai.ai.model
 
 import com.example.dodroidai.ai.config.AIConfig
 import com.example.dodroidai.ai.tools.ToolDefinition
-import com.google.gson.Gson
+import com.example.dodroidai.util.GsonUtil
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -15,9 +15,8 @@ fun createRequest(
     messages: List<ChatMessage>,
     tools: List<ToolDefinition>?
 ): Request {
-    val gson = Gson()
     val requestBody = createRequestBody(config, messages, tools)
-    val requestJson = gson.toJson(requestBody)
+    val requestJson = GsonUtil.toJson(requestBody)
 
     val url = when (config.apiFormat) {
         ApiFormat.ANTHROPIC_MESSAGES -> "${config.baseUrl}/v1/messages"
@@ -37,7 +36,7 @@ fun createRequest(
                 addHeader(name, value)
             }
         }
-        .post(requestJson.toRequestBody("application/json".toMediaType()))
+        .post((requestJson ?: "{}").toRequestBody("application/json".toMediaType()))
         .build()
 }
 
