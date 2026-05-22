@@ -20,6 +20,7 @@ import com.example.dodroidai.ai.tools.ToolCallDisplay
 import com.example.dodroidai.ai.tools.ToolDefinition
 import com.example.dodroidai.ai.tools.ToolExecutor
 import com.example.dodroidai.ai.tools.ToolResult
+import com.example.dodroidai.ui.common.CustomDialog
 import com.example.dodroidai.data.model.ChatSession
 import com.example.dodroidai.data.repository.ChatRepository
 import com.google.gson.annotations.SerializedName
@@ -413,6 +414,35 @@ class ChatViewModel(
                     result = "",
                     error = "未知工具: ${toolCall.name}"
                 )
+            } else if (tool.riskLevel == RiskLevel.HIGH) {
+                // 高风险工具需要用户确认
+                val confirmed = requestToolConfirmation(tool, fragment)
+                if (!confirmed) {
+                    return@map ToolResult(
+                        toolCallId = toolCall.id,
+                        toolName = toolCall.name,
+                        success = false,
+                        result = "",
+                        error = "用户取消"
+                    )
+                }
+                // 继续执行权限检查和执行
+                if (!tool.hasPermissions(toolExecutor.context)) {
+                    val granted = requestToolPermission(tool, fragment)
+                    if (granted) {
+                        toolExecutor.execute(toolCall)
+                    } else {
+                        ToolResult(
+                            toolCallId = toolCall.id,
+                            toolName = toolCall.name,
+                            success = false,
+                            result = "",
+                            error = "权限被拒绝"
+                        )
+                    }
+                } else {
+                    toolExecutor.execute(toolCall)
+                }
             } else if (!tool.hasPermissions(toolExecutor.context)) {
                 // 请求权限
                 val granted = requestToolPermission(tool, fragment)
@@ -441,6 +471,39 @@ class ChatViewModel(
         tool.requestPermissions(fragment.requireActivity()) { granted ->
             deferred.complete(granted)
         }
+        return deferred.await()
+    }
+
+    /**
+     * 请求高风险工具确认
+     */
+    private suspend fun requestToolConfirmation(tool: Tool, fragment: androidx.fragment.app.Fragment): Boolean {
+        val deferred = CompletableDeferred<Boolean>()
+        fragment.activity?.runOnUiThread {
+            val dialog = CustomDialog.Builder(fragment.requireContext())
+                .setTitle("确认执行")
+                .setDescription("即将执行【${tool.name}】工具，此操作风险较高，是否继续？")
+                .setButtons(
+                    CustomDialog.ButtonInfo("确认", onClick = {
+                        Log.i(TAG, "Confirm button clicked")
+                        if (!deferred.isCompleted) {
+                            deferred.complete(true)
+                        }
+                    }, dismissOnClick = true),
+                    CustomDialog.ButtonInfo("取消", onClick = {
+                        Log.i(TAG, "Cancel button clicked")
+                        if (!deferred.isCompleted) {
+                            deferred.complete(false)
+                        }
+                    }, dismissOnClick = true)
+                )
+                .setCancelable(true)
+                .build()
+            dialog.window?.setType(android.view.WindowManager.LayoutParams.TYPE_APPLICATION_PANEL)
+            dialog.show()
+            Log.i(TAG, "Dialog shown")
+        }
+        Log.i(TAG, "Waiting for confirmation...")
         return deferred.await()
     }
 
