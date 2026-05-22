@@ -182,7 +182,7 @@ class ChatMessageAdapter(
                 }
 
                 // 显示工具调用结果
-                if (message.toolCalls.isNotEmpty()) {
+                if (!message.toolCalls.isNullOrEmpty()) {
                     toolCallContainer.visibility = View.VISIBLE
                     toolCallContainer.removeAllViews()
 

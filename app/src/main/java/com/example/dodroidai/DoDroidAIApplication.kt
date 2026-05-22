@@ -14,7 +14,7 @@ class DoDroidAIApplication : android.app.Application() {
     lateinit var chatRepository: com.example.dodroidai.data.repository.ChatRepository
         private set
 
-    lateinit var toolManager: com.example.dodroidai.ai.tools.ToolManager
+    lateinit var toolExecutor: com.example.dodroidai.ai.tools.ToolExecutor
         private set
 
     override fun onCreate() {
@@ -23,7 +23,7 @@ class DoDroidAIApplication : android.app.Application() {
         configManager = com.example.dodroidai.ai.config.AIConfigManager(this)
         appConfigManager = com.example.dodroidai.ai.config.AppConfigManager(this)
         chatRepository = com.example.dodroidai.data.repository.ChatRepository(this)
-        toolManager = com.example.dodroidai.ai.tools.ToolManager(this)
+        toolExecutor = com.example.dodroidai.ai.tools.ToolExecutor(this)
     }
 
     companion object {

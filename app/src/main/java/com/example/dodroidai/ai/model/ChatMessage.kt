@@ -30,7 +30,7 @@ data class ChatMessage(
     @SerializedName("loadingSeconds")
     val loadingSeconds: Int = 0,
     @SerializedName("toolCalls")
-    val toolCalls: List<ToolCallDisplay> = emptyList(),
+    val toolCalls: List<ToolCallDisplay>? = emptyList(),
     @SerializedName("toolCallId")
     val toolCallId: String? = null,
     @SerializedName("reasoningContent")

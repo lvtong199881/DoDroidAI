@@ -14,10 +14,11 @@ import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_TOOL
 import com.example.dodroidai.ai.model.StreamingCallback
 import com.example.dodroidai.ai.streaming.StreamingChatClient
 import com.example.dodroidai.ai.tools.RiskLevel
+import com.example.dodroidai.ai.tools.Tool
 import com.example.dodroidai.ai.tools.ToolCall
 import com.example.dodroidai.ai.tools.ToolCallDisplay
 import com.example.dodroidai.ai.tools.ToolDefinition
-import com.example.dodroidai.ai.tools.ToolManager
+import com.example.dodroidai.ai.tools.ToolExecutor
 import com.example.dodroidai.ai.tools.ToolResult
 import com.example.dodroidai.data.model.ChatSession
 import com.example.dodroidai.data.repository.ChatRepository
@@ -112,8 +113,9 @@ sealed class ToolPermissionResult {
 class ChatViewModel(
     private val configManager: AIConfigManager,
     private val chatRepository: ChatRepository,
-    private val toolManager: ToolManager,
-    private val sessionId: String? = null
+    private val toolExecutor: ToolExecutor,
+    private val sessionId: String? = null,
+    private val fragment: androidx.fragment.app.Fragment? = null
 ) : ViewModel() {
 
     companion object {
@@ -242,7 +244,7 @@ class ChatViewModel(
                 val config = getCurrentConfig()
                 // 获取历史消息（已包含新添加的 userMessage）
                 val allMessages = getRecentMessages()
-                val tools = toolManager.getToolDefinitions()
+                val tools = toolExecutor.getToolDefinitions()
 
                 // 使用流式发送
                 Log.i(TAG, "sendMessageStreaming messages count: ${allMessages.size}")
@@ -255,7 +257,7 @@ class ChatViewModel(
                 while (currentToolCalls.isNotEmpty() && toolCallDepth < MAX_TOOL_CALL_DEPTH) {
                     toolCallDepth++
                     // 执行工具调用
-                    val toolResults = executeToolCalls(currentToolCalls)
+                    val toolResults = executeToolCalls(currentToolCalls, fragment!!)
                     // 添加工具结果消息
                     val toolMessages = buildToolMessages(currentToolCalls, toolResults)
                     val messagesWithResults = allMessages + toolMessages
@@ -397,9 +399,58 @@ class ChatViewModel(
     /**
      * 执行工具调用
      */
-    private fun executeToolCalls(toolCalls: List<ToolCall>): List<ToolResult> {
+    private suspend fun executeToolCalls(
+        toolCalls: List<ToolCall>,
+        fragment: androidx.fragment.app.Fragment
+    ): List<ToolResult> {
         return toolCalls.map { toolCall ->
-            toolManager.executeTool(toolCall)
+            val tool = toolExecutor.getTool(toolCall.name)
+            if (tool == null) {
+                ToolResult(
+                    toolCallId = toolCall.id,
+                    toolName = toolCall.name,
+                    success = false,
+                    result = "",
+                    error = "未知工具: ${toolCall.name}"
+                )
+            } else if (!tool.hasPermissions(toolExecutor.context)) {
+                // 请求权限
+                val granted = requestToolPermission(tool, fragment)
+                if (granted) {
+                    toolExecutor.execute(toolCall)
+                } else {
+                    ToolResult(
+                        toolCallId = toolCall.id,
+                        toolName = toolCall.name,
+                        success = false,
+                        result = "",
+                        error = "权限被拒绝"
+                    )
+                }
+            } else {
+                toolExecutor.execute(toolCall)
+            }
+        }
+    }
+
+    /**
+     * 请求工具权限
+     */
+    private suspend fun requestToolPermission(tool: Tool, fragment: androidx.fragment.app.Fragment): Boolean {
+        val deferred = CompletableDeferred<Boolean>()
+        tool.requestPermissions(fragment.requireActivity()) { granted ->
+            deferred.complete(granted)
+        }
+        return deferred.await()
+    }
+
+    /**
+     * 检查并请求工具权限
+     */
+    private fun checkAndRequestPermissions(toolCalls: List<ToolCall>, activity: android.app.Activity): List<ToolCall> {
+        return toolCalls.filter { toolCall ->
+            val tool = toolExecutor.getTool(toolCall.name)
+            tool != null && !tool.hasPermissions(toolExecutor.context)
         }
     }
 
@@ -551,12 +602,13 @@ class ChatViewModel(
     class Factory(
         private val configManager: AIConfigManager,
         private val chatRepository: ChatRepository,
-        private val toolManager: ToolManager,
-        private val sessionId: String? = null
+        private val toolExecutor: ToolExecutor,
+        private val sessionId: String? = null,
+        private val fragment: androidx.fragment.app.Fragment? = null
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return ChatViewModel(configManager, chatRepository, toolManager, sessionId) as T
+            return ChatViewModel(configManager, chatRepository, toolExecutor, sessionId, fragment) as T
         }
     }
 }

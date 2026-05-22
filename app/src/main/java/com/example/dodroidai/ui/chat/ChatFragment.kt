@@ -52,8 +52,9 @@ class ChatFragment : Fragment() {
             ChatViewModel.Factory(
                 DoDroidAIApplication.instance.configManager,
                 DoDroidAIApplication.instance.chatRepository,
-                DoDroidAIApplication.instance.toolManager,
-                sessionId
+                DoDroidAIApplication.instance.toolExecutor,
+                sessionId,
+                this
             )
         )[ChatViewModel::class.java]
     }
