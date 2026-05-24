@@ -11,7 +11,8 @@ import com.example.dodroidai.data.model.ChatSession
  * 聊天会话列表适配器
  */
 class ChatSessionAdapter(
-    private val onSessionClick: (String) -> Unit
+    private val onSessionClick: (String) -> Unit,
+    private val onSessionLongClick: (ChatSession) -> Unit
 ) : RecyclerView.Adapter<ChatSessionViewHolder>() {
 
     private val items = mutableListOf<ChatSession>()
@@ -24,7 +25,7 @@ class ChatSessionAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChatSessionViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_session, parent, false)
-        return ChatSessionViewHolder(view, onSessionClick)
+        return ChatSessionViewHolder(view, onSessionClick, onSessionLongClick)
     }
 
     override fun onBindViewHolder(holder: ChatSessionViewHolder, position: Int) {

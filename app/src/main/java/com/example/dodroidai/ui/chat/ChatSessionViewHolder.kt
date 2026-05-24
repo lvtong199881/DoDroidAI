@@ -11,7 +11,8 @@ import com.example.dodroidai.data.model.ChatSession
  */
 class ChatSessionViewHolder(
     view: View,
-    private val onSessionClick: (String) -> Unit
+    private val onSessionClick: (String) -> Unit,
+    private val onSessionLongClick: (ChatSession) -> Unit
 ) : RecyclerView.ViewHolder(view) {
 
     private val tvTitle: TextView = view.findViewById(R.id.tvTitle)
@@ -23,6 +24,10 @@ class ChatSessionViewHolder(
 
         itemView.setOnClickListener {
             onSessionClick(session.id)
+        }
+        itemView.setOnLongClickListener {
+            onSessionLongClick(session)
+            true
         }
     }
 

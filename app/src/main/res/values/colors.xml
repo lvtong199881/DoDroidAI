@@ -4,4 +4,5 @@
     <color name="dialog_button_primary">#6200EE</color>
     <color name="dialog_button_secondary">#757575</color>
     <color name="dialog_button_divider">#33000000</color>
+    <color name="divider_horizontal">#33000000</color>
 </resources>

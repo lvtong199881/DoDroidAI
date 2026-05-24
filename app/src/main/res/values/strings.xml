@@ -72,4 +72,7 @@
     <string name="copy_success">Copied to clipboard</string>
     <string name="confirm">Confirm</string>
     <string name="thinking_process">Thinking Process</string>
+    <string name="rename_session">Rename</string>
+    <string name="delete_session">Delete</string>
+    <string name="delete_session_confirm">Delete "%1$s"?</string>
 </resources>

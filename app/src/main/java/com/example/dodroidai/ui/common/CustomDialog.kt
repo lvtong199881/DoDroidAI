@@ -82,6 +82,11 @@ class CustomDialog(
     }
 
     private fun setupButtons(buttonContainer: LinearLayout) {
+        if (buttons.isEmpty()) {
+            buttonContainer.visibility = View.GONE
+            return
+        }
+        buttonContainer.visibility = View.VISIBLE
         buttonContainer.removeAllViews()
 
         buttons.forEachIndexed { index, buttonInfo ->
@@ -189,7 +194,6 @@ class CustomDialog(
         }
 
         fun build(): CustomDialog {
-            require(buttons.isNotEmpty()) { "At least one button is required" }
             return CustomDialog(context, title, description, customView, buttons, cancelable, width, height, gravity)
         }
     }

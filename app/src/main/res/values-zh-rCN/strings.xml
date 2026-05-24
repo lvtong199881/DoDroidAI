@@ -69,4 +69,7 @@
     <string name="copy">复制</string>
     <string name="copy_success">已复制到剪贴板</string>
     <string name="thinking_process">思考过程</string>
+    <string name="rename_session">重命名</string>
+    <string name="delete_session">删除</string>
+    <string name="delete_session_confirm">确定删除"%1$s"？</string>
 </resources>
