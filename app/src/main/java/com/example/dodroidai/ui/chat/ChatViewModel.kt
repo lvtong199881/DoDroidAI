@@ -141,6 +141,12 @@ class ChatViewModel(
     val streamingContentUpdate: StateFlow<Pair<Int, String>?> = _streamingContentUpdate.asStateFlow()
 
     /**
+     * AI 回复完成 Flow（用于 TTS 朗读）
+     */
+    private val _responseComplete = MutableSharedFlow<String>()
+    val responseComplete: SharedFlow<String> = _responseComplete.asSharedFlow()
+
+    /**
      * 发送工具调用确认请求给 UI
      */
     private val _toolConfirmation = MutableSharedFlow<ToolConfirmationRequest>()
@@ -293,6 +299,7 @@ class ChatViewModel(
                 )
 
                 saveCurrentSession()
+                _responseComplete.emit(assistantMessage.content)
             } catch (e: Exception) {
                 loadingJob.cancel()
 

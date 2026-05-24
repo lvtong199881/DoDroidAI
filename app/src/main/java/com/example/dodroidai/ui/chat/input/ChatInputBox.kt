@@ -5,6 +5,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.AttributeSet
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageButton
@@ -51,6 +52,16 @@ class ChatInputBox @JvmOverloads constructor(
     var onFocusChange: ((Boolean) -> Unit)? = null
     var onSendClick: ((String, List<AttachmentItem>) -> Unit)? = null
     var onAttachmentsChange: ((List<AttachmentItem>) -> Unit)? = null
+
+    /**
+     * 语音输入监听器
+     */
+    interface OnVoiceInputListener {
+        fun onVoiceStart()
+        fun onVoiceEnd()
+    }
+
+    var onVoiceInputListener: OnVoiceInputListener? = null
 
     init {
         LayoutInflater.from(context).inflate(R.layout.view_chat_input_box, this, true)
@@ -118,6 +129,21 @@ class ChatInputBox @JvmOverloads constructor(
                 true
             } else {
                 false
+            }
+        }
+
+        // 语音输入：按下开始，抬起结束
+        voiceHint?.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    onVoiceInputListener?.onVoiceStart()
+                    true
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    onVoiceInputListener?.onVoiceEnd()
+                    true
+                }
+                else -> false
             }
         }
     }

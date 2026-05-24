@@ -29,6 +29,8 @@ import com.example.dodroidai.ui.chat.input.AttachmentItem
 import com.example.dodroidai.ui.common.CustomDialog
 import com.example.dodroidai.ui.common.Toolbar
 import com.example.dodroidai.ai.tools.ToolCall
+import com.example.dodroidai.ai.voice.TtsManager
+import com.example.dodroidai.ai.voice.VoiceInputManager
 import com.example.dodroidai.util.GsonUtil
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.launch
@@ -67,6 +69,16 @@ class ChatFragment : Fragment() {
 
     // 拍照
     private var tempCameraUri: Uri? = null
+
+    // 语音输入管理
+    private val voiceInputManager: VoiceInputManager by lazy {
+        VoiceInputManager(requireContext())
+    }
+
+    // TTS 管理
+    private val ttsManager: TtsManager by lazy {
+        TtsManager(requireContext())
+    }
     private val takePictureLauncher = registerForActivityResult(
         ActivityResultContracts.TakePicture()
     ) { success ->
@@ -113,6 +125,17 @@ class ChatFragment : Fragment() {
             }
         }
         pendingPermissionToolCall = null
+    }
+
+    // 语音权限请求
+    private val voicePermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            startVoiceInput()
+        } else {
+            Toast.makeText(context, R.string.voice_permission_denied, Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onCreateView(
@@ -210,6 +233,21 @@ class ChatFragment : Fragment() {
             hideKeyboard()
             chatInputBox?.clearInput()
         }
+
+        // 语音输入监听
+        chatInputBox?.onVoiceInputListener = object : ChatInputBox.OnVoiceInputListener {
+            override fun onVoiceStart() {
+                if (checkVoicePermission()) {
+                    startVoiceInput()
+                } else {
+                    voicePermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                }
+            }
+
+            override fun onVoiceEnd() {
+                stopVoiceInput()
+            }
+        }
     }
 
     private fun observeState() {
@@ -257,6 +295,17 @@ class ChatFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.toolPermission.collect { request ->
                     showPermissionRequestDialog(request)
+                }
+            }
+        }
+
+        // 监听 AI 回复完成，用于 TTS 朗读
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.responseComplete.collect { content ->
+                    if (content.isNotBlank()) {
+                        speakTts(content)
+                    }
                 }
             }
         }
@@ -425,6 +474,58 @@ class ChatFragment : Fragment() {
             requireContext(),
             Manifest.permission.CAMERA
         ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun checkVoicePermission(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.RECORD_AUDIO
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun startVoiceInput() {
+        voiceInputManager.startListening(object : VoiceInputManager.VoiceRecognitionCallback {
+            override fun onReadyForSpeech() {
+                activity?.runOnUiThread {
+                    Toast.makeText(context, R.string.voice_ready, Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onBeginningOfSpeech() {}
+
+            override fun onEndOfSpeech() {}
+
+            override fun onPartialResult(text: String) {}
+
+            override fun onResult(text: String) {
+                activity?.runOnUiThread {
+                    if (text.isNotBlank()) {
+                        chatInputBox?.clearInput()
+                        viewModel.sendMessage(text)
+                    }
+                }
+            }
+
+            override fun onError(error: String) {
+                activity?.runOnUiThread {
+                    Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                }
+            }
+        })
+    }
+
+    private fun stopVoiceInput() {
+        voiceInputManager.stopListening()
+    }
+
+    private fun speakTts(text: String) {
+        ttsManager.speak(text)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        voiceInputManager.destroy()
+        ttsManager.shutdown()
     }
 
     companion object {
