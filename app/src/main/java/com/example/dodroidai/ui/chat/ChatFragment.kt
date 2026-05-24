@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -242,7 +243,9 @@ class ChatFragment : Fragment() {
         // 语音输入监听
         chatInputBox?.onVoiceInputListener = object : ChatInputBox.OnVoiceInputListener {
             override fun onVoiceStart() {
-                if (checkVoicePermission()) {
+                val hasPermission = checkVoicePermission()
+                Log.d("ChatFragment", "onVoiceStart: checkVoicePermission=$hasPermission")
+                if (hasPermission) {
                     startVoiceInput()
                 } else {
                     voicePermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
@@ -509,6 +512,7 @@ class ChatFragment : Fragment() {
             }
 
             override fun onResult(text: String) {
+                Log.d("ChatFragment", "语音识别结果: $text")
                 activity?.runOnUiThread {
                     voiceInputDialog?.dismiss()
                     voiceInputDialog = null

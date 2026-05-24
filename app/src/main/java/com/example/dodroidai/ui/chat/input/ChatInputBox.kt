@@ -134,6 +134,7 @@ class ChatInputBox @JvmOverloads constructor(
 
         // 语音输入：按下开始，抬起结束
         voiceHint?.setOnTouchListener { _, event ->
+            android.util.Log.d("ChatInputBox", "touch event: ${event.action}")
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     onVoiceInputListener?.onVoiceStart()

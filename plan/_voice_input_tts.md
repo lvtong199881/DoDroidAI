@@ -3,29 +3,123 @@
 ## Context
 TodoTasks.md P1 级任务 #6，实现全语音交互，解放双手。
 
-**实现要点**：
-- 语音输入：使用 Android `SpeechRecognizer`（联网）或 `Whisper.cpp`（离线）
-- TTS 输出：使用 Android `TextToSpeech`，支持中文、可调语速/音调
-- UI 按钮（麦克风图标）触发语音输入
-- Agent 回复后自动朗读（可配置开关）
-- 需要 `RECORD_AUDIO` 权限
+**当前状态**：已完成基础语音输入和 TTS 输出（使用 SpeechRecognizer 联网识别）。
+**本次更新**：将 SpeechRecognizer 替换为 Whisper.cpp，实现离线语音识别。
+
+**问题**：SpeechRecognizer 依赖网络，无法在无网环境下工作。
+**解决方案**：使用 whisper.cpp 在设备端离线执行语音识别。
 
 ## 实现方案
 
 ### 1. 权限配置
 **文件**: `app/src/main/AndroidManifest.xml`
 
-添加权限：
-```xml
-<uses-permission android:name="android.permission.RECORD_AUDIO" />
+已有 RECORD_AUDIO 权限，无需修改。
+
+### 2. 集成 Whisper.cpp（本次修改重点）
+**文件**: `app/src/main/java/com/example/dodroidai/ai/voice/VoiceInputManager.kt`（修改）
+
+#### 关键设计决策
+
+| 问题 | 决策 | 理由 |
+|------|------|------|
+| 模块集成方式 | 复制 whisper.android/lib 模块 | 避免外部依赖 |
+| 模型存储 | `assets/models/ggml-base.bin` | APK 内置，开箱即用 |
+| 模型选择 | `ggml-base.bin` (142 MiB) | 平衡准确率与性能 |
+| 音频格式 | 16kHz, mono, PCM 16bit | Whisper 训练数据格式 |
+| 回调接口 | 保持现有 `VoiceRecognitionCallback` | 无需修改 ChatFragment |
+
+#### 新增文件
+
+| 文件 | 用途 |
+|------|------|
+| `app/src/main/java/com/example/dodroidai/ai/voice/WhisperRecorder.kt` | 音频录制（AudioRecord） |
+| `app/src/main/java/com/example/dodroidai/ai/voice/AudioDataProcessor.kt` | PCM ShortArray → FloatArray |
+| `app/src/main/java/com/example/dodroidai/ai/voice/WhisperContext.kt` | WhisperContext Kotlin 封装 |
+| `app/src/main/java/com/example/dodroidai/ai/voice/WhisperCpuConfig.kt` | CPU 核心数配置 |
+| `app/src/main/jni/whisper/*.cpp,h` | Whisper 原生源码 |
+| `app/src/main/jni/ggml/*` | GGML 库源码 |
+| `app/src/main/jni/whisper/jni.c` | JNI 桥接 |
+| `app/src/main/assets/models/ggml-base.bin` | 模型文件 |
+| `app/src/main/jni/whisper/CMakeLists.txt` | CMake 构建配置 |
+
+#### 修改文件
+
+| 文件 | 修改内容 |
+|------|----------|
+| `app/build.gradle.kts` | 添加 CMake 构建配置 |
+| `app/src/main/java/com/example/dodroidai/ai/voice/VoiceInputManager.kt` | 重写为 Whisper 实现 |
+
+#### 实现步骤
+
+**Step 1: 配置 build.gradle.kts**
+```kotlin
+android {
+    defaultConfig {
+        ndk {
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a")
+        }
+        externalNativeBuild {
+            cmake {
+                path = "src/main/jni/whisper/CMakeLists.txt"
+            }
+        }
+    }
+}
 ```
 
-### 2. 集成 Whisper.cpp
-**文件**: `app/src/main/java/com/example/dodroidai/ai/voice/VoiceInputManager.kt`（新增）
+**Step 2: 复制 JNI 源码**
+从 `/tmp/whisper.cpp-repo/examples/whisper.android/lib/src/main/jni/` 复制：
+- `whisper/` 目录（whisper.cpp, whisper.h, jni.c, CMakeLists.txt）
+- `ggml/` 目录（ggml 库源码）
 
-使用 Whisper.cpp 库进行离线语音识别：
-- 依赖 `whisper.cpp` native library
-- 使用 `VoiceRecognitionCallback` 回调识别结果
+修改 `jni.c` 中的包名：
+```
+Java_com_whispercpp_whisper_WhisperLib_00024Companion_* 
+→ 
+Java_com_example_dodroidai_ai_voice_WhisperLib_00024Companion_*
+```
+
+**Step 3: 创建 WhisperRecorder.kt**
+使用 `AudioRecord` 录制 16kHz mono PCM 16bit 音频：
+```kotlin
+val sampleRate = 16000
+val channelConfig = AudioFormat.CHANNEL_IN_MONO
+val audioFormat = AudioFormat.ENCODING_PCM_16BIT
+```
+
+**Step 4: 创建 WhisperContext.kt**
+封装 JNI 调用，提供 `transcribeData(data: FloatArray): String` 方法。
+
+**Step 5: 重写 VoiceInputManager.kt**
+保持 `VoiceRecognitionCallback` 接口不变，内部实现替换为 Whisper。
+
+**Step 6: 下载模型**
+```bash
+curl -L -o app/src/main/assets/models/ggml-base.bin \
+  https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin
+```
+
+#### 音频参数
+
+| 参数 | 值 |
+|------|------|
+| 采样率 | 16000 Hz |
+| 声道 | MONO |
+| 位深 | PCM 16bit |
+| 缓冲区 | minBufferSize * 4 |
+
+RMS 计算（用于波形显示）：
+```kotlin
+20 * log10(rms / 32767.0)
+```
+
+#### 关键参考文件
+
+- Whisper Android 示例：`/tmp/whisper.cpp-repo/examples/whisper.android/`
+- Kotlin 封装参考：`/tmp/whisper.cpp-repo/examples/whisper.android/lib/src/main/java/com/whispercpp/whisper/LibWhisper.kt`
+- JNI 实现参考：`/tmp/whisper.cpp-repo/examples/whisper.android/lib/src/main/jni/whisper/jni.c`
+- 录音实现参考：`/tmp/whisper.cpp-repo/examples/whisper.android/app/src/main/java/com/whispercppdemo/recorder/Recorder.kt`
 
 ### 3. TTS 服务
 **文件**: `app/src/main/java/com/example/dodroidai/ai/voice/TtsManager.kt`（新增）
@@ -118,14 +212,23 @@ voiceHint.setOnTouchListener { _, event ->
 | 修改 | `ui/chat/input/ChatInputBox.kt` - 绑定语音按下/抬起事件 |
 | 修改 | `ui/chat/ChatFragment.kt` - 集成语音服务 |
 
-## 验证方案
+## 实现状态
 
-1. 语音输入：
-   - 切换到语音模式
-   - 按住 voiceHint 区域说话
-   - 验证语音转为文字显示在输入框
-2. TTS 输出：
-   - 发送消息让 AI 回复
-   - 验证 AI 回复后自动朗读
-3. 权限：
-   - 首次使用语音功能时验证权限请求
+已完成以下工作：
+
+- [x] 配置 build.gradle.kts 添加 CMake 构建
+- [x] 复制 whisper.cpp 和 ggml 源码到 app/src/main/jni/
+- [x] 修改 jni.c 包名为 `com.example.dodroidai.ai.voice`
+- [x] 创建 WhisperRecorder.kt（音频录制）
+- [x] 创建 WhisperContext.kt（Whisper JNI 封装）
+- [x] 创建 WhisperCpuConfig.kt（CPU 核心数配置）
+- [x] 重写 VoiceInputManager.kt 为 Whisper 实现
+- [x] 下载 ggml-base.bin 模型到 assets/models/
+
+## 验证计划
+
+1. **编译验证**：CMake 构建成功，SO 库正确生成
+2. **录音验证**： WhisperRecorder 录制的数据格式正确
+3. **模型加载验证**：首次打开语音输入时模型加载成功
+4. **端到端测试**：完整语音输入流程，验证识别结果
+5. **离线测试**：飞行模式下测试语音输入
