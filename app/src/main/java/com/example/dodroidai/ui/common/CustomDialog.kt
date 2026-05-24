@@ -4,6 +4,7 @@ import android.app.Dialog
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
+import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.example.dodroidai.R
@@ -23,7 +24,10 @@ class CustomDialog(
     private val description: String?,
     private val customView: View?,
     private val buttons: List<ButtonInfo>,
-    private val cancelable: Boolean
+    private val cancelable: Boolean,
+    private val width: Int = WindowManager.LayoutParams.MATCH_PARENT,
+    private val height: Int = WindowManager.LayoutParams.WRAP_CONTENT,
+    private val gravity: Int = android.view.Gravity.CENTER
 ) : Dialog(context, R.style.CustomDialogTheme) {
 
     init {
@@ -62,6 +66,19 @@ class CustomDialog(
 
         setContentView(view)
         setCancelable(cancelable)
+    }
+
+    override fun show() {
+        super.show()
+        window?.apply {
+            val layoutParams = WindowManager.LayoutParams()
+            layoutParams.copyFrom(getAttributes())
+            layoutParams.width = width
+            layoutParams.height = height
+            layoutParams.dimAmount = 0.5f
+            layoutParams.gravity = gravity
+            setAttributes(layoutParams)
+        }
     }
 
     private fun setupButtons(buttonContainer: LinearLayout) {
@@ -121,6 +138,9 @@ class CustomDialog(
         private var customView: View? = null
         private var buttons: List<ButtonInfo> = emptyList()
         private var cancelable: Boolean = true
+        private var width: Int = WindowManager.LayoutParams.MATCH_PARENT
+        private var height: Int = WindowManager.LayoutParams.WRAP_CONTENT
+        private var gravity: Int = android.view.Gravity.CENTER
 
         fun setTitle(title: String): Builder {
             this.title = title
@@ -157,9 +177,20 @@ class CustomDialog(
             return this
         }
 
+        fun setSize(width: Int, height: Int): Builder {
+            this.width = width
+            this.height = height
+            return this
+        }
+
+        fun setGravity(gravity: Int): Builder {
+            this.gravity = gravity
+            return this
+        }
+
         fun build(): CustomDialog {
             require(buttons.isNotEmpty()) { "At least one button is required" }
-            return CustomDialog(context, title, description, customView, buttons, cancelable)
+            return CustomDialog(context, title, description, customView, buttons, cancelable, width, height, gravity)
         }
     }
 }

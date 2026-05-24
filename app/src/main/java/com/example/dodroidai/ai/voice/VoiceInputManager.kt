@@ -28,6 +28,7 @@ class VoiceInputManager(private val context: Context) {
         fun onPartialResult(text: String)
         fun onResult(text: String)
         fun onError(error: String)
+        fun onRmsChanged(rmsdB: Float)
     }
 
     private var speechRecognizer: SpeechRecognizer? = null
@@ -118,7 +119,9 @@ class VoiceInputManager(private val context: Context) {
                 callback.onBeginningOfSpeech()
             }
 
-            override fun onRmsChanged(rmsdB: Float) {}
+            override fun onRmsChanged(rmsdB: Float) {
+                callback.onRmsChanged(rmsdB)
+            }
 
             override fun onBufferReceived(buffer: ByteArray?) {}
 

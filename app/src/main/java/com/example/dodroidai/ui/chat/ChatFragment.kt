@@ -26,6 +26,7 @@ import com.example.dodroidai.ui.chat.adapter.ChatMessageAdapter
 import com.example.dodroidai.ui.chat.input.ChatAddOptions
 import com.example.dodroidai.ui.chat.input.ChatInputBox
 import com.example.dodroidai.ui.chat.input.AttachmentItem
+import com.example.dodroidai.ui.chat.input.VoiceInputDialog
 import com.example.dodroidai.ui.common.CustomDialog
 import com.example.dodroidai.ui.common.Toolbar
 import com.example.dodroidai.ai.tools.ToolCall
@@ -79,6 +80,10 @@ class ChatFragment : Fragment() {
     private val ttsManager: TtsManager by lazy {
         TtsManager(requireContext())
     }
+
+    // 语音输入弹窗
+    private var voiceInputDialog: VoiceInputDialog? = null
+
     private val takePictureLauncher = registerForActivityResult(
         ActivityResultContracts.TakePicture()
     ) { success ->
@@ -484,12 +489,12 @@ class ChatFragment : Fragment() {
     }
 
     private fun startVoiceInput() {
+        voiceInputDialog = VoiceInputDialog(requireContext()).apply {
+            show()
+        }
+
         voiceInputManager.startListening(object : VoiceInputManager.VoiceRecognitionCallback {
-            override fun onReadyForSpeech() {
-                activity?.runOnUiThread {
-                    Toast.makeText(context, R.string.voice_ready, Toast.LENGTH_SHORT).show()
-                }
-            }
+            override fun onReadyForSpeech() {}
 
             override fun onBeginningOfSpeech() {}
 
@@ -497,8 +502,16 @@ class ChatFragment : Fragment() {
 
             override fun onPartialResult(text: String) {}
 
+            override fun onRmsChanged(rmsdB: Float) {
+                activity?.runOnUiThread {
+                    voiceInputDialog?.updateRms(rmsdB)
+                }
+            }
+
             override fun onResult(text: String) {
                 activity?.runOnUiThread {
+                    voiceInputDialog?.dismiss()
+                    voiceInputDialog = null
                     if (text.isNotBlank()) {
                         chatInputBox?.clearInput()
                         viewModel.sendMessage(text)
@@ -508,6 +521,8 @@ class ChatFragment : Fragment() {
 
             override fun onError(error: String) {
                 activity?.runOnUiThread {
+                    voiceInputDialog?.dismiss()
+                    voiceInputDialog = null
                     Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
                 }
             }
@@ -516,6 +531,8 @@ class ChatFragment : Fragment() {
 
     private fun stopVoiceInput() {
         voiceInputManager.stopListening()
+        voiceInputDialog?.dismiss()
+        voiceInputDialog = null
     }
 
     private fun speakTts(text: String) {
