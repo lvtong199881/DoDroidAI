@@ -29,6 +29,9 @@
     <string name="group_ai">AI</string>
     <string name="group_app">应用</string>
     <string name="group_about">关于</string>
+    <string name="web_search_title">联网搜索</string>
+    <string name="web_search_api_key_hint">Brave Search API 密钥</string>
+    <string name="web_search_description">搜索互联网获取实时信息</string>
     <string name="about_title">关于</string>
     <string name="version_format">版本 %s</string>
     <string name="settings">设置</string>
@@ -72,4 +75,5 @@
     <string name="rename_session">重命名</string>
     <string name="delete_session">删除</string>
     <string name="delete_session_confirm">确定删除"%1$s"？</string>
+    <string name="web_search">智能搜索</string>
 </resources>

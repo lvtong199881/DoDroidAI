@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.dodroidai.ai.config.AIConfig
-import com.example.dodroidai.ai.config.AIConfigManager
+import com.example.dodroidai.ai.config.AppConfigManager
 import com.example.dodroidai.ai.model.ChatMessage
 import com.example.dodroidai.ai.model.ChatMessage.Companion.LOADING_THINKING
 import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_ASSISTANT
@@ -112,7 +112,6 @@ sealed class ToolPermissionResult {
  * 聊天页面 ViewModel
  */
 class ChatViewModel(
-    private val configManager: AIConfigManager,
     private val chatRepository: ChatRepository,
     private val toolExecutor: ToolExecutor,
     private val sessionId: String? = null,
@@ -205,7 +204,7 @@ class ChatViewModel(
         }
     }
 
-    fun sendMessage(content: String) {
+    fun sendMessage(content: String, webSearchEnabled: Boolean = false) {
         if (content.isBlank()) return
 
         viewModelScope.launch {
@@ -251,7 +250,12 @@ class ChatViewModel(
                 val config = getCurrentConfig()
                 // 获取历史消息（已包含新添加的 userMessage）
                 val allMessages = getRecentMessages()
-                val tools = toolExecutor.getToolDefinitions()
+                // 根据设置决定是否启用 web_search 工具
+                val tools = if (webSearchEnabled) {
+                    toolExecutor.getToolDefinitions()
+                } else {
+                    toolExecutor.getToolDefinitions().filter { it.name != "web_search" }
+                }
 
                 // 使用流式发送
                 Log.i(TAG, "sendMessageStreaming messages count: ${allMessages.size}")
@@ -496,13 +500,13 @@ class ChatViewModel(
                         if (!deferred.isCompleted) {
                             deferred.complete(true)
                         }
-                    }, dismissOnClick = true),
+                    }),
                     CustomDialog.ButtonInfo("取消", onClick = {
                         Log.i(TAG, "Cancel button clicked")
                         if (!deferred.isCompleted) {
                             deferred.complete(false)
                         }
-                    }, dismissOnClick = true)
+                    })
                 )
                 .setCancelable(true)
                 .build()
@@ -662,7 +666,7 @@ class ChatViewModel(
     }
 
     private suspend fun getCurrentConfig(): AIConfig {
-        return configManager.configFlow.first()
+        return AppConfigManager.configFlow.first()
     }
 
     fun clearError() {
@@ -670,7 +674,6 @@ class ChatViewModel(
     }
 
     class Factory(
-        private val configManager: AIConfigManager,
         private val chatRepository: ChatRepository,
         private val toolExecutor: ToolExecutor,
         private val sessionId: String? = null,
@@ -678,7 +681,7 @@ class ChatViewModel(
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return ChatViewModel(configManager, chatRepository, toolExecutor, sessionId, fragment) as T
+            return ChatViewModel(chatRepository, toolExecutor, sessionId, fragment) as T
         }
     }
 }

@@ -31,6 +31,7 @@ import com.example.dodroidai.ui.chat.input.VoiceInputDialog
 import com.example.dodroidai.ui.common.CustomDialog
 import com.example.dodroidai.ui.common.Toolbar
 import com.example.dodroidai.ai.tools.ToolCall
+import com.example.dodroidai.ai.config.AppConfigManager
 import com.example.dodroidai.ai.voice.TtsManager
 import com.example.dodroidai.ai.voice.VoiceInputManager
 import com.example.dodroidai.util.GsonUtil
@@ -47,6 +48,7 @@ class ChatFragment : Fragment() {
     private var chatAddOptions: ChatAddOptions? = null
     private var recyclerView: androidx.recyclerview.widget.RecyclerView? = null
     private var adapter: ChatMessageAdapter? = null
+    private var isWebSearchEnabled = false
 
     private val sessionId: String? by lazy { arguments?.getString(ARG_SESSION_ID) }
 
@@ -54,7 +56,6 @@ class ChatFragment : Fragment() {
         androidx.lifecycle.ViewModelProvider(
             this,
             ChatViewModel.Factory(
-                DoDroidAIApplication.instance.configManager,
                 DoDroidAIApplication.instance.chatRepository,
                 DoDroidAIApplication.instance.toolExecutor,
                 sessionId,
@@ -181,7 +182,7 @@ class ChatFragment : Fragment() {
 
         // 打印当前 AI 配置
         viewLifecycleOwner.lifecycleScope.launch {
-            val config = DoDroidAIApplication.instance.configManager.configFlow
+            val config = AppConfigManager.configFlow
             config.collect { cfg ->
                 android.util.Log.d("ChatFragment", "Current AI config: provider=${cfg.provider}, baseUrl=${cfg.baseUrl}, model=${cfg.model}, apiKey=${cfg.apiKey.take(10)}...")
             }
@@ -197,6 +198,11 @@ class ChatFragment : Fragment() {
     private fun setupListeners() {
         chatInputBox?.onDeepThinkToggle = { _ ->
             hideKeyboard()
+        }
+
+        chatInputBox?.onWebSearchToggle = { enabled ->
+            hideKeyboard()
+            isWebSearchEnabled = enabled
         }
 
         chatInputBox?.onModeSwitch = {
@@ -235,7 +241,7 @@ class ChatFragment : Fragment() {
         }
 
         chatInputBox?.onSendClick = { message, _ ->
-            viewModel.sendMessage(message)
+            viewModel.sendMessage(message, isWebSearchEnabled)
             hideKeyboard()
             chatInputBox?.clearInput()
         }
@@ -337,8 +343,7 @@ class ChatFragment : Fragment() {
                             viewModel.onPermissionResult(ToolPermissionResult.Denied(toolCall.id))
                         }
                         pendingPermissionToolCall = null
-                    },
-                    dismissOnClick = false
+                    }
                 ),
                 CustomDialog.ButtonInfo(
                     text = "授权",
@@ -347,8 +352,7 @@ class ChatFragment : Fragment() {
                         if (toolCall != null) {
                             toolPermissionLauncher.launch(request.permission)
                         }
-                    },
-                    dismissOnClick = false
+                    }
                 )
             )
             .setCancelable(false)
@@ -384,8 +388,7 @@ class ChatFragment : Fragment() {
                             viewModel.onToolConfirmationResult(ToolConfirmationResult.Rejected(toolCall.id))
                         }
                         pendingToolCall = null
-                    },
-                    dismissOnClick = false
+                    }
                 ),
                 CustomDialog.ButtonInfo(
                     text = getString(R.string.confirm),
@@ -395,8 +398,7 @@ class ChatFragment : Fragment() {
                             viewModel.onToolConfirmationResult(ToolConfirmationResult.Approved(toolCall))
                         }
                         pendingToolCall = null
-                    },
-                    dismissOnClick = false
+                    }
                 )
             )
             .setCancelable(false)
@@ -518,7 +520,7 @@ class ChatFragment : Fragment() {
                     voiceInputDialog = null
                     if (text.isNotBlank()) {
                         chatInputBox?.clearInput()
-                        viewModel.sendMessage(text)
+                        viewModel.sendMessage(text, isWebSearchEnabled)
                     }
                 }
             }

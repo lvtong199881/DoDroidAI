@@ -84,11 +84,26 @@
             android:layout_width="wrap_content"
             android:layout_height="36dp"
             android:text="@string/deep_think"
-            android:textSize="12sp"
+            android:textSize="10dp"
             android:checkable="true"
             android:gravity="center_vertical"
             android:background="@drawable/bg_button_think"
             app:icon="@drawable/ic_think"
+            app:iconSize="16dp" />
+
+        <!-- 智能搜索按钮 -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnWebSearch"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginStart="4dp"
+            android:text="@string/web_search"
+            android:textSize="10dp"
+            android:checkable="true"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_button_think"
+            app:icon="@drawable/ic_web_search"
             app:iconSize="16dp" />
 
         <View

@@ -54,7 +54,7 @@ class AIConfigFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel = AIConfigViewModel(DoDroidAIApplication.instance.configManager)
+        viewModel = AIConfigViewModel()
     }
 
     override fun onCreateView(

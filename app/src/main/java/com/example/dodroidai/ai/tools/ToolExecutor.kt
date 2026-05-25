@@ -6,13 +6,16 @@ import android.content.Context
 /**
  * 工具执行器，负责管理所有工具并分发执行
  */
-class ToolExecutor(val context: Context) {
+class ToolExecutor(
+    val context: Context
+) {
     private val tools: Map<String, Tool> = listOf(
         GetCurrentTimeTool(),
         SetAlarmTool(),
         AddCalendarEventTool(context),
         SendSmsTool(context),
-        AddNoteTool()
+        AddNoteTool(),
+        WebSearchTool()
     ).associateBy { it.name }
 
     fun getTool(name: String): Tool? = tools[name]
@@ -75,7 +78,8 @@ class ToolExecutor(val context: Context) {
             "set_alarm",
             "add_calendar_event",
             "send_sms",
-            "add_note"
+            "add_note",
+            "web_search"
         )
     }
 }

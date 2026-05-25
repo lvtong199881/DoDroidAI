@@ -10,7 +10,8 @@ object ToolsDefinition {
         SET_ALARM,
         ADD_CALENDAR_EVENT,
         SEND_SMS,
-        ADD_NOTE
+        ADD_NOTE,
+        WEB_SEARCH
     )
 
     /**
@@ -88,5 +89,20 @@ object ToolsDefinition {
             required = listOf("title", "content")
         ),
         riskLevel = RiskLevel.HIGH
+    )
+
+    /**
+     * 联网搜索
+     */
+    private val WEB_SEARCH = ToolDefinition(
+        name = "web_search",
+        description = "搜索互联网获取实时信息，如天气、新闻、股票等",
+        parameters = ToolParameters(
+            properties = mapOf(
+                "query" to ToolProperty("string", "搜索关键词")
+            ),
+            required = listOf("query")
+        ),
+        riskLevel = RiskLevel.LOW
     )
 }

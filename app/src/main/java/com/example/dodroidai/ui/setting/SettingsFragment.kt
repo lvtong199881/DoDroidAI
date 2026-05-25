@@ -15,6 +15,10 @@ import com.example.dodroidai.R
 import com.example.dodroidai.ai.config.AIConfig
 import com.example.dodroidai.ai.config.AppConfigManager
 import com.example.dodroidai.ai.model.AIProvider
+import android.text.InputType
+import android.widget.EditText
+import android.widget.LinearLayout
+import com.example.dodroidai.ui.common.CustomDialog
 import com.example.dodroidai.ui.common.SettingsItemView
 import com.example.dodroidai.ui.common.Toolbar
 import kotlinx.coroutines.flow.first
@@ -27,19 +31,19 @@ import kotlinx.coroutines.runBlocking
 class SettingsFragment : Fragment() {
 
     private var viewModel: SettingsViewModel? = null
-    private var configManager: AppConfigManager? = null
+    private val configManager = AppConfigManager
 
     private var aiConfigCard: SettingsItemView? = null
     private var languageConfigCard: SettingsItemView? = null
     private var appearanceConfigCard: SettingsItemView? = null
+    private var webSearchCard: SettingsItemView? = null
     private var aboutCard: SettingsItemView? = null
     private var toolbar: Toolbar? = null
     private var scrollView: ScrollView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel = SettingsViewModel(DoDroidAIApplication.instance.configManager)
-        configManager = AppConfigManager(DoDroidAIApplication.instance)
+        viewModel = SettingsViewModel()
     }
 
     override fun onCreateView(
@@ -55,6 +59,7 @@ class SettingsFragment : Fragment() {
         aiConfigCard = view.findViewById(R.id.aiConfigCard)
         languageConfigCard = view.findViewById(R.id.languageConfigCard)
         appearanceConfigCard = view.findViewById(R.id.appearanceConfigCard)
+        webSearchCard = view.findViewById(R.id.webSearchCard)
         aboutCard = view.findViewById(R.id.aboutCard)
         toolbar = view.findViewById(R.id.toolbar)
         scrollView = view.findViewById(R.id.scrollView)
@@ -62,6 +67,7 @@ class SettingsFragment : Fragment() {
         aiConfigCard?.setTitle(R.string.ai_config_title)
         languageConfigCard?.setTitle(R.string.language_title)
         appearanceConfigCard?.setTitle(R.string.appearance_title)
+        webSearchCard?.setTitle(R.string.web_search_title)
         aboutCard?.setTitle(R.string.about_title)
 
         toolbar?.setTitle(R.string.settings_title)
@@ -96,6 +102,10 @@ class SettingsFragment : Fragment() {
             showThemeDialog()
         }
 
+        webSearchCard?.setOnItemClickListener {
+            showWebSearchConfigDialog()
+        }
+
         aboutCard?.setOnItemClickListener {
             navigateTo(AboutFragment())
         }
@@ -119,7 +129,7 @@ class SettingsFragment : Fragment() {
         val radioGroup = dialogView.findViewById<android.widget.RadioGroup>(R.id.themeRadioGroup)
 
         val currentTheme = runCatching {
-            runBlocking { configManager?.themeFlow?.first() }
+            runBlocking { configManager.themeFlow?.first() }
         }.getOrDefault(AppConfigManager.THEME_SYSTEM)
 
         when (currentTheme) {
@@ -138,13 +148,53 @@ class SettingsFragment : Fragment() {
                     else -> AppConfigManager.THEME_SYSTEM
                 }
                 lifecycleScope.launch {
-                    configManager?.updateTheme(theme)
+                    configManager.updateTheme(theme)
                     applyTheme(theme)
                     activity?.recreate()
                 }
             }
             .setNegativeButton(R.string.cancel, null)
             .show()
+    }
+
+    private fun showWebSearchConfigDialog() {
+        lifecycleScope.launch {
+            val currentApiKey = runBlocking { configManager.braveSearchApiKeyFlow?.first() ?: "" }
+
+            val inputView = EditText(requireContext()).apply {
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    setMargins(48, 16, 48, 0)
+                }
+                hint = getString(R.string.web_search_api_key_hint)
+                setText(currentApiKey)
+                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            }
+
+            CustomDialog.Builder(requireContext())
+                .setTitle(R.string.web_search_title)
+                .setDescription(R.string.web_search_description)
+                .setCustomView(inputView)
+                .setButtons(
+                    CustomDialog.ButtonInfo(
+                        text = getString(R.string.save),
+                        onClick = {
+                            val apiKey = inputView.text.toString().trim()
+                            lifecycleScope.launch {
+                                configManager.updateBraveSearchApiKey(apiKey)
+                            }
+                        }
+                    ),
+                    CustomDialog.ButtonInfo(
+                        text = getString(R.string.cancel),
+                        onClick = {}
+                    )
+                )
+                .build()
+                .show()
+        }
     }
 
     private fun applyTheme(theme: String) {
@@ -169,7 +219,7 @@ class SettingsFragment : Fragment() {
     private fun observeLanguage() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                configManager?.languageFlow?.collect { language ->
+                configManager.languageFlow?.collect { language ->
                     updateLanguageUI(language)
                 }
             }
@@ -179,7 +229,7 @@ class SettingsFragment : Fragment() {
     private fun observeTheme() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                configManager?.themeFlow?.collect { theme ->
+                configManager.themeFlow?.collect { theme ->
                     updateThemeUI(theme)
                     applyTheme(theme)
                 }

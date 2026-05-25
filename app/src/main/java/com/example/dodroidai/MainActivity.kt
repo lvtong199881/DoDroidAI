@@ -16,22 +16,17 @@ import java.util.Locale
  */
 class MainActivity : AppCompatActivity() {
 
-    private var appConfigManager: AppConfigManager? = null
-
     override fun attachBaseContext(newBase: Context) {
-        val app = newBase.applicationContext as DoDroidAIApplication
-        appConfigManager = app.appConfigManager
-
         // 先应用主题
         val theme = runCatching {
-            runBlocking { appConfigManager?.themeFlow?.first() }
+            runBlocking { AppConfigManager.themeFlow.first() }
         }.getOrNull() ?: AppConfigManager.THEME_SYSTEM
         applyTheme(theme)
 
         // 再应用语言
         val language = runCatching {
-            runBlocking { appConfigManager?.languageFlow?.first() }
-        }.getOrDefault("en") ?: "en"
+            runBlocking { AppConfigManager.languageFlow.first() }
+        }.getOrDefault("en")
         val context = updateLocale(newBase, language)
         super.attachBaseContext(context)
     }

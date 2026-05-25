@@ -31,6 +31,7 @@ class ChatInputBox @JvmOverloads constructor(
     private var inputText: TextInputEditText? = null
     private var voiceHint: TextView? = null
     private var btnThink: MaterialButton? = null
+    private var btnWebSearch: MaterialButton? = null
     private var btnAdd: ImageButton? = null
     private var btnModeSwitch: ImageButton? = null
     private var btnSend: ImageButton? = null
@@ -38,6 +39,7 @@ class ChatInputBox @JvmOverloads constructor(
 
     private var isVoiceMode = false
     private var isDeepThinkEnabled = false
+    private var isWebSearchEnabled = false
     private var isAddOptionsVisible = false
     private var isKeyboardVisible = false
 
@@ -47,6 +49,7 @@ class ChatInputBox @JvmOverloads constructor(
     }
 
     var onDeepThinkToggle: ((Boolean) -> Unit)? = null
+    var onWebSearchToggle: ((Boolean) -> Unit)? = null
     var onModeSwitch: (() -> Unit)? = null
     var onAddClick: (() -> Unit)? = null
     var onFocusChange: ((Boolean) -> Unit)? = null
@@ -74,6 +77,7 @@ class ChatInputBox @JvmOverloads constructor(
         inputText = findViewById(R.id.inputText)
         voiceHint = findViewById(R.id.voiceHint)
         btnThink = findViewById(R.id.btnThink)
+        btnWebSearch = findViewById(R.id.btnWebSearch)
         btnAdd = findViewById(R.id.btnAdd)
         btnModeSwitch = findViewById(R.id.btnModeSwitch)
         btnSend = findViewById(R.id.btnSend)
@@ -88,6 +92,12 @@ class ChatInputBox @JvmOverloads constructor(
             isDeepThinkEnabled = !isDeepThinkEnabled
             btnThink?.isChecked = isDeepThinkEnabled
             onDeepThinkToggle?.invoke(isDeepThinkEnabled)
+        }
+
+        btnWebSearch?.setOnClickListener {
+            isWebSearchEnabled = !isWebSearchEnabled
+            btnWebSearch?.isChecked = isWebSearchEnabled
+            onWebSearchToggle?.invoke(isWebSearchEnabled)
         }
 
         btnModeSwitch?.setOnClickListener {

@@ -5,12 +5,6 @@ package com.example.dodroidai
  */
 class DoDroidAIApplication : android.app.Application() {
 
-    lateinit var configManager: com.example.dodroidai.ai.config.AIConfigManager
-        private set
-
-    lateinit var appConfigManager: com.example.dodroidai.ai.config.AppConfigManager
-        private set
-
     lateinit var chatRepository: com.example.dodroidai.data.repository.ChatRepository
         private set
 
@@ -20,8 +14,6 @@ class DoDroidAIApplication : android.app.Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
-        configManager = com.example.dodroidai.ai.config.AIConfigManager(this)
-        appConfigManager = com.example.dodroidai.ai.config.AppConfigManager(this)
         chatRepository = com.example.dodroidai.data.repository.ChatRepository(this)
         toolExecutor = com.example.dodroidai.ai.tools.ToolExecutor(this)
     }

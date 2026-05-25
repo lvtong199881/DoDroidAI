@@ -22,18 +22,11 @@ import kotlinx.coroutines.launch
  */
 class LanguageSettingFragment : Fragment() {
 
-    private var configManager: AppConfigManager? = null
-
     private var languageRadioGroup: RadioGroup? = null
     private var radioEnglish: RadioButton? = null
     private var radioChineseSimplified: RadioButton? = null
     private var radioChineseTraditional: RadioButton? = null
     private var toolbar: Toolbar? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        configManager = AppConfigManager(DoDroidAIApplication.instance)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -68,7 +61,7 @@ class LanguageSettingFragment : Fragment() {
                 else -> "en"
             }
             CoroutineScope(Dispatchers.Main).launch {
-                configManager?.updateLanguage(language)
+                AppConfigManager.updateLanguage(language)
                 val localeList = LocaleListCompat.forLanguageTags(language)
                 AppCompatDelegate.setApplicationLocales(localeList)
                 parentFragmentManager.popBackStack()
