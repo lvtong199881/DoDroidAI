@@ -21,6 +21,7 @@ import com.example.dodroidai.ui.common.Toolbar
 import com.example.dodroidai.ui.setting.SettingsFragment
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 /**
  * 对话列表页面 Fragment，显示聊天历史记录
@@ -57,10 +58,9 @@ class ChatListFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 DoDroidAIApplication.instance.chatRepository.sessionsFlow.collect { sessions ->
-                    val sortedSessions = sessions.sortedByDescending { it.updatedAt }
-                    adapter?.submitList(sortedSessions)
-                    tvEmpty?.visibility = if (sortedSessions.isEmpty()) View.VISIBLE else View.GONE
-                    recyclerView?.visibility = if (sortedSessions.isEmpty()) View.GONE else View.VISIBLE
+                    val groupedItems = groupSessionsByTime(sessions)
+                    adapter?.submitList(groupedItems)
+                    updateEmptyState(groupedItems)
                 }
             }
         }
@@ -69,11 +69,74 @@ class ChatListFragment : Fragment() {
     private fun refreshSessions() {
         viewLifecycleOwner.lifecycleScope.launch {
             val sessions = DoDroidAIApplication.instance.chatRepository.sessionsFlow.first()
-            val sortedSessions = sessions.sortedByDescending { it.updatedAt }
-            adapter?.submitList(sortedSessions)
-            tvEmpty?.visibility = if (sortedSessions.isEmpty()) View.VISIBLE else View.GONE
-            recyclerView?.visibility = if (sortedSessions.isEmpty()) View.GONE else View.VISIBLE
+            val groupedItems = groupSessionsByTime(sessions)
+            adapter?.submitList(groupedItems)
+            updateEmptyState(groupedItems)
         }
+    }
+
+    private fun updateEmptyState(items: List<ChatListItem>) {
+        val hasSessions = items.any { it is ChatListItem.SessionItem }
+        tvEmpty?.visibility = if (hasSessions) View.GONE else View.VISIBLE
+        recyclerView?.visibility = if (hasSessions) View.VISIBLE else View.GONE
+    }
+
+    private fun groupSessionsByTime(sessions: List<ChatSession>): List<ChatListItem> {
+        if (sessions.isEmpty()) return emptyList()
+
+        val sortedSessions = sessions.sortedByDescending { it.updatedAt }
+        val now = System.currentTimeMillis()
+
+        val calendar = Calendar.getInstance()
+        val todayStart = calendar.apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+
+        calendar.add(Calendar.DAY_OF_YEAR, -1)
+        val yesterdayStart = calendar.timeInMillis
+
+        calendar.add(Calendar.DAY_OF_YEAR, -6)
+        val sevenDaysAgo = calendar.timeInMillis
+
+        calendar.add(Calendar.DAY_OF_YEAR, -23)
+        val thirtyDaysAgo = calendar.timeInMillis
+
+        calendar.add(Calendar.DAY_OF_YEAR, -30)
+        val oneMonthAgo = calendar.timeInMillis
+
+        val todaySessions = sortedSessions.filter { it.updatedAt >= todayStart }
+        val yesterdaySessions = sortedSessions.filter { it.updatedAt in yesterdayStart until todayStart }
+        val sevenDaysSessions = sortedSessions.filter { it.updatedAt in sevenDaysAgo until yesterdayStart }
+        val thirtyDaysSessions = sortedSessions.filter { it.updatedAt in thirtyDaysAgo until sevenDaysAgo }
+        val olderSessions = sortedSessions.filter { it.updatedAt < oneMonthAgo }
+
+        val result = mutableListOf<ChatListItem>()
+
+        if (todaySessions.isNotEmpty()) {
+            result.add(ChatListItem.SectionHeader(getString(R.string.chat_section_today)))
+            result.addAll(todaySessions.map { ChatListItem.SessionItem(it) })
+        }
+        if (yesterdaySessions.isNotEmpty()) {
+            result.add(ChatListItem.SectionHeader(getString(R.string.chat_section_yesterday)))
+            result.addAll(yesterdaySessions.map { ChatListItem.SessionItem(it) })
+        }
+        if (sevenDaysSessions.isNotEmpty()) {
+            result.add(ChatListItem.SectionHeader(getString(R.string.chat_section_last_7_days)))
+            result.addAll(sevenDaysSessions.map { ChatListItem.SessionItem(it) })
+        }
+        if (thirtyDaysSessions.isNotEmpty()) {
+            result.add(ChatListItem.SectionHeader(getString(R.string.chat_section_last_30_days)))
+            result.addAll(thirtyDaysSessions.map { ChatListItem.SessionItem(it) })
+        }
+        if (olderSessions.isNotEmpty()) {
+            result.add(ChatListItem.SectionHeader(getString(R.string.chat_section_older)))
+            result.addAll(olderSessions.map { ChatListItem.SessionItem(it) })
+        }
+
+        return result
     }
 
     private fun initViews(view: View) {

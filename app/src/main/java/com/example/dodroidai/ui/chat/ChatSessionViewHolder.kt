@@ -16,11 +16,9 @@ class ChatSessionViewHolder(
 ) : RecyclerView.ViewHolder(view) {
 
     private val tvTitle: TextView = view.findViewById(R.id.tvTitle)
-    private val tvTime: TextView = view.findViewById(R.id.tvTime)
 
     fun bind(session: ChatSession) {
         tvTitle.text = session.title
-        tvTime.text = formatTime(session.updatedAt)
 
         itemView.setOnClickListener {
             onSessionClick(session.id)
@@ -28,17 +26,6 @@ class ChatSessionViewHolder(
         itemView.setOnLongClickListener {
             onSessionLongClick(session)
             true
-        }
-    }
-
-    private fun formatTime(timestamp: Long): String {
-        val now = System.currentTimeMillis()
-        val diff = now - timestamp
-        return when {
-            diff < 60 * 1000 -> "刚刚"
-            diff < 60 * 60 * 1000 -> "${diff / (60 * 1000)} 分钟前"
-            diff < 24 * 60 * 60 * 1000 -> "${diff / (60 * 60 * 1000)} 小时前"
-            else -> "${diff / (24 * 60 * 60 * 1000)} 天前"
         }
     }
 }

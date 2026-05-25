@@ -76,4 +76,11 @@
     <string name="delete_session">删除</string>
     <string name="delete_session_confirm">确定删除"%1$s"？</string>
     <string name="web_search">智能搜索</string>
+
+    <!-- Chat List Section Headers -->
+    <string name="chat_section_today">今天</string>
+    <string name="chat_section_yesterday">昨天</string>
+    <string name="chat_section_last_7_days">7天内</string>
+    <string name="chat_section_last_30_days">30天内</string>
+    <string name="chat_section_older">一个月前</string>
 </resources>
