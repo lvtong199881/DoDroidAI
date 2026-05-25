@@ -51,6 +51,7 @@ dependencies {
   implementation(libs.androidx.appcompat)
   implementation(libs.androidx.activity)
   implementation(libs.androidx.constraintlayout)
+  implementation(libs.androidx.splashscreen)
 
   // Material Design
   implementation("com.google.android.material:material:1.12.0")
