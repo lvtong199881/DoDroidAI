@@ -115,7 +115,6 @@ class ChatListFragment : Fragment() {
     private fun showSessionOptions(session: ChatSession) {
         OptionDialog.show(
             context = requireContext(),
-            title = session.title,
             options = listOf(
                 getString(R.string.rename_session) to { showRenameDialog(session) },
                 getString(R.string.delete_session) to { showDeleteConfirmDialog(session) }

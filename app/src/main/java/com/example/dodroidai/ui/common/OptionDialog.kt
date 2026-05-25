@@ -14,7 +14,6 @@ object OptionDialog {
 
     fun show(
         context: Context,
-        title: String,
         options: List<Pair<String, () -> Unit>>
     ) {
         val optionsLayout = LinearLayout(context).apply {
@@ -46,7 +45,6 @@ object OptionDialog {
         }
 
         CustomDialog.Builder(context)
-            .setTitle(title)
             .setCustomView(optionsLayout)
             .setCancelable(true)
             .build()

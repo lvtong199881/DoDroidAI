@@ -8,6 +8,8 @@ import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.example.dodroidai.R
+import com.example.dodroidai.util.dp
+import com.example.dodroidai.util.safeAddView
 
 /**
  * 自定义对话框，使用 Builder 模式
@@ -56,7 +58,7 @@ class CustomDialog(
         // 设置自定义View
         if (customView != null) {
             customContainer.visibility = View.VISIBLE
-            customContainer.addView(customView)
+            customContainer.safeAddView(customView)
         } else {
             customContainer.visibility = View.GONE
         }
@@ -143,7 +145,7 @@ class CustomDialog(
         private var customView: View? = null
         private var buttons: List<ButtonInfo> = emptyList()
         private var cancelable: Boolean = true
-        private var width: Int = WindowManager.LayoutParams.MATCH_PARENT
+        private var width: Int = 280.dp
         private var height: Int = WindowManager.LayoutParams.WRAP_CONTENT
         private var gravity: Int = android.view.Gravity.CENTER
 
@@ -167,7 +169,7 @@ class CustomDialog(
             return this
         }
 
-        fun setCustomView(view: View): Builder {
+        fun setCustomView(view: View?): Builder {
             this.customView = view
             return this
         }

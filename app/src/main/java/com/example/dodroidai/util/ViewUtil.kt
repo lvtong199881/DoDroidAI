@@ -1,16 +1,9 @@
-package com.mohanlv.common
+package com.example.dodroidai.util
 
-import android.content.Context
 import android.content.res.Resources
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.Px
-import androidx.fragment.app.Fragment
-import com.mohanlv.base.utils.AppUtils
-
-fun Fragment.getSafeContext(): Context {
-    return context ?: AppUtils.getContext()
-}
 
 fun View.updateMarginTop(@Px top: Int) {
     val lp = this.layoutParams as? ViewGroup.MarginLayoutParams

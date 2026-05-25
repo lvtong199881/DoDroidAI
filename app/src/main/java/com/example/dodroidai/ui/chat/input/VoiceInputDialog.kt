@@ -26,8 +26,7 @@ class VoiceInputDialog(private val context: Context) {
         val height = (screenHeight * 0.4f).toInt()
 
         dialog = CustomDialog.Builder(context)
-            .setCustomView(waveformView!!)
-            .setButtons(CustomDialog.ButtonInfo(text = "", onClick = null, dismissOnClick = false))
+            .setCustomView(waveformView)
             .setCancelable(false)
             .setSize(WindowManager.LayoutParams.MATCH_PARENT, height)
             .setGravity(android.view.Gravity.BOTTOM)
