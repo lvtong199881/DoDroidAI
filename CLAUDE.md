@@ -35,3 +35,4 @@ app/
 
 - 腾讯云镜像: `https://mirrors.cloud.tencent.com/gradle/`
 - 已配置本地证书信任 (mirrors.cloud.tencent.com)
+- Plan 文件保存在 `plan/` 目录下（通过 `.claude/settings.json` 配置 `plansDirectory: "plan"`）
