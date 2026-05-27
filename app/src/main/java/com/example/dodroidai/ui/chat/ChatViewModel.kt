@@ -662,7 +662,10 @@ class ChatViewModel(
             )
         }
         chatRepository.saveSession(session)
-        _uiState.value = _uiState.value.copy(sessionId = session.id)
+        _uiState.value = _uiState.value.copy(
+            sessionId = session.id,
+            sessionName = session.title
+        )
     }
 
     private suspend fun getCurrentConfig(): AIConfig {

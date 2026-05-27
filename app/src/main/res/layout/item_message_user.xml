@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
     android:paddingStart="12dp"
     android:paddingTop="8dp"
     android:paddingEnd="12dp"
@@ -26,7 +27,12 @@
         android:padding="12dp"
         android:textColor="?attr/colorOnPrimaryContainer"
         android:textSize="16sp"
+        tools:text="消息内容"
+        app:layout_constrainedWidth="true"
         app:layout_constraintEnd_toStartOf="@id/avatar"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_default="wrap" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
