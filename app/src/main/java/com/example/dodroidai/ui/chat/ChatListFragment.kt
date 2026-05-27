@@ -13,6 +13,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dodroidai.DoDroidAIApplication
+import com.example.dodroidai.MainActivity
 import com.example.dodroidai.R
 import com.example.dodroidai.data.model.ChatSession
 import com.example.dodroidai.ui.common.CustomDialog
@@ -32,6 +33,14 @@ class ChatListFragment : Fragment() {
     private var tvEmpty: TextView? = null
     private var recyclerView: RecyclerView? = null
     private var adapter: ChatSessionAdapter? = null
+
+    // Drawer mode
+    private var isDrawerMode = false
+    var onSessionSelected: ((String?) -> Unit)? = null
+
+    fun setDrawerMode(enabled: Boolean) {
+        isDrawerMode = enabled
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -145,7 +154,14 @@ class ChatListFragment : Fragment() {
         recyclerView = view.findViewById(R.id.recyclerView)
 
         adapter = ChatSessionAdapter(
-            onSessionClick = { sessionId -> navigateTo(ChatFragment.newInstance(sessionId)) },
+            onSessionClick = { sessionId ->
+                if (isDrawerMode) {
+                    (activity as? MainActivity)?.closeDrawer()
+                    onSessionSelected?.invoke(sessionId)
+                } else {
+                    navigateTo(ChatFragment.newInstance(sessionId))
+                }
+            },
             onSessionLongClick = { session -> showSessionOptions(session) }
         )
         recyclerView?.layoutManager = LinearLayoutManager(context)
@@ -154,7 +170,12 @@ class ChatListFragment : Fragment() {
         toolbar?.setTitle(R.string.app_name)
         toolbar?.setBackIcon(R.drawable.ic_add)
         toolbar?.setOnBackClickListener {
-            navigateTo(ChatFragment.newInstance(null))
+            if (isDrawerMode) {
+                (activity as? MainActivity)?.closeDrawer()
+                onSessionSelected?.invoke(null)
+            } else {
+                navigateTo(ChatFragment.newInstance(null))
+            }
         }
         toolbar?.setRightIcon(R.drawable.ic_settings)
         toolbar?.setOnRightClickListener {
@@ -237,6 +258,12 @@ class ChatListFragment : Fragment() {
     private fun deleteSession(sessionId: String) {
         viewLifecycleOwner.lifecycleScope.launch {
             DoDroidAIApplication.instance.chatRepository.deleteSession(sessionId)
+        }
+    }
+
+    companion object {
+        fun newInstance(): ChatListFragment {
+            return ChatListFragment()
         }
     }
 }

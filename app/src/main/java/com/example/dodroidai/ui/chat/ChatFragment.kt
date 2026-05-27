@@ -22,6 +22,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dodroidai.DoDroidAIApplication
+import com.example.dodroidai.MainActivity
 import com.example.dodroidai.R
 import com.example.dodroidai.ui.chat.adapter.ChatMessageAdapter
 import com.example.dodroidai.ui.chat.input.ChatAddOptions
@@ -48,6 +49,7 @@ class ChatFragment : Fragment() {
     private var chatAddOptions: ChatAddOptions? = null
     private var recyclerView: androidx.recyclerview.widget.RecyclerView? = null
     private var adapter: ChatMessageAdapter? = null
+    private var tvEmptyHint: android.widget.TextView? = null
     private var isWebSearchEnabled = false
 
     private val sessionId: String? by lazy { arguments?.getString(ARG_SESSION_ID) }
@@ -165,6 +167,7 @@ class ChatFragment : Fragment() {
         chatInputBox = view.findViewById(R.id.chatInputBox)
         chatAddOptions = view.findViewById(R.id.chatAddOptions)
         recyclerView = view.findViewById(R.id.recyclerView)
+        tvEmptyHint = view.findViewById(R.id.tvEmptyHint)
 
         adapter = ChatMessageAdapter { position, expanded ->
             val messages = adapter?.currentList?.toMutableList() ?: return@ChatMessageAdapter
@@ -189,8 +192,9 @@ class ChatFragment : Fragment() {
         }
 
         toolbar?.setTitle(R.string.new_chat)
+        toolbar?.setBackIcon(R.drawable.ic_menu)
         toolbar?.setOnBackClickListener {
-            parentFragmentManager.popBackStack()
+            (activity as? MainActivity)?.toggleDrawer()
         }
         toolbar?.setRightVisible(false)
     }
@@ -273,6 +277,9 @@ class ChatFragment : Fragment() {
                             recyclerView?.scrollToPosition(state.messages.size - 1)
                         }
                     }
+                    // 控制空状态显示
+                    val isEmpty = state.messages.isEmpty() && !state.isLoading
+                    tvEmptyHint?.visibility = if (isEmpty) View.VISIBLE else View.GONE
                     if (state.sessionName != null) {
                         toolbar?.setTitle(state.sessionName)
                     }

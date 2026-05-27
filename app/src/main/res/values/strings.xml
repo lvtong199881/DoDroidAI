@@ -80,6 +80,8 @@
     <string name="delete_session_confirm">Delete "%1$s"?</string>
     <string name="web_search">Smart Search</string>
 
+    <string name="chat_empty_hint">发送消息开始对话</string>
+
     <!-- Chat List Section Headers -->
     <string name="chat_section_today">Today</string>
     <string name="chat_section_yesterday">Yesterday</string>

@@ -77,6 +77,8 @@
     <string name="delete_session_confirm">确定删除"%1$s"？</string>
     <string name="web_search">智能搜索</string>
 
+    <string name="chat_empty_hint">发送消息开始对话</string>
+
     <!-- Chat List Section Headers -->
     <string name="chat_section_today">今天</string>
     <string name="chat_section_yesterday">昨天</string>
