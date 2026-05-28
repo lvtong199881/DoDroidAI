@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -18,7 +19,6 @@ import com.example.dodroidai.R
 import com.example.dodroidai.data.model.ChatSession
 import com.example.dodroidai.ui.common.CustomDialog
 import com.example.dodroidai.ui.common.OptionDialog
-import com.example.dodroidai.ui.common.Toolbar
 import com.example.dodroidai.ui.setting.SettingsFragment
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -29,10 +29,11 @@ import java.util.Calendar
  */
 class ChatListFragment : Fragment() {
 
-    private var toolbar: Toolbar? = null
+    private var tvTitle: TextView? = null
     private var tvEmpty: TextView? = null
     private var recyclerView: RecyclerView? = null
     private var adapter: ChatSessionAdapter? = null
+    private var btnSettings: ImageButton? = null
 
     // Drawer mode
     private var isDrawerMode = false
@@ -149,9 +150,10 @@ class ChatListFragment : Fragment() {
     }
 
     private fun initViews(view: View) {
-        toolbar = view.findViewById(R.id.toolbar)
+        tvTitle = view.findViewById(R.id.tvTitle)
         tvEmpty = view.findViewById(R.id.tvEmpty)
         recyclerView = view.findViewById(R.id.recyclerView)
+        btnSettings = view.findViewById(R.id.btnSettings)
 
         adapter = ChatSessionAdapter(
             onSessionClick = { sessionId ->
@@ -167,18 +169,7 @@ class ChatListFragment : Fragment() {
         recyclerView?.layoutManager = LinearLayoutManager(context)
         recyclerView?.adapter = adapter
 
-        toolbar?.setTitle(R.string.app_name)
-        toolbar?.setBackIcon(R.drawable.ic_add)
-        toolbar?.setOnBackClickListener {
-            if (isDrawerMode) {
-                (activity as? MainActivity)?.closeDrawer()
-                onSessionSelected?.invoke(null)
-            } else {
-                navigateTo(ChatFragment.newInstance(null))
-            }
-        }
-        toolbar?.setRightIcon(R.drawable.ic_settings)
-        toolbar?.setOnRightClickListener {
+        btnSettings?.setOnClickListener {
             navigateTo(SettingsFragment())
         }
     }
