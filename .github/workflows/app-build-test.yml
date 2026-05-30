@@ -1,4 +1,4 @@
-name: App Build test
+name: AppBuildtest2
 
 on:
   workflow_dispatch:
