@@ -49,4 +49,10 @@
     <string name="ai_avatar">AI 頭像</string>
     <string name="thinking_process">思考過程</string>
     <string name="web_search">智能搜索</string>
+
+    <!-- Widget -->
+    <string name="widget_start_chat">開始對話</string>
+    <string name="widget_hint">點擊聊天</string>
+    <string name="widget_description">快速開始新的 AI 對話</string>
+    <string name="widget_search_hint">搜索或提問…</string>
 </resources>

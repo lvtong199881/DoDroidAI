@@ -8,4 +8,9 @@
 
     <!-- 闪屏页背景色 -->
     <color name="splashBackground">#6200EE</color>
+
+    <!-- Widget 颜色 -->
+    <color name="white">#FFFFFF</color>
+    <color name="white_70">#B3FFFFFF</color>
+    <color name="widget_background">#CC1E1E1E</color>
 </resources>

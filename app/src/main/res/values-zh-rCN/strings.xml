@@ -85,4 +85,10 @@
     <string name="chat_section_last_7_days">7天内</string>
     <string name="chat_section_last_30_days">30天内</string>
     <string name="chat_section_older">一个月前</string>
+
+    <!-- Widget -->
+    <string name="widget_start_chat">开始对话</string>
+    <string name="widget_hint">点击聊天</string>
+    <string name="widget_description">快速开始新的 AI 对话</string>
+    <string name="widget_search_hint">搜索或提问…</string>
 </resources>

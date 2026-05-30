@@ -38,6 +38,39 @@
                 <action android:name="com.example.dodroidai.ALARM_TRIGGER" />
             </intent-filter>
         </receiver>
+
+        <receiver
+            android:name=".widget.AgentWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/agent_widget_info_1x2" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.AgentWidgetProvider1x4"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/agent_widget_info_1x4" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.AgentWidgetProvider2x2"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/agent_widget_info_2x2" />
+        </receiver>
     </application>
 
 </manifest>

@@ -21,6 +21,10 @@ import java.util.Locale
  */
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+        const val EXTRA_NEW_CHAT = "new_chat"
+    }
+
     private var chatListFragment: ChatListFragment? = null
 
     private var drawerLayout: DrawerLayout? = null
@@ -69,6 +73,9 @@ class MainActivity : AppCompatActivity() {
         drawerLayout = findViewById(R.id.drawerLayout)
 
         if (savedInstanceState == null) {
+            // 检测是否从 widget 点击启动新对话
+            val startNewChat = intent?.getBooleanExtra(EXTRA_NEW_CHAT, false) ?: false
+
             // 默认启动 ChatFragment（无 sessionId）
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, ChatFragment.newInstance(null))

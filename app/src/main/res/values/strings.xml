@@ -88,4 +88,10 @@
     <string name="chat_section_last_7_days">Last 7 Days</string>
     <string name="chat_section_last_30_days">Last 30 Days</string>
     <string name="chat_section_older">Older</string>
+
+    <!-- Widget -->
+    <string name="widget_start_chat">Start Chat</string>
+    <string name="widget_hint">Tap to chat</string>
+    <string name="widget_description">Quickly start a new conversation with AI</string>
+    <string name="widget_search_hint">Search or ask anything…</string>
 </resources>

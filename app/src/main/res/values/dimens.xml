@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 1x2 widget: 2 columns x 1 row -->
+    <dimen name="widget_min_width_1x2">110dp</dimen>
+    <dimen name="widget_min_height_1x2">40dp</dimen>
+
+    <!-- 1x4 widget: 4 columns x 1 row -->
+    <dimen name="widget_min_width_1x4">220dp</dimen>
+    <dimen name="widget_min_height_1x4">40dp</dimen>
+
+    <!-- 2x2 widget: 2 columns x 2 rows -->
+    <dimen name="widget_min_width_2x2">110dp</dimen>
+    <dimen name="widget_min_height_2x2">110dp</dimen>
+
+    <!-- Common -->
+    <dimen name="widget_corner_radius">16dp</dimen>
+    <dimen name="widget_padding">8dp</dimen>
+    <dimen name="widget_icon_size">24dp</dimen>
+    <dimen name="widget_text_size">14sp</dimen>
+</resources>
