@@ -14,7 +14,7 @@ jobs:
         - name: 设置 JDK
           uses: actions/setup-java@v4
           with:
-            distribution: 'temurin'
+            distribution: ''temurin''
             java-version: '17'
 
         - name: 设置 Android SDK
@@ -31,7 +31,6 @@ jobs:
           with:
             files: app/build/outputs/apk/release/*.apk
             tag_name: release-${{ github.run_number }}
-            generate_release_notes: true
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
