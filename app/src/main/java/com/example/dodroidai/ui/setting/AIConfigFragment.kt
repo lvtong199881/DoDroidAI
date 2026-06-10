@@ -1,23 +1,22 @@
 package com.example.dodroidai.ui.setting
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
-import android.widget.ImageView
 import android.widget.ScrollView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.example.dodroidai.DoDroidAIApplication
 import com.example.dodroidai.R
 import com.example.dodroidai.ai.config.AIConfig
+import com.example.dodroidai.ai.config.AppConfigManager
 import com.example.dodroidai.ai.model.AIProvider
 import com.example.dodroidai.ai.model.ApiFormat
 import com.example.dodroidai.ui.common.Toolbar
@@ -26,7 +25,7 @@ import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 
 /**
- * AI 配置页面 Fragment
+ * AI 配置页面 Fragment，支持新建和编辑模式
  */
 class AIConfigFragment : Fragment() {
 
@@ -43,6 +42,8 @@ class AIConfigFragment : Fragment() {
     private var sonnetModelInput: TextInputEditText? = null
     private var opusModelInput: TextInputEditText? = null
     private var saveButton: Button? = null
+    private var deleteButton: Button? = null
+    private var setActiveButton: Button? = null
     private var toolbar: Toolbar? = null
     private var scrollView: ScrollView? = null
 
@@ -52,9 +53,15 @@ class AIConfigFragment : Fragment() {
 
     private var currentApiFormat: ApiFormat = ApiFormat.ANTHROPIC_MESSAGES
 
+    // 编辑模式相关
+    private var editingConfigId: String? = null
+    private var isEditMode: Boolean = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel = AIConfigViewModel()
+        editingConfigId = arguments?.getString(ARG_CONFIG_ID)
+        isEditMode = editingConfigId != null
     }
 
     override fun onCreateView(
@@ -72,7 +79,12 @@ class AIConfigFragment : Fragment() {
         setupApiFormatDropdown()
         setupQuickProviderCards()
         setupSaveButton()
+        setupActionButtons()
         observeConfig()
+
+        if (isEditMode) {
+            loadEditingConfig()
+        }
     }
 
     private fun initViews(view: View) {
@@ -89,13 +101,15 @@ class AIConfigFragment : Fragment() {
         sonnetModelInput = view.findViewById(R.id.sonnetModelInput)
         opusModelInput = view.findViewById(R.id.opusModelInput)
         saveButton = view.findViewById(R.id.saveButton)
+        deleteButton = view.findViewById(R.id.deleteButton)
+        setActiveButton = view.findViewById(R.id.setActiveButton)
         cardOpenAI = view.findViewById(R.id.cardOpenAI)
         cardDeepSeek = view.findViewById(R.id.cardDeepSeek)
         cardMiniMax = view.findViewById(R.id.cardMiniMax)
     }
 
     private fun setupToolbar() {
-        toolbar?.setTitle(R.string.ai_config_title)
+        toolbar?.setTitle(if (isEditMode) R.string.ai_config_edit else R.string.ai_config_new)
         toolbar?.setOnBackClickListener {
             parentFragmentManager.popBackStack()
         }
@@ -152,6 +166,42 @@ class AIConfigFragment : Fragment() {
         }
     }
 
+    private fun setupActionButtons() {
+        // 编辑模式下显示删除和设为激活按钮
+        if (isEditMode) {
+            deleteButton?.visibility = View.VISIBLE
+            deleteButton?.setOnClickListener {
+                showDeleteConfirmDialog()
+            }
+
+            setActiveButton?.visibility = View.VISIBLE
+            setActiveButton?.setOnClickListener {
+                editingConfigId?.let { configId ->
+                    viewModel?.setActiveConfig(configId)
+                    Toast.makeText(context, R.string.save_success, Toast.LENGTH_SHORT).show()
+                    parentFragmentManager.popBackStack()
+                }
+            }
+        } else {
+            deleteButton?.visibility = View.GONE
+            setActiveButton?.visibility = View.GONE
+        }
+    }
+
+    private fun showDeleteConfirmDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.delete)
+            .setMessage(getString(R.string.ai_config_delete_confirm))
+            .setPositiveButton(R.string.delete) { _, _ ->
+                editingConfigId?.let { configId ->
+                    viewModel?.deleteConfig(configId)
+                }
+                parentFragmentManager.popBackStack()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
     private fun validateInputs(): Boolean {
         val providerName = providerNameInput?.text.toString().trim()
         val apiKey = apiKeyInput?.text.toString().trim()
@@ -182,8 +232,15 @@ class AIConfigFragment : Fragment() {
     }
 
     private fun saveConfig() {
-        val provider = AIProvider.valueOf(providerNameInput?.text.toString().trim().uppercase())
+        val providerStr = providerNameInput?.text.toString().trim().uppercase()
+        val provider = try {
+            AIProvider.valueOf(providerStr)
+        } catch (e: Exception) {
+            AIProvider.CUSTOM
+        }
+
         val newConfig = AIConfig(
+            id = editingConfigId ?: "",
             provider = provider,
             apiKey = apiKeyInput?.text.toString().trim(),
             baseUrl = baseUrlInput?.text.toString().trim(),
@@ -197,17 +254,29 @@ class AIConfigFragment : Fragment() {
             sonnetModel = sonnetModelInput?.text.toString().trim(),
             opusModel = opusModelInput?.text.toString().trim()
         )
-        android.util.Log.d("AIConfigFragment", "Saving config: provider=${newConfig.provider}, baseUrl=${newConfig.baseUrl}, model=${newConfig.model}, apiKey=${newConfig.apiKey.take(10)}...")
-        viewModel?.updateConfig(newConfig)
-        Toast.makeText(context, R.string.save_success, Toast.LENGTH_SHORT).show()
-        parentFragmentManager.popBackStack()
+
+        viewModel?.saveConfig(newConfig, isEditMode) { success ->
+            if (success) {
+                Toast.makeText(context, R.string.save_success, Toast.LENGTH_SHORT).show()
+                parentFragmentManager.popBackStack()
+            }
+        }
+    }
+
+    private fun loadEditingConfig() {
+        editingConfigId?.let { configId ->
+            viewModel?.loadConfig(configId)
+        }
     }
 
     private fun observeConfig() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel?.config?.collect { config ->
-                    updateUI(config)
+                    // 如果是编辑模式且配置 ID匹配，才更新 UI
+                    if (isEditMode && config.id == editingConfigId) {
+                        updateUI(config)
+                    }
                 }
             }
         }
@@ -225,5 +294,9 @@ class AIConfigFragment : Fragment() {
         opusModelInput?.setText(config.opusModel)
         currentApiFormat = config.apiFormat
         apiFormatDropdown?.setText(getApiFormatDisplayName(config.apiFormat), false)
+    }
+
+    companion object {
+        const val ARG_CONFIG_ID = "config_id"
     }
 }

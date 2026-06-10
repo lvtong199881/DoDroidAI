@@ -3,11 +3,14 @@ package com.example.dodroidai.ai.config
 import com.example.dodroidai.ai.model.AIProvider
 import com.example.dodroidai.ai.model.ApiFormat
 import com.google.gson.annotations.SerializedName
+import java.util.UUID
 
 /**
  * AI 配置数据类
  */
 data class AIConfig(
+    @SerializedName("id")
+    val id: String = UUID.randomUUID().toString(),
     @SerializedName("provider")
     val provider: AIProvider,
     @SerializedName("apiKey")
@@ -31,7 +34,11 @@ data class AIConfig(
     @SerializedName("sonnetModel")
     val sonnetModel: String = "",
     @SerializedName("opusModel")
-    val opusModel: String = ""
+    val opusModel: String = "",
+    @SerializedName("createdAt")
+    val createdAt: Long = System.currentTimeMillis(),
+    @SerializedName("updatedAt")
+    val updatedAt: Long = System.currentTimeMillis()
 ) {
     companion object {
         fun default(provider: AIProvider): AIConfig {

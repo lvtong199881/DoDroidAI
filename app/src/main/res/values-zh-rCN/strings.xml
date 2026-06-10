@@ -76,6 +76,14 @@
     <string name="delete_session">删除</string>
     <string name="delete_session_confirm">确定删除"%1$s"？</string>
     <string name="web_search">智能搜索</string>
+    <string name="ai_config_list_title">AI 配置列表</string>
+    <string name="ai_config_new">新建配置</string>
+    <string name="ai_config_edit">编辑配置</string>
+    <string name="ai_config_delete_confirm">确定删除此配置？</string>
+    <string name="ai_config_set_active">设为激活</string>
+    <string name="ai_config_clone">克隆</string>
+    <string name="ai_config_active">已激活</string>
+    <string name="ai_config_empty">暂无配置</string>
 
     <string name="chat_empty_hint">发送消息开始对话</string>
 

@@ -79,6 +79,14 @@
     <string name="delete_session">Delete</string>
     <string name="delete_session_confirm">Delete "%1$s"?</string>
     <string name="web_search">Smart Search</string>
+    <string name="ai_config_list_title">AI Configurations</string>
+    <string name="ai_config_new">New Configuration</string>
+    <string name="ai_config_edit">Edit Configuration</string>
+    <string name="ai_config_delete_confirm">Delete this configuration?</string>
+    <string name="ai_config_set_active">Set as Active</string>
+    <string name="ai_config_clone">Clone</string>
+    <string name="ai_config_active">Active</string>
+    <string name="ai_config_empty">No configurations yet</string>
 
     <string name="chat_empty_hint">发送消息开始对话</string>
 

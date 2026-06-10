@@ -91,7 +91,7 @@ class SettingsFragment : Fragment() {
 
     private fun setupClickListeners() {
         aiConfigCard?.setOnItemClickListener {
-            navigateTo(AIConfigFragment())
+            navigateTo(AIConfigListFragment())
         }
 
         languageConfigCard?.setOnItemClickListener {

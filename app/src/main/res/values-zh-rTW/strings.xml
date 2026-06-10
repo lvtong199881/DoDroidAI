@@ -49,6 +49,14 @@
     <string name="ai_avatar">AI 頭像</string>
     <string name="thinking_process">思考過程</string>
     <string name="web_search">智能搜索</string>
+    <string name="ai_config_list_title">AI 配置列表</string>
+    <string name="ai_config_new">新建配置</string>
+    <string name="ai_config_edit">編輯配置</string>
+    <string name="ai_config_delete_confirm">確定刪除此配置？</string>
+    <string name="ai_config_set_active">設為激活</string>
+    <string name="ai_config_clone">克隆</string>
+    <string name="ai_config_active">已激活</string>
+    <string name="ai_config_empty">暫無配置</string>
 
     <!-- Widget -->
     <string name="widget_start_chat">開始對話</string>
