@@ -2924,14 +2924,14 @@ static bool whisper_decode_internal(
 
                     for (int i = 0; i < n_kv; ++i) {
                         if (!kv_self.cells[i].has_seq_id(seq_id) || kv_self.cells[i].pos > pos) {
-                            data[h*(n_kv*n_tokens) + j*n_kv + i] = -INFINITY;
+                                                       data[h*(n_kv*n_tokens) + j*n_kv + i] = -std::numeric_limits<float>::infinity();
                         }
                     }
                 }
 
                 for (int i = n_tokens; i < n_tokens; ++i) {
                     for (int j = 0; j < n_kv; ++j) {
-                        data[h*(n_kv*n_tokens) + i*n_kv + j] = -INFINITY;
+                        data[h*(n_kv*n_tokens) + i*n_kv + j] = -std::numeric_limits<float>::infinity();
                     }
                 }
             }
@@ -6128,17 +6128,17 @@ static void whisper_compute_logprobs(
     const float logit_max = *std::max_element(logits.begin(), logits.end());
     float logsumexp = 0.0f;
     for (int i = 0; i < n_logits; ++i) {
-        if (logits[i] > -INFINITY) {
+        if (logits[i] > -std::numeric_limits<float>::infinity()) {
             logsumexp += expf(logits[i] - logit_max);
         }
     }
     logsumexp = logf(logsumexp) + logit_max;
 
     for (int i = 0; i < n_logits; ++i) {
-        if (logits[i] > -INFINITY) {
+        if (logits[i] > -std::numeric_limits<float>::infinity()) {
             logprobs[i] = logits[i] - logsumexp;
         } else {
-            logprobs[i] = -INFINITY;
+            logprobs[i] = -std::numeric_limits<float>::infinity();
         }
     }
 }
@@ -6149,7 +6149,7 @@ static void whisper_compute_probs(
     const std::vector<float> & logprobs,
           std::vector<float> & probs)     {
     for (int i = 0; i < n_logits; ++i) {
-        if (logits[i] == -INFINITY) {
+        if (logits[i] == -std::numeric_limits<float>::infinity()) {
             probs[i] = 0.0f;
         } else {
             probs[i] = expf(logprobs[i]);
@@ -6202,48 +6202,48 @@ static void whisper_process_logits(
         // https://github.com/openai/whisper/blob/0b1ba3d46ebf7fe6f953acfd8cad62a4f851b49f/whisper/decoding.py#L388-L390
         if (params.suppress_blank) {
             if (is_initial) {
-                logits[vocab.token_eot]           = -INFINITY;
-                logits[vocab.token_to_id.at(" ")] = -INFINITY;
+                logits[vocab.token_eot]           = -std::numeric_limits<float>::infinity();
+                logits[vocab.token_to_id.at(" ")] = -std::numeric_limits<float>::infinity();
             }
         }
 
         // suppress <|notimestamps|> token
         // ref: https://github.com/openai/whisper/blob/0b1ba3d46ebf7fe6f953acfd8cad62a4f851b49f/whisper/decoding.py#L410-L412
-        logits[vocab.token_not] = -INFINITY;
+        logits[vocab.token_not] = -std::numeric_limits<float>::infinity();
         if (params.no_timestamps) {
             for (int i = vocab.token_beg; i < n_logits; ++i) {
-                logits[i] = -INFINITY;
+                logits[i] = -std::numeric_limits<float>::infinity();
             }
         }
 
         // ref: https://github.com/ggml-org/whisper.cpp/pull/3798
         if (!params.no_timestamps && !params.single_segment && params.max_tokens > 0 && (int) tokens_cur.size() >= params.max_tokens) {
             for (int i = 0; i < vocab.token_eot; ++i) {
-                logits[i] = -INFINITY;
+                logits[i] = -std::numeric_limits<float>::infinity();
             }
         }
 
         // suppress sot and nosp tokens
-        logits[vocab.token_sot]  = -INFINITY;
-        logits[vocab.token_nosp] = -INFINITY;
+        logits[vocab.token_sot]  = -std::numeric_limits<float>::infinity();
+        logits[vocab.token_nosp] = -std::numeric_limits<float>::infinity();
 
         // [TDRZ] when tinydiarize is disabled, suppress solm token
         if (params.tdrz_enable == false) {
-            logits[vocab.token_solm] = -INFINITY;
+            logits[vocab.token_solm] = -std::numeric_limits<float>::infinity();
         }
 
         // suppress task tokens
-        logits[vocab.token_translate]  = -INFINITY;
-        logits[vocab.token_transcribe] = -INFINITY;
-        logits[vocab.token_prev]       = -INFINITY;
+        logits[vocab.token_translate]  = -std::numeric_limits<float>::infinity();
+        logits[vocab.token_transcribe] = -std::numeric_limits<float>::infinity();
+        logits[vocab.token_prev]       = -std::numeric_limits<float>::infinity();
 
         // suppress lang tokens
         for (size_t i = 0; i < g_lang.size(); ++i) {
-            logits[whisper_token_lang(&ctx, i)] = -INFINITY;
+            logits[whisper_token_lang(&ctx, i)] = -std::numeric_limits<float>::infinity();
         }
 
         // suppress prev token
-        logits[vocab.token_prev] = -INFINITY;
+        logits[vocab.token_prev] = -std::numeric_limits<float>::infinity();
 
         if (params.logits_filter_callback) {
             params.logits_filter_callback(&ctx, &state, tokens_cur.data(), tokens_cur.size(), logits.data(), params.logits_filter_callback_user_data);
@@ -6255,7 +6255,7 @@ static void whisper_process_logits(
             std::regex re(params.suppress_regex);
             for (std::pair<whisper_vocab::token, whisper_vocab::id> token_id : vocab.token_to_id) {
                 if (std::regex_match(token_id.first, re)) {
-                    logits[token_id.second] = -INFINITY;
+                    logits[token_id.second] = -std::numeric_limits<float>::infinity();
                 }
             }
         }
@@ -6267,17 +6267,17 @@ static void whisper_process_logits(
                 const std::string suppress_tokens[] = {token, " " + token};
                 for (const std::string & suppress_token : suppress_tokens) {
                     if (vocab.token_to_id.find(suppress_token) != vocab.token_to_id.end()) {
-                        logits[vocab.token_to_id.at(suppress_token)] = -INFINITY;
+                        logits[vocab.token_to_id.at(suppress_token)] = -std::numeric_limits<float>::infinity();
                     }
                 }
             }
 
             // allow hyphens "-" and single quotes "'" between words, but not at the beginning of a word
             if (vocab.token_to_id.find(" -") != vocab.token_to_id.end()) {
-                logits[vocab.token_to_id.at(" -")] = -INFINITY;
+                logits[vocab.token_to_id.at(" -")] = -std::numeric_limits<float>::infinity();
             }
             if (vocab.token_to_id.find(" '") != vocab.token_to_id.end()) {
-                logits[vocab.token_to_id.at(" '")] = -INFINITY;
+                logits[vocab.token_to_id.at(" '")] = -std::numeric_limits<float>::infinity();
             }
         }
 
@@ -6292,11 +6292,11 @@ static void whisper_process_logits(
             if (last_was_timestamp) {
                 if (penultimate_was_timestamp) {
                     for (int i = vocab.token_beg; i < n_logits; ++i) {
-                        logits[i] = -INFINITY;
+                        logits[i] = -std::numeric_limits<float>::infinity();
                     }
                 } else {
                     for (int i = 0; i < vocab.token_eot; ++i) {
-                        logits[i] = -INFINITY;
+                        logits[i] = -std::numeric_limits<float>::infinity();
                     }
                 }
             }
@@ -6309,7 +6309,7 @@ static void whisper_process_logits(
             const int   tid0      = std::round(params.max_initial_ts/precision);
 
             for (int i = vocab.token_beg + tid0 + 1; i < n_logits; ++i) {
-                logits[i] = -INFINITY;
+                logits[i] = -std::numeric_limits<float>::infinity();
             }
         }
 
@@ -6319,7 +6319,7 @@ static void whisper_process_logits(
             const int tid0 = decoder.seek_delta/2;
 
             for (int i = vocab.token_beg; i < vocab.token_beg + tid0; ++i) {
-                logits[i] = -INFINITY;
+                logits[i] = -std::numeric_limits<float>::infinity();
             }
         }
 
@@ -6330,12 +6330,12 @@ static void whisper_process_logits(
         // ref: https://github.com/openai/whisper/blob/0b1ba3d46ebf7fe6f953acfd8cad62a4f851b49f/whisper/decoding.py#L431-L437
         {
             // logsumexp over timestamps
-            float timestamp_logprob = -INFINITY;
+            float timestamp_logprob = -std::numeric_limits<float>::infinity();
             {
                 float logsumexp = 0.0f;
                 const float logprob_max = *std::max_element(logprobs.begin() + vocab.token_beg, logprobs.end());
                 for (int i = vocab.token_beg; i < n_logits; ++i) {
-                    if (logprobs[i] > -INFINITY) {
+                    if (logprobs[i] > -std::numeric_limits<float>::infinity()) {
                         logsumexp += expf(logprobs[i] - logprob_max);
                     }
                 }
@@ -6350,8 +6350,8 @@ static void whisper_process_logits(
 
             if (timestamp_logprob > max_text_token_logprob) {
                 for (int i = 0; i < vocab.token_beg; ++i) {
-                    logits[i]   = -INFINITY;
-                    logprobs[i] = -INFINITY;
+                    logits[i]   = -std::numeric_limits<float>::infinity();
+                    logprobs[i] = -std::numeric_limits<float>::infinity();
                 }
             } else {
                 if (params.n_grammar_rules > 0) {
@@ -6362,17 +6362,17 @@ static void whisper_process_logits(
                         const float logit_max = *std::max_element(logits.begin(), logits.end());
                         float logsumexp = 0.0f;
                         for (int i = 0; i < n_logits; ++i) {
-                            if (logits[i] > -INFINITY) {
+                            if (logits[i] > -std::numeric_limits<float>::infinity()) {
                                 logsumexp += expf(logits[i] - logit_max);
                             }
                         }
                         logsumexp = logf(logsumexp) + logit_max;
 
                         for (int i = 0; i < n_logits; ++i) {
-                            if (logits[i] > -INFINITY) {
+                            if (logits[i] > -std::numeric_limits<float>::infinity()) {
                                 logprobs[i] = logits[i] - logsumexp;
                             } else {
-                                logprobs[i] = -INFINITY;
+                                logprobs[i] = -std::numeric_limits<float>::infinity();
                             }
                         }
                     }
@@ -6471,7 +6471,7 @@ static whisper_token_data whisper_sample_token(
         double max_ts = 0.0;
 
         for (int i = vocab.token_beg; i < n_logits; i++) {
-            if (probs[i] == -INFINITY) {
+            if (probs[i] == -std::numeric_limits<float>::infinity()) {
                 continue;
             }
 
@@ -6553,7 +6553,7 @@ static std::vector<whisper_token_data> whisper_sample_token_topk(
         double max_ts = 0.0;
 
         for (int i = vocab.token_beg; i < n_logits; i++) {
-            if (probs[i] == -INFINITY) {
+            if (probs[i] == -std::numeric_limits<float>::infinity()) {
                 continue;
             }
 
@@ -7071,10 +7071,10 @@ int whisper_full_with_state(
                 decoder.sequence.tokens.clear();
                 decoder.sequence.result_len       = 0;
                 decoder.sequence.sum_logprobs_all = 0.0;
-                decoder.sequence.sum_logprobs     = -INFINITY;
-                decoder.sequence.avg_logprobs     = -INFINITY;
+                decoder.sequence.sum_logprobs     = -std::numeric_limits<float>::infinity();
+                decoder.sequence.avg_logprobs     = -std::numeric_limits<float>::infinity();
                 decoder.sequence.entropy          = 0.0;
-                decoder.sequence.score            = -INFINITY;
+                decoder.sequence.score            = -std::numeric_limits<float>::infinity();
 
                 decoder.seek_delta = 100*WHISPER_CHUNK_SIZE;
 
@@ -7516,7 +7516,7 @@ int whisper_full_with_state(
 
             // rank the resulting sequences and select the best one
             {
-                double best_score = -INFINITY;
+                double best_score = -std::numeric_limits<float>::infinity();
 
                 for (int j = 0; j < n_decoders_cur; ++j) {
                     auto & decoder = state->decoders[j];
@@ -8703,7 +8703,7 @@ static ggml_tensor * dtw_and_backtrace(ggml_context * ctx, ggml_tensor * x) {
     struct ggml_tensor * cost = ggml_new_tensor_2d(ctx, GGML_TYPE_F32, N + 1, M + 1);
     struct ggml_tensor * trace = ggml_new_tensor_2d(ctx, GGML_TYPE_I32, N + 1, M + 1);
 
-    cost = whisper_set_f32(cost, INFINITY);
+    cost = whisper_set_f32(cost, std::numeric_limits<float>::infinity());
     trace = whisper_set_i32(trace, -1);
     whisper_set_f32_nd(cost, 0, 0, 0, 0, 0.0);
 

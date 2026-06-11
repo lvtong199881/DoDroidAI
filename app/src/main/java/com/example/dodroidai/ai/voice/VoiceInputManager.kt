@@ -48,7 +48,7 @@ class VoiceInputManager(private val context: Context) {
             try {
                 whisperContext = WhisperContext.createContextFromAsset(
                     context.assets,
-                    "models/ggml-tiny.bin"
+                    "models/ggml-tiny-q8_0.bin"
                 )
                 withContext(Dispatchers.Main) {
                     onReady()

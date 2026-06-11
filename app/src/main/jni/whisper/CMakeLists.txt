@@ -24,7 +24,7 @@ function(build_library target_name)
         ${CMAKE_SOURCE_DIR}/jni.c
     )
 
-    target_compile_definitions(${target_name} PUBLIC GGML_USE_CPU)
+    target_compile_definitions(${target_name} PUBLIC GGML_USE_OPENCL)
     target_compile_definitions(${target_name} PRIVATE WHISPER_VERSION="${WHISPER_VERSION}")
 
     if (${target_name} STREQUAL "whisper_v8fp16_va")
