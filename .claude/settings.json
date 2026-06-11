@@ -1,3 +1,24 @@
 {
-  "plansDirectory": "plan"
+  "plansDirectory": "plan",
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew lintDebug *)",
+      "Bash(./gradlew tasks *)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/skills/android-review/hooks/afterEdit.sh",
+            "async": true,
+            "statusMessage": "Running Android review"
+          }
+        ]
+      }
+    ]
+  }
 }
