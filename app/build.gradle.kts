@@ -87,4 +87,7 @@ dependencies {
 
   // Markdown
   implementation("io.noties.markwon:core:4.6.2")
+
+  // Internal modules
+  implementation(project(":webview-sdk"))
 }

@@ -97,4 +97,8 @@
     <string name="widget_hint">点击聊天</string>
     <string name="widget_description">快速开始新的 AI 对话</string>
     <string name="widget_search_hint">搜索或提问…</string>
+
+    <!-- App Shortcut -->
+    <string name="shortcut_look_around_short">去看看</string>
+    <string name="shortcut_look_around_long">打开网页</string>
 </resources>

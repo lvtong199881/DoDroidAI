@@ -97,4 +97,8 @@
     <string name="widget_hint">Tap to chat</string>
     <string name="widget_description">Quickly start a new conversation with AI</string>
     <string name="widget_search_hint">Search or ask anything…</string>
+
+    <!-- App Shortcut -->
+    <string name="shortcut_look_around_short">Look</string>
+    <string name="shortcut_look_around_long">Open Web View</string>
 </resources>

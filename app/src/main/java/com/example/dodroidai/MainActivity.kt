@@ -12,6 +12,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import com.example.dodroidai.ai.config.AppConfigManager
 import com.example.dodroidai.ui.chat.ChatFragment
 import com.example.dodroidai.ui.chat.ChatListFragment
+import com.example.dodroidai.webviewsdk.WebViewEntry
 import java.util.Locale
 
 /**
@@ -21,6 +22,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_NEW_CHAT = "new_chat"
+        const val EXTRA_OPEN_WEB = "open_web"
 
         private const val LANG_EN = "en"
         private const val LANG_ZH_CN = "zh-rCN"
@@ -70,10 +72,23 @@ class MainActivity : AppCompatActivity() {
             // 检测是否从 widget 点击启动新对话
             val startNewChat = intent?.getBooleanExtra(EXTRA_NEW_CHAT, false) ?: false
 
-            // 默认启动 ChatFragment（无 sessionId）
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, ChatFragment.newInstance(null))
-                .commit()
+            // 检测是否从 shortcut 启动 WebFragment
+            val openWeb = intent?.getBooleanExtra(EXTRA_OPEN_WEB, false) ?: false
+
+            if (openWeb) {
+                // 启动 WebFragment(看看去 shortcut):
+                // 先后 add 两个 fragment,ChatFragment 在底(无 back stack),
+                // WebFragment 在上(有 back stack);关闭 WebFragment 后 ChatFragment 仍保留
+                supportFragmentManager.beginTransaction()
+                    .add(R.id.fragment_container, ChatFragment.newInstance(null))
+                    .commit()
+                WebViewEntry.show(this, R.id.fragment_container)
+            } else {
+                // 默认启动 ChatFragment(无 sessionId)
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, ChatFragment.newInstance(null))
+                    .commit()
+            }
 
             // 预加载侧边栏中的 ChatListFragment
             chatListFragment = ChatListFragment.newInstance()

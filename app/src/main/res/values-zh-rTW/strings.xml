@@ -55,4 +55,8 @@
     <string name="widget_hint">點擊聊天</string>
     <string name="widget_description">快速開始新的 AI 對話</string>
     <string name="widget_search_hint">搜索或提問…</string>
+
+    <!-- App Shortcut -->
+    <string name="shortcut_look_around_short">去看看</string>
+    <string name="shortcut_look_around_long">打開網頁</string>
 </resources>
