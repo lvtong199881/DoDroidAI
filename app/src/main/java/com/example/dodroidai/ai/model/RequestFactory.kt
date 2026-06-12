@@ -1,6 +1,5 @@
 package com.example.dodroidai.ai.model
 
-import android.util.Log
 import com.example.dodroidai.ai.config.AIConfig
 import com.example.dodroidai.ai.tools.ToolDefinition
 import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_TOOL
@@ -19,7 +18,6 @@ fun createStreamingRequest(
 ): Request {
     val requestBody = createRequestBody(config, messages, tools)
     val requestJson = GsonUtil.toJson(requestBody)
-    Log.i(TAG, "Streaming request: $requestJson")
 
     val headers = listOf(
         "Content-Type" to "application/json",
@@ -77,5 +75,3 @@ private fun ToolDefinition.toAnthropicTool(): AnthropicTool {
         )
     )
 }
-
-private const val TAG = "StreamingRequest"

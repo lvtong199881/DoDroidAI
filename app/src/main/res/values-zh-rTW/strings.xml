@@ -3,11 +3,8 @@
     <string name="back">返回</string>
     <string name="settings_title">設置</string>
     <string name="ai_config_title">AI 配置</string>
-    <string name="ai_provider">AI 提供商</string>
     <string name="ai_api_key">API 密鑰</string>
-    <string name="ai_model">模型</string>
     <string name="ai_base_url">接口地址</string>
-    <string name="ai_temperature">溫度參數</string>
     <string name="save">儲存</string>
     <string name="cancel">取消</string>
     <string name="not_configured">未配置</string>
@@ -23,9 +20,6 @@
     <string name="theme_system">跟隨系統</string>
     <string name="theme_light">淺色</string>
     <string name="theme_dark">深色</string>
-    <string name="error_api_key_empty">API 密鑰不能為空</string>
-    <string name="error_model_empty">模型不能為空</string>
-    <string name="error_base_url_empty">接口地址不能為空</string>
     <string name="group_ai">AI</string>
     <string name="group_app">應用</string>
     <string name="group_about">關於</string>
@@ -36,7 +30,6 @@
     <string name="chat_input_hint">輸入消息…</string>
     <string name="send">發送</string>
     <string name="new_chat">新對話</string>
-    <string name="voice_input">語音</string>
     <string name="voice_hold_to_speak">按住說話</string>
     <string name="deep_think">深度思考</string>
     <string name="switch_mode">切換模式</string>
@@ -46,7 +39,6 @@
     <string name="file">文件</string>
     <string name="ocr_text">僅識別圖片中的文字</string>
     <string name="user_avatar">用戶頭像</string>
-    <string name="ai_avatar">AI 頭像</string>
     <string name="thinking_process">思考過程</string>
     <string name="web_search">智能搜索</string>
     <string name="ai_config_list_title">AI 配置列表</string>

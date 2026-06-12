@@ -12,8 +12,6 @@ import androidx.drawerlayout.widget.DrawerLayout
 import com.example.dodroidai.ai.config.AppConfigManager
 import com.example.dodroidai.ui.chat.ChatFragment
 import com.example.dodroidai.ui.chat.ChatListFragment
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 import java.util.Locale
 
 /**
@@ -23,6 +21,10 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_NEW_CHAT = "new_chat"
+
+        private const val LANG_EN = "en"
+        private const val LANG_ZH_CN = "zh-rCN"
+        private const val LANG_ZH_TW = "zh-rTW"
     }
 
     private var chatListFragment: ChatListFragment? = null
@@ -30,17 +32,9 @@ class MainActivity : AppCompatActivity() {
     private var drawerLayout: DrawerLayout? = null
 
     override fun attachBaseContext(newBase: Context) {
-        // 先应用主题
-        val theme = runCatching {
-            runBlocking { AppConfigManager.themeFlow.first() }
-        }.getOrNull() ?: AppConfigManager.THEME_SYSTEM
-        applyTheme(theme)
-
-        // 再应用语言
-        val language = runCatching {
-            runBlocking { AppConfigManager.languageFlow.first() }
-        }.getOrDefault("en")
-        val context = updateLocale(newBase, language)
+        // 从 Application.onCreate 预热的内存缓存同步读取,避免阻塞主线程
+        applyTheme(AppConfigManager.cachedTheme)
+        val context = updateLocale(newBase, AppConfigManager.cachedLanguage)
         super.attachBaseContext(context)
     }
 
@@ -55,8 +49,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateLocale(context: Context, language: String): Context {
         val locale = when (language) {
-            "zh-rCN" -> Locale.SIMPLIFIED_CHINESE
-            "zh-rTW" -> Locale.TRADITIONAL_CHINESE
+            LANG_ZH_CN -> Locale.SIMPLIFIED_CHINESE
+            LANG_ZH_TW -> Locale.TRADITIONAL_CHINESE
             else -> Locale.ENGLISH
         }
         Locale.setDefault(locale)
@@ -90,7 +84,7 @@ class MainActivity : AppCompatActivity() {
                     .commit()
             }
             supportFragmentManager.beginTransaction()
-                .replace(R.id.drawer_container, chatListFragment!!)
+                .replace(R.id.drawer_container, chatListFragment ?: return)
                 .commit()
         }
 

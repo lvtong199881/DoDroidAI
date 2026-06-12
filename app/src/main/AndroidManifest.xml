@@ -40,7 +40,7 @@
         </receiver>
 
         <receiver
-            android:name=".widget.AgentWidgetProvider"
+            android:name=".widget.AgentWidgetProvider1x2"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

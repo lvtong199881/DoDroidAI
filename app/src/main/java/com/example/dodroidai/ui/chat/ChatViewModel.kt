@@ -268,7 +268,12 @@ class ChatViewModel(
                 while (currentToolCalls.isNotEmpty() && toolCallDepth < MAX_TOOL_CALL_DEPTH) {
                     toolCallDepth++
                     // 执行工具调用
-                    val toolResults = executeToolCalls(currentToolCalls, fragment!!)
+                    val currentFragment = fragment
+                    if (currentFragment == null) {
+                        Log.w(TAG, "Fragment 不可用,跳过工具调用")
+                        break
+                    }
+                    val toolResults = executeToolCalls(currentToolCalls, currentFragment)
                     // 添加工具结果消息
                     val toolMessages = buildToolMessages(currentToolCalls, toolResults)
                     val messagesWithResults = allMessages + toolMessages
@@ -306,6 +311,7 @@ class ChatViewModel(
                 _responseComplete.emit(assistantMessage.content)
             } catch (e: Exception) {
                 loadingJob.cancel()
+                Log.e(TAG, "sendMessage 失败", e)
 
                 val currentMessages = _uiState.value.messages.toMutableList()
                 val lastIndex = currentMessages.lastIndex
@@ -611,6 +617,7 @@ class ChatViewModel(
             val map = GsonUtil.fromJsonWithTypeToken(argsJson, object : TypeToken<Map<String, Any>>() {})
             map?.entries?.joinToString(", ") { "${it.key}: ${it.value}" } ?: argsJson.take(50)
         } catch (e: Exception) {
+            Log.w(TAG, "summarizeArgs 解析失败", e)
             argsJson.take(50)
         }
     }

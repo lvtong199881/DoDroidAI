@@ -1,25 +1,32 @@
 package com.example.dodroidai
 
+import com.example.dodroidai.ai.config.AppConfigManager
+import com.example.dodroidai.ai.tools.ToolExecutor
+import com.example.dodroidai.data.repository.ChatRepository
+
 /**
  * 应用 Application 类，管理全局配置
  */
 class DoDroidAIApplication : android.app.Application() {
 
-    lateinit var chatRepository: com.example.dodroidai.data.repository.ChatRepository
-        private set
+    val chatRepository: ChatRepository by lazy { ChatRepository(this) }
 
-    lateinit var toolExecutor: com.example.dodroidai.ai.tools.ToolExecutor
-        private set
+    val toolExecutor: ToolExecutor by lazy { ToolExecutor(this) }
 
     override fun onCreate() {
         super.onCreate()
-        instance = this
-        chatRepository = com.example.dodroidai.data.repository.ChatRepository(this)
-        toolExecutor = com.example.dodroidai.ai.tools.ToolExecutor(this)
-    }
-
-    companion object {
-        lateinit var instance: DoDroidAIApplication
-            private set
+        AppConfigManager.init(this)
     }
 }
+
+/**
+ * 通过 Context 访问 ChatRepository,避免对 DoDroidAIApplication 单例的直接依赖
+ */
+val android.content.Context.chatRepository: ChatRepository
+    get() = (applicationContext as DoDroidAIApplication).chatRepository
+
+/**
+ * 通过 Context 访问 ToolExecutor,避免对 DoDroidAIApplication 单例的直接依赖
+ */
+val android.content.Context.toolExecutor: ToolExecutor
+    get() = (applicationContext as DoDroidAIApplication).toolExecutor

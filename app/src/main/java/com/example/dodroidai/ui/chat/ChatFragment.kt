@@ -24,6 +24,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dodroidai.DoDroidAIApplication
 import com.example.dodroidai.MainActivity
 import com.example.dodroidai.R
+import com.example.dodroidai.chatRepository
+import com.example.dodroidai.toolExecutor
 import com.example.dodroidai.ui.chat.adapter.ChatMessageAdapter
 import com.example.dodroidai.ui.chat.input.ChatAddOptions
 import com.example.dodroidai.ui.chat.input.ChatInputBox
@@ -58,8 +60,8 @@ class ChatFragment : Fragment() {
         androidx.lifecycle.ViewModelProvider(
             this,
             ChatViewModel.Factory(
-                DoDroidAIApplication.instance.chatRepository,
-                DoDroidAIApplication.instance.toolExecutor,
+                requireContext().chatRepository,
+                requireContext().toolExecutor,
                 sessionId,
                 this
             )
@@ -213,10 +215,11 @@ class ChatFragment : Fragment() {
             hideKeyboard()
         }
 
-        chatInputBox?.onAddClick = {
+        chatInputBox?.onAddClick = handler@{
             hideKeyboard()
-            val isVisible = !chatInputBox!!.isAddOptionsVisible()
-            chatInputBox?.setAddOptionsVisible(isVisible)
+            val inputBox = chatInputBox ?: return@handler
+            val isVisible = !inputBox.isAddOptionsVisible()
+            inputBox.setAddOptionsVisible(isVisible)
             chatAddOptions?.setVisible(isVisible)
         }
 
@@ -335,7 +338,7 @@ class ChatFragment : Fragment() {
     private fun showPermissionRequestDialog(request: ToolPermissionRequest) {
         pendingPermissionToolCall = request.toolCall
 
-        val title = "需要权限"
+        val title = getString(R.string.permission_request_title)
         val description = request.rationale + "\n\n工具: ${request.toolName}\n参数: ${summarizeArgs(request.toolCall.arguments)}"
 
         val dialog = CustomDialog.Builder(requireContext())
@@ -353,7 +356,7 @@ class ChatFragment : Fragment() {
                     }
                 ),
                 CustomDialog.ButtonInfo(
-                    text = "授权",
+                    text = getString(R.string.permission_grant),
                     onClick = {
                         val toolCall = pendingPermissionToolCall
                         if (toolCall != null) {
@@ -373,6 +376,7 @@ class ChatFragment : Fragment() {
             val map = GsonUtil.fromJsonWithTypeToken(argsJson, object : TypeToken<Map<String, Any>>() {})
             map?.entries?.joinToString(", ") { "${it.key}: ${it.value}" } ?: argsJson.take(50)
         } catch (e: Exception) {
+            Log.w("ChatFragment", "summarizeArgs 解析失败", e)
             argsJson.take(50)
         }
     }
@@ -380,8 +384,8 @@ class ChatFragment : Fragment() {
     private fun showToolConfirmationDialog(request: ToolConfirmationRequest) {
         pendingToolCall = request.toolCall
 
-        val title = "工具调用确认"
-        val description = "是否允许执行以下操作？\n\n工具: ${request.toolName}\n参数: ${request.argsSummary}"
+        val title = getString(R.string.tool_call_confirm_title)
+        val description = getString(R.string.tool_call_confirm_message, request.toolName, request.argsSummary)
 
         val dialog = CustomDialog.Builder(requireContext())
             .setTitle(title)
@@ -420,12 +424,12 @@ class ChatFragment : Fragment() {
     }
 
     private fun launchCamera() {
-        val uri = createImageUri()
+        val uri = createImageUri() ?: return
         tempCameraUri = uri
         takePictureLauncher.launch(uri)
     }
 
-    private fun createImageUri(): Uri {
+    private fun createImageUri(): Uri? {
         val contentValues = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, "IMG_${System.currentTimeMillis()}.jpg")
             put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
@@ -436,7 +440,7 @@ class ChatFragment : Fragment() {
         return requireContext().contentResolver.insert(
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
             contentValues
-        ) ?: throw IllegalStateException("Failed to create image URI")
+        )
     }
 
     private fun addImageAttachment(uri: Uri) {

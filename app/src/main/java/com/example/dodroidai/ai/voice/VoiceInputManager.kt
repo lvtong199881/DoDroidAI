@@ -45,19 +45,19 @@ class VoiceInputManager(private val context: Context) {
 
         initJob?.cancel()
         initJob = scope.launch(Dispatchers.IO) {
-            try {
-                whisperContext = WhisperContext.createContextFromAsset(
-                    context.assets,
-                    "models/ggml-tiny-q8_0.bin"
-                )
+            val newContext = WhisperContext.createContextFromAsset(
+                this@VoiceInputManager.context.assets,
+                "models/ggml-tiny-q8_0.bin"
+            )
+            if (newContext == null) {
                 withContext(Dispatchers.Main) {
-                    onReady()
+                    currentCallback?.onError("模型加载失败")
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "模型加载失败", e)
-                withContext(Dispatchers.Main) {
-                    currentCallback?.onError("模型加载失败: ${e.message}")
-                }
+                return@launch
+            }
+            withContext(Dispatchers.Main) {
+                whisperContext = newContext
+                onReady()
             }
         }
     }

@@ -53,26 +53,29 @@ class WhisperContext private constructor(private var ptr: Long) {
         fun createContextFromAsset(
             assetManager: AssetManager,
             assetPath: String
-        ): WhisperContext {
+        ): WhisperContext? {
             val ptr = WhisperLib.initContextFromAsset(assetManager, assetPath)
             if (ptr == 0L) {
-                throw RuntimeException("Couldn't create context from asset $assetPath")
+                Log.e(LOG_TAG, "Couldn't create context from asset $assetPath")
+                return null
             }
             return WhisperContext(ptr)
         }
 
-        fun createContextFromFile(filePath: String): WhisperContext {
+        fun createContextFromFile(filePath: String): WhisperContext? {
             val ptr = WhisperLib.initContext(filePath)
             if (ptr == 0L) {
-                throw RuntimeException("Couldn't create context with path $filePath")
+                Log.e(LOG_TAG, "Couldn't create context with path $filePath")
+                return null
             }
             return WhisperContext(ptr)
         }
 
-        fun createContextFromInputStream(stream: InputStream): WhisperContext {
+        fun createContextFromInputStream(stream: InputStream): WhisperContext? {
             val ptr = WhisperLib.initContextFromInputStream(stream)
             if (ptr == 0L) {
-                throw RuntimeException("Couldn't create context from input stream")
+                Log.e(LOG_TAG, "Couldn't create context from input stream")
+                return null
             }
             return WhisperContext(ptr)
         }

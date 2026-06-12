@@ -10,7 +10,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.example.dodroidai.DoDroidAIApplication
 import com.example.dodroidai.R
 import com.example.dodroidai.ai.config.AIConfig
 import com.example.dodroidai.ai.config.AppConfigManager
@@ -23,7 +22,6 @@ import com.example.dodroidai.ui.common.SettingsItemView
 import com.example.dodroidai.ui.common.Toolbar
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 /**
  * 设置页面 Fragment，显示 AI 配置和语言设置入口
@@ -128,9 +126,8 @@ class SettingsFragment : Fragment() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_theme_setting, null)
         val radioGroup = dialogView.findViewById<android.widget.RadioGroup>(R.id.themeRadioGroup)
 
-        val currentTheme = runCatching {
-            runBlocking { configManager.themeFlow?.first() }
-        }.getOrDefault(AppConfigManager.THEME_SYSTEM)
+        // 预热主题从缓存中读取(同步),回写时再异步
+        val currentTheme = AppConfigManager.cachedTheme
 
         when (currentTheme) {
             AppConfigManager.THEME_LIGHT -> radioGroup.check(R.id.radioLight)
@@ -159,7 +156,7 @@ class SettingsFragment : Fragment() {
 
     private fun showWebSearchConfigDialog() {
         lifecycleScope.launch {
-            val currentApiKey = runBlocking { configManager.braveSearchApiKeyFlow?.first() ?: "" }
+            val currentApiKey = configManager.braveSearchApiKeyFlow.first()
 
             val inputView = EditText(requireContext()).apply {
                 layoutParams = LinearLayout.LayoutParams(

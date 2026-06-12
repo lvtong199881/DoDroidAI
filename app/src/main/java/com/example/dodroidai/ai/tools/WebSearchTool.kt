@@ -6,6 +6,7 @@ import com.example.dodroidai.ai.config.AppConfigManager
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.util.concurrent.TimeUnit
@@ -13,17 +14,14 @@ import java.util.concurrent.TimeUnit
 /**
  * 联网搜索工具，使用 Brave Search API
  */
-class WebSearchTool : Tool {
+class WebSearchTool(
+    private val httpClient: OkHttpClient
+) : Tool {
     override val name = "web_search"
 
     override val requiredPermissions = emptyList<String>()
 
     override val riskLevel = RiskLevel.LOW
-
-    private val httpClient = OkHttpClient.Builder()
-        .connectTimeout(30L, TimeUnit.SECONDS)
-        .readTimeout(30L, TimeUnit.SECONDS)
-        .build()
 
     private val gson = Gson()
 
@@ -69,7 +67,7 @@ class WebSearchTool : Tool {
             )
         }
 
-        val apiKey = kotlinx.coroutines.runBlocking {
+        val apiKey = runBlocking {
             AppConfigManager.braveSearchApiKeyFlow.first()
         }
         if (apiKey.isBlank()) {
@@ -126,9 +124,14 @@ class WebSearchTool : Tool {
             .build()
 
         val response = httpClient.newCall(request).execute()
-        val body = response.body?.string() ?: throw Exception("空响应")
-
-        return parseResponse(body)
+        response.use {
+            val body = it.body?.string()
+            if (body.isNullOrBlank()) {
+                Log.e(TAG, "空响应")
+                return "未找到相关结果"
+            }
+            return parseResponse(body)
+        }
     }
 
     private fun parseResponse(json: String): String {
@@ -144,8 +147,8 @@ class WebSearchTool : Tool {
                 }.joinToString("\n\n")
             }
         } catch (e: Exception) {
-            Log.e(TAG, "解析响应失败: $json", e)
-            throw e
+            Log.e(TAG, "解析响应失败", e)
+            "未找到相关结果"
         }
     }
 

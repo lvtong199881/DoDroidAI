@@ -1,6 +1,8 @@
 package com.example.dodroidai.ai.config
 
+import android.app.Application
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -27,8 +29,49 @@ object AppConfigManager {
     const val THEME_LIGHT = "light"
     const val THEME_DARK = "dark"
 
+    // 同步访问的 SharedPreferences 缓存(避免在 attachBaseContext 中阻塞 DataStore)
+    private const val PREFS_NAME = "app_config_cache"
+    private const val KEY_LANGUAGE = "cached_language"
+    private const val KEY_THEME = "cached_theme"
+
+    @Volatile
+    var cachedLanguage: String = "en"
+        private set
+
+    @Volatile
+    var cachedTheme: String = THEME_SYSTEM
+        private set
+
+    @Volatile
+    private var applicationContext: Context? = null
+
     private val context: Context
-        get() = com.example.dodroidai.DoDroidAIApplication.instance
+        get() = applicationContext ?: currentApplication()
+            ?: error("AppConfigManager.init must be called in Application.onCreate")
+
+    private fun currentApplication(): Context? {
+        return try {
+            val activityThreadClass = Class.forName("android.app.ActivityThread")
+            val method = activityThreadClass.getMethod("currentApplication")
+            method.invoke(null) as? Context
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    /**
+     * 在 Application.onCreate 中同步预热,确保 attachBaseContext 可同步读
+     */
+    fun init(application: Application) {
+        val appContext = application.applicationContext
+        applicationContext = appContext
+        val prefs = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        cachedLanguage = prefs.getString(KEY_LANGUAGE, "en") ?: "en"
+        cachedTheme = prefs.getString(KEY_THEME, THEME_SYSTEM) ?: THEME_SYSTEM
+    }
+
+    private fun prefsOrThrow(): SharedPreferences? =
+        applicationContext?.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     // ===== 应用级配置 =====
     private val languageKey = stringPreferencesKey("language")
@@ -48,12 +91,16 @@ object AppConfigManager {
     }
 
     suspend fun updateLanguage(language: String) {
+        cachedLanguage = language
+        prefsOrThrow()?.edit()?.putString(KEY_LANGUAGE, language)?.apply()
         context.appDataStore.edit { preferences ->
             preferences[languageKey] = language
         }
     }
 
     suspend fun updateTheme(theme: String) {
+        cachedTheme = theme
+        prefsOrThrow()?.edit()?.putString(KEY_THEME, theme)?.apply()
         context.appDataStore.edit { preferences ->
             preferences[themeKey] = theme
         }

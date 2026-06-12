@@ -44,6 +44,9 @@ interface Tool {
      * @return 工具执行结果
      */
     fun execute(context: Context, arguments: String): ToolResult
+
+    /** 释放工具持有的资源,默认无操作 */
+    fun close() {}
 }
 
 /**

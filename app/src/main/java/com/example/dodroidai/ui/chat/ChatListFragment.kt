@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.dodroidai.DoDroidAIApplication
 import com.example.dodroidai.MainActivity
 import com.example.dodroidai.R
+import com.example.dodroidai.chatRepository
 import com.example.dodroidai.data.model.ChatSession
 import com.example.dodroidai.ui.common.CustomDialog
 import com.example.dodroidai.ui.common.OptionDialog
@@ -67,7 +68,7 @@ class ChatListFragment : Fragment() {
     private fun observeSessions() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                DoDroidAIApplication.instance.chatRepository.sessionsFlow.collect { sessions ->
+                requireContext().chatRepository.sessionsFlow.collect { sessions ->
                     val groupedItems = groupSessionsByTime(sessions)
                     adapter?.submitList(groupedItems)
                     updateEmptyState(groupedItems)
@@ -78,7 +79,7 @@ class ChatListFragment : Fragment() {
 
     private fun refreshSessions() {
         viewLifecycleOwner.lifecycleScope.launch {
-            val sessions = DoDroidAIApplication.instance.chatRepository.sessionsFlow.first()
+            val sessions = requireContext().chatRepository.sessionsFlow.first()
             val groupedItems = groupSessionsByTime(sessions)
             adapter?.submitList(groupedItems)
             updateEmptyState(groupedItems)
@@ -239,16 +240,17 @@ class ChatListFragment : Fragment() {
 
     private fun renameSession(sessionId: String, newTitle: String) {
         viewLifecycleOwner.lifecycleScope.launch {
-            val sessions = DoDroidAIApplication.instance.chatRepository.sessionsFlow.first()
+            val repo = requireContext().chatRepository
+            val sessions = repo.sessionsFlow.first()
             val session = sessions.find { it.id == sessionId } ?: return@launch
             val updatedSession = session.copy(title = newTitle, updatedAt = System.currentTimeMillis())
-            DoDroidAIApplication.instance.chatRepository.saveSession(updatedSession)
+            repo.saveSession(updatedSession)
         }
     }
 
     private fun deleteSession(sessionId: String) {
         viewLifecycleOwner.lifecycleScope.launch {
-            DoDroidAIApplication.instance.chatRepository.deleteSession(sessionId)
+            requireContext().chatRepository.deleteSession(sessionId)
         }
     }
 

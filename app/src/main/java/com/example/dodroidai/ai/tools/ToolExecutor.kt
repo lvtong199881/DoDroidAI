@@ -2,20 +2,28 @@ package com.example.dodroidai.ai.tools
 
 import android.app.Activity
 import android.content.Context
+import okhttp3.OkHttpClient
+import java.io.Closeable
+import java.util.concurrent.TimeUnit
 
 /**
  * 工具执行器，负责管理所有工具并分发执行
  */
 class ToolExecutor(
     val context: Context
-) {
+) : Closeable {
+    private val httpClient: OkHttpClient = OkHttpClient.Builder()
+        .connectTimeout(30L, TimeUnit.SECONDS)
+        .readTimeout(30L, TimeUnit.SECONDS)
+        .build()
+
     private val tools: Map<String, Tool> = listOf(
         GetCurrentTimeTool(),
         SetAlarmTool(),
         AddCalendarEventTool(context),
         SendSmsTool(context),
         AddNoteTool(),
-        WebSearchTool()
+        WebSearchTool(httpClient)
     ).associateBy { it.name }
 
     fun getTool(name: String): Tool? = tools[name]
@@ -81,5 +89,10 @@ class ToolExecutor(
             "add_note",
             "web_search"
         )
+    }
+
+    override fun close() {
+        httpClient.dispatcher.executorService.shutdown()
+        httpClient.connectionPool.evictAll()
     }
 }

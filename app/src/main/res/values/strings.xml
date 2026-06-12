@@ -3,11 +3,8 @@
     <string name="back">Back</string>
     <string name="settings_title">Settings</string>
     <string name="ai_config_title">AI Configuration</string>
-    <string name="ai_provider">AI Provider</string>
     <string name="ai_api_key">API Key</string>
-    <string name="ai_model">Model</string>
     <string name="ai_base_url">Base URL</string>
-    <string name="ai_temperature">Temperature</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="not_configured">Not configured</string>
@@ -23,9 +20,6 @@
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
-    <string name="error_api_key_empty">API Key cannot be empty</string>
-    <string name="error_model_empty">Model cannot be empty</string>
-    <string name="error_base_url_empty">Base URL cannot be empty</string>
     <string name="group_ai">AI</string>
     <string name="group_app">App</string>
     <string name="group_about">About</string>
@@ -39,7 +33,6 @@
     <string name="chat_input_hint">Type a message…</string>
     <string name="send">Send</string>
     <string name="new_chat">New Chat</string>
-    <string name="voice_input">Voice</string>
     <string name="voice_hold_to_speak">Hold to speak</string>
     <string name="deep_think">Deep Think</string>
     <string name="switch_mode">Switch Mode</string>
@@ -49,12 +42,10 @@
     <string name="file">File</string>
     <string name="ocr_text">仅识别图片中的文字</string>
     <string name="user_avatar">User avatar</string>
-    <string name="ai_avatar">AI avatar</string>
     <string name="delete">Delete</string>
     <string name="camera_permission_denied">Camera permission denied</string>
     <string name="file_format_unsupported">File format not supported</string>
     <string name="voice_permission_denied">Voice permission denied</string>
-    <string name="voice_ready">Start speaking…</string>
 
     <!-- AI Config -->
     <string name="group_basic_info">Basic Info</string>
@@ -74,6 +65,10 @@
     <string name="copy">Copy</string>
     <string name="copy_success">Copied to clipboard</string>
     <string name="confirm">Confirm</string>
+    <string name="tool_call_confirm_title">工具调用确认</string>
+    <string name="tool_call_confirm_message">是否允许执行以下操作？\n\n工具: %1$s\n参数: %2$s</string>
+    <string name="permission_request_title">需要权限</string>
+    <string name="permission_grant">授权</string>
     <string name="thinking_process">Thinking Process</string>
     <string name="rename_session">Rename</string>
     <string name="delete_session">Delete</string>
