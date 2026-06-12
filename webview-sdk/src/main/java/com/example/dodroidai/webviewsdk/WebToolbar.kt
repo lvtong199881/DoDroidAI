@@ -1,6 +1,7 @@
 package com.example.dodroidai.webviewsdk
 
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
@@ -32,13 +33,20 @@ class WebToolbar @JvmOverloads constructor(
     private var onCloseClickListener: (() -> Unit)? = null
     private var onRightClickListener: (() -> Unit)? = null
 
+    // XML 根 FrameLayout 的引用,背景设置都走它,
+    // 与 wv_view_toolbar.xml 根节点 android:id=@+id/wvToolbarRoot 对齐。
+    private var rootView: View? = null
+    private var defaultBackground: Drawable? = null
+
     init {
         LayoutInflater.from(context).inflate(R.layout.wv_view_toolbar, this, true)
+        rootView = findViewById(R.id.wvToolbarRoot)
         btnBack = findViewById(R.id.wvBtnBack)
         btnClose = findViewById(R.id.wvBtnClose)
         tvTitle = findViewById(R.id.wvTvTitle)
         btnRight = findViewById(R.id.wvBtnRight)
         divider = findViewById(R.id.wvDivider)
+        defaultBackground = rootView?.background
 
         btnBack?.setOnClickListener {
             onBackClickListener?.invoke()
@@ -127,5 +135,34 @@ class WebToolbar @JvmOverloads constructor(
 
     fun setDividerVisible(visible: Boolean) {
         divider?.visibility = if (visible) VISIBLE else GONE
+    }
+
+    /**
+     * 设置标题文本颜色。H5 Bridge 调用,需在主线程触发。
+     */
+    fun setTitleTextColor(color: Int) {
+        tvTitle?.setTextColor(color)
+    }
+
+    /**
+     * 设置 close 按钮是否显示。H5 Bridge 调用,需在主线程触发。
+     */
+    fun setCloseVisible(visible: Boolean) {
+        btnClose?.visibility = if (visible) VISIBLE else GONE
+    }
+
+    /**
+     * 设置 toolbar 整体背景(用于渐变)。H5 Bridge 调用,需在主线程触发。
+     * 改的是 XML 根 FrameLayout 的 background,与 layout 文件声明的背景对齐。
+     */
+    fun applyBackground(drawable: Drawable) {
+        rootView?.background = drawable
+    }
+
+    /**
+     * 恢复 inflate 时的默认背景。Bridge setBackgroundGradient("{}") 时调用。
+     */
+    fun resetBackground() {
+        defaultBackground?.let { rootView?.background = it }
     }
 }

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>去看看</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background: #f5f5f5;
+            color: #1f1f1f;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+        .hero {
+            padding: 20px 16px 12px;
+        }
+        .hero-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #141414;
+        }
+        .hero-sub {
+            margin-top: 4px;
+            font-size: 13px;
+            color: #6b6b6b;
+        }
+        .list {
+            padding: 4px 12px 24px;
+        }
+        .card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+        .card:active {
+            background: #fafafa;
+        }
+        .card-tag {
+            display: inline-block;
+            font-size: 12px;
+            color: #1a73e8;
+            background: #e8f0fe;
+            padding: 2px 10px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        .card-tag.design { color: #c2185b; background: #fce4ec; }
+        .card-tag.life { color: #2e7d32; background: #e8f5e9; }
+        .card-tag.fun { color: #ef6c00; background: #fff3e0; }
+        .card-tag.read { color: #6a1b9a; background: #f3e5f5; }
+        .card-tag.travel { color: #00838f; background: #e0f7fa; }
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f1f1f;
+            margin-bottom: 6px;
+        }
+        .card-desc {
+            font-size: 14px;
+            color: #5f6368;
+        }
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #9aa0a6;
+            margin-top: 10px;
+        }
+        .footer {
+            padding: 16px;
+            text-align: center;
+            font-size: 12px;
+            color: #9aa0a6;
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <div class="hero-title">今日推荐</div>
+        <div class="hero-sub">25 条精选,慢慢看</div>
+    </div>
+    <div class="list">
+
+        <div class="card">
+            <span class="card-tag">技术</span>
+            <div class="card-title">Kotlin Coroutines 与 RxJava 该怎么选</div>
+            <div class="card-desc">Coroutines 写起来更像同步代码,结构化并发让取消传播更简单;RxJava 的操作符生态依然丰富。新项目建议用前者。</div>
+            <div class="card-meta"><span>5 分钟阅读</span><span>1.2k</span></div>
+        </div>
+
+        <div class="card">
+            <span class="card-tag design">设计</span>
+            <div class="card-title">Material Design 3 的动态取色</div>
+            <div class="card-desc">从用户壁纸生成主题色板,让系统应用与第三方应用在视觉上协调。Android 12+ 全面落地。</div>
+            <div class="card-meta"><span>3 分钟阅读</span><span>876</span></div>
+        </div>
+
+        <div class="card">
+            <span class="card-tag life">生活</span>
+            <div class="card-title">早起一小时,你能做的 5 件事</div>
+            <div class="card-desc">不是为了卷,而是为了在世界醒来之前,先给自己留一段不被打扰的时间。</div>
+            <div class="card-meta"><span>4 分钟阅读</span><span>2.4k</span></div>
+        </div>
+
+        <div class="card">
+            <span class="card-tag fun">趣闻</span>
+            <div class="card-title">章鱼有三颗心脏</div>
+            <div class="card-desc">两颗为鳃供血,一颗为身体供血。游泳时主心脏会停跳,所以它们更喜欢爬。</div>
+            <div class="card-meta"><span>1 分钟阅读</span><span>3.1k</span></div>
+        </div>
+
+        <div class="card">
+            <span class="card-tag">技术</span>
+            <div class="card-title">WebAssembly 不是为了取代 JavaScript</div>
+            <div class="card-desc">WASM 适合 CPU 密集计算和把 C/C++/Rust 移植到浏览器,UI 操作和 DOM 交互仍然是 JS 的主场。</div>
+            <div class="card-meta"><span>6 分钟阅读</span><span>954</span></div>
+        </div>
+
+        <div class="card">
+            <span class="card-tag design">设计</span>
+            <div class="card-title">渐变配色的三种实用思路</div>
+            <div class="card-desc">同色系明度渐变最稳;互补色渐变要降饱和;三色渐变记得在中间留过渡色,避免脏色。</div>
+            <div class="card-meta"><span>3 分钟阅读</span><span>1.5k</span></div>
+        </div>
+
+        <div class="card">
+            <span class="card-tag life">生活</span>
+            <div class="card-title">番茄工作法到底有没有用</div>
+            <div class="card-desc">关键不是 25 分钟这个数字,而是"明确开始 / 强制休息"的节奏。对易分心的人最有效。</div>
+            <div class="card-meta"><span>4 分钟阅读</span><span>1.8k</span></div>
+        </div>
+
+        <div class="card">
+            <span class="card-tag fun">趣闻</span>
+            <div class="card-title">北极圈的极昼可以持续 6 个月</div>
+            <div class="card-desc">越靠近北极点,极昼越长。最北端从春分到秋分,太阳一直在地平线之上。</div>
+            <div class="card-meta"><span>2 分钟阅读</span><span>2.7k</span></div>
+        </div>
+
+        <div class="card">
+            <span class="card-tag">技术</span>
+            <div class="card-title">Jetpack Compose 的重组优化</div>
+            <div class="card-desc">用 remember + key、把状态下沉到最小作用域、避免在 Composable 里做副作用,可以显著降低重组次数。</div>
+            <div class="card-meta"><span>7 分钟阅读</span><span>1.1k</span></div>
+        </div>
+
+        <div class="card">
+            <span class="card-tag design">设计</span>
+            <div class="card-title">拟物风又回来了</div>
+            <div class="card-desc">扁平之后,设计师重新拥抱质感、阴影和材质。这次的拟物更克制,只在关键交互点用。</div>
+            <div class="card-meta"><span>5 分钟阅读</span><span>2.0k</span></div>
+        </div>
+
+        <div class="card">
+            <span class="card-tag read">阅读</span>
+            <div class="card-title">《人类简史》三百字摘要</div>
+            <div class="card-desc">认知革命让智人能讲共同的故事,农业革命把人钉在土地上,科学革命让人类相信未知可以被探索。</div>
+            <div class="card-meta"><span>3 分钟阅读</span><span>4.2k</span></div>
+        </div>
+
+        <div class="card">
+            <span class="card-tag travel">旅行</span>
+            <div class="card-title">京都的秋天</div>
+            <div class="card-desc">东福寺、永观堂、岚山。11 月中下旬是枫叶最艳的时候,赶在游客高峰前的清晨七点最好。</div>
+            <div class="card-meta"><span>4 分钟阅读</span><span>1.6k</span></div>
+        </div>
+
+        <div class="card">
+            <span class="card-tag">技术</span>
+            <div class="card-title">GraphQL 不是银弹</div>
+            <div class="card-desc">解决了过度获取和接口扩散,代价是后端复杂度和缓存策略变难。读多写少、聚合查询场景最受益。</div>
+            <div class="card-meta"><span>6 分钟阅读</span><span>702</span></div>
+        </div>
+
+        <div class="card">
+            <span class="card-tag design">设计</span>
+            <div class="card-title">中文排版的隐形规则</div>
+            <div class="card-desc">中英文之间留四分之一字宽、避免孤行、标点不出血。这些细节是新手与老手的分水岭。</div>
+            <div class="card-meta"><span>5 分钟阅读</span><span>1.9k</span></div>
+        </div>
+
+        <div class="card">
+            <span class="card-tag life">生活</span>
+            <div class="card-title">每天 10 分钟冥想的科学依据</div>
+            <div class="card-desc">研究显示规律冥想能降低杏仁核反应、增强前额叶控制力。重点不在时长,在频率。</div>
+            <div class="card-meta"><span>5 分钟阅读</span><span>3.3k</span></div>
+        </div>
+
+        <div class="card">
+            <span class="card-tag fun">趣闻</span>
+            <div class="card-title">蜜蜂的舞蹈是一套坐标语言</div>
+            <div class="card-desc">摆尾舞表达蜜源方向和距离。方向用与太阳夹角表示,距离用摆尾时长编码。冯·弗里施靠这个拿了诺奖。</div>
+            <div class="card-meta"><span>2 分钟阅读</span><span>2.5k</span></div>
+        </div>
+
+        <div class="card">
+            <span class="card-tag">技术</span>
+            <div class="card-title">eBPF 是 Linux 内核里的 JavaScript</div>
+            <div class="card-desc">不用改内核就能动态注入观测、网络、安全逻辑。现在云原生的可观测性几乎全靠它。</div>
+            <div class="card-meta"><span>8 分钟阅读</span><span>1.0k</span></div>
+        </div>
+
+        <div class="card">
+            <span class="card-tag read">阅读</span>
+            <div class="card-title">《艺术的故事》开篇</div>
+            <div class="card-desc">"没有艺术这种东西,只有艺术家。"贡布里希用这句话开场,推翻了把艺术神化的所有惯性。</div>
+            <div class="card-meta"><span>4 分钟阅读</span><span>1.4k</span></div>
+        </div>
+
+        <div class="card">
+            <span class="card-tag travel">旅行</span>
+            <div class="card-title">冰岛看极光的最佳窗口</div>
+            <div class="card-desc">9 月到次年 3 月、地磁活跃指数 Kp ≥ 3、远离光污染。雷克雅未克北边一小时车程就够暗。</div>
+            <div class="card-meta"><span>3 分钟阅读</span><span>1.7k</span></div>
+        </div>
+
+        <div class="card">
+            <span class="card-tag">技术</span>
+            <div class="card-title">Rust 正式进入 Linux 内核</div>
+            <div class="card-desc">从 6.1 开始官方支持,目前主要在驱动层。借助所有权模型规避一类长期困扰内核的内存安全 bug。</div>
+            <div class="card-meta"><span>5 分钟阅读</span><span>2.2k</span></div>
+        </div>
+
+        <div class="card">
+            <span class="card-tag design">设计</span>
+            <div class="card-title">暗黑模式不是简单的反色</div>
+            <div class="card-desc">纯黑背景会拉爆 OLED 对比度,正确做法是用深灰打底,主要文本用 high emphasis 的浅色而非纯白。</div>
+            <div class="card-meta"><span>4 分钟阅读</span><span>1.6k</span></div>
+        </div>
+
+        <div class="card">
+            <span class="card-tag life">生活</span>
+            <div class="card-title">间歇性禁食的取舍</div>
+            <div class="card-desc">16:8 对大多数人来说是可持续的窗口。它的好处更多来自总热量降低,而不是禁食本身的代谢魔法。</div>
+            <div class="card-meta"><span>6 分钟阅读</span><span>2.8k</span></div>
+        </div>
+
+        <div class="card">
+            <span class="card-tag fun">趣闻</span>
+            <div class="card-title">森林里的树木通过菌根聊天</div>
+            <div class="card-desc">真菌网络连接树根,可以传递糖分、水分,甚至化学信号。一棵被啃食的树会通知邻居提前合成防御物质。</div>
+            <div class="card-meta"><span>3 分钟阅读</span><span>3.5k</span></div>
+        </div>
+
+        <div class="card">
+            <span class="card-tag">技术</span>
+            <div class="card-title">量子计算解释:三分钟入门</div>
+            <div class="card-desc">叠加让 n 比特同时表示 2^n 状态,纠缠让操作并行。难点是退相干 —— 任何观测都会让叠加坍缩。</div>
+            <div class="card-meta"><span>4 分钟阅读</span><span>1.3k</span></div>
+        </div>
+
+        <div class="card">
+            <span class="card-tag read">阅读</span>
+            <div class="card-title">《人月神话》经典段落</div>
+            <div class="card-desc">"给一个延期的项目加人,只会让它更晚交付。"50 年过去,这条 Brooks 定律依然是软件工程最被低估的常识。</div>
+            <div class="card-meta"><span>3 分钟阅读</span><span>2.9k</span></div>
+        </div>
+
+    </div>
+    <div class="footer">— 到底啦 —</div>
+
+    <style>
+        .demo-panel {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 999;
+        }
+        .demo-btn {
+            background: #1a73e8;
+            color: #ffffff;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 16px;
+            font-size: 13px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        }
+        .demo-btn:active { background: #1557b0; }
+    </style>
+    <div class="demo-panel">
+        <button class="demo-btn" onclick="demoTitle()">改标题</button>
+        <button class="demo-btn" onclick="demoColor()">改标题颜色</button>
+        <button class="demo-btn" onclick="demoGradient()">渐变背景</button>
+        <button class="demo-btn" onclick="demoCloseHide()">隐藏 close</button>
+        <button class="demo-btn" onclick="demoCloseShow()">显示 close</button>
+        <button class="demo-btn" onclick="demoReset()">恢复默认</button>
+    </div>
+    <script>
+        function demoTitle() {
+            window.WVToolbar.setTitle("今日推荐 · 已读 12");
+        }
+        function demoColor() {
+            window.WVToolbar.setTitleColor("#FFFFFF");
+        }
+        function demoGradient() {
+            window.WVToolbar.setBackgroundGradient(
+                '{"colors":["#FF0000","#0000FF"],"direction":0}'
+            );
+            window.WVToolbar.setTitleColor("#FFFFFF");
+        }
+        function demoCloseHide() {
+            window.WVToolbar.setCloseVisible(false);
+        }
+        function demoCloseShow() {
+            window.WVToolbar.setCloseVisible(true);
+        }
+        function demoReset() {
+            window.WVToolbar.setBackgroundGradient("{}");
+            window.WVToolbar.setTitleColor("#1F1F1F");
+            window.WVToolbar.setTitle("今日推荐");
+        }
+    </script>
+</body>
+</html>

@@ -10,7 +10,9 @@ import androidx.fragment.app.FragmentManager
  * webview-sdk 不硬编码 app 的容器 id,保证可移植性。
  */
 object WebViewEntry {
-    private const val DEFAULT_URL = "https://www.baidu.com"
+    // 默认加载 sdk 内置的 H5 页面(assets/wv/lookaround.html),
+    // 业务方可在调用时传入自己的 url 覆盖
+    private const val DEFAULT_URL = "file:///android_asset/wv/lookaround.html"
     private const val TAG = "WebFragment"
 
     @JvmStatic

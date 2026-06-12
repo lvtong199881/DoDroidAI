@@ -116,6 +116,9 @@ class WebFragment : Fragment() {
         }
 
         val url = arguments?.getString(ARG_URL) ?: DEFAULT_URL
+        // 注册 JS Bridge 必须在 loadUrl 之前,首屏页面才能拿到 window.WVToolbar
+        val bridge = WebToolbarBridge(webToolbar)
+        current.addJavascriptInterface(bridge, BRIDGE_NAME)
         current.loadUrl(url)
         webToolbar?.setBackEnabled(false)
 
@@ -236,8 +239,9 @@ class WebFragment : Fragment() {
 
     companion object {
         const val ARG_URL = "url"
+        const val BRIDGE_NAME = "WVToolbar"
 
-        private const val DEFAULT_URL = "https://www.baidu.com"
+        private const val DEFAULT_URL = "file:///android_asset/wv/lookaround.html"
 
         fun newInstance(url: String = DEFAULT_URL): WebFragment {
             return WebFragment().apply {
