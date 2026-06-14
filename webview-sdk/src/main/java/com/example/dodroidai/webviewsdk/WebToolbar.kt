@@ -9,6 +9,7 @@ import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.annotation.DrawableRes
+import androidx.annotation.IntRange
 import androidx.annotation.StringRes
 
 /**
@@ -164,5 +165,25 @@ class WebToolbar @JvmOverloads constructor(
      */
     fun resetBackground() {
         defaultBackground?.let { rootView?.background = it }
+    }
+
+    /**
+     * 设置 toolbar 整体 alpha,接收百分比 0-100,内部转 0f-1f。
+     * 作用于整个 FrameLayout(含文字/按钮/背景),由 H5 Bridge 或 Native 滚动联动触发。
+     */
+    fun setAlphaPercent(@IntRange(from = 0, to = 100) percent: Int) {
+        alpha = percent.coerceIn(0, 100) / 100f
+    }
+
+    /**
+     * 控制 toolbar 是否响应点击。
+     * 当 alpha 极低、toolbar 视觉上"基本看不见"时,设为 false 让触摸穿透到下方 WebView,
+     * 避免用户误触不可见的 back/close 按钮。
+     */
+    fun setInteractive(interactive: Boolean) {
+        isClickable = interactive
+        btnBack?.isEnabled = interactive
+        btnClose?.isEnabled = interactive
+        btnRight?.isEnabled = interactive
     }
 }

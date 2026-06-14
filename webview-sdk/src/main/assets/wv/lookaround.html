@@ -291,6 +291,10 @@
         .demo-btn:active { background: #1557b0; }
     </style>
     <div class="demo-panel">
+        <button class="demo-btn" onclick="demoEnableScrollAlpha()">启用滚动联动</button>
+        <button class="demo-btn" onclick="demoDisableScrollAlpha()">禁用滚动联动</button>
+        <button class="demo-btn" onclick="demoManualAlpha50()">手动 alpha=50</button>
+        <button class="demo-btn" onclick="demoManualAlpha100()">手动 alpha=100</button>
         <button class="demo-btn" onclick="demoTitle()">改标题</button>
         <button class="demo-btn" onclick="demoColor()">改标题颜色</button>
         <button class="demo-btn" onclick="demoGradient()">渐变背景</button>
@@ -299,6 +303,27 @@
         <button class="demo-btn" onclick="demoReset()">恢复默认</button>
     </div>
     <script>
+        // 默认滚动联动规则:scrollY=0 时 alpha=100,scrollY=300dp 时 alpha=0,
+        // 中间线性插值
+        var DEFAULT_SCROLL_ALPHA_RULE = {
+            startY: 0,
+            endY: 300,
+            startAlpha: 100,
+            endAlpha: 0
+        };
+
+        function demoEnableScrollAlpha() {
+            window.WVToolbar.setScrollAlphaRule(JSON.stringify(DEFAULT_SCROLL_ALPHA_RULE));
+        }
+        function demoDisableScrollAlpha() {
+            window.WVToolbar.disableScrollAlpha();
+        }
+        function demoManualAlpha50() {
+            window.WVToolbar.setAlpha(50);
+        }
+        function demoManualAlpha100() {
+            window.WVToolbar.setAlpha(100);
+        }
         function demoTitle() {
             window.WVToolbar.setTitle("今日推荐 · 已读 12");
         }
@@ -322,6 +347,15 @@
             window.WVToolbar.setTitleColor("#1F1F1F");
             window.WVToolbar.setTitle("今日推荐");
         }
+
+        // 页面加载完默认启用滚动联动,体验"下拉时 toolbar 渐隐"效果
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.WVToolbar && window.WVToolbar.setScrollAlphaRule) {
+                window.WVToolbar.setScrollAlphaRule(
+                    JSON.stringify(DEFAULT_SCROLL_ALPHA_RULE)
+                );
+            }
+        });
     </script>
 </body>
 </html>

@@ -16,14 +16,21 @@ import org.json.JSONObject
  * - setTitleColor(String hex):更新标题颜色
  * - setCloseVisible(Boolean):控制 close 按钮显隐
  * - setBackgroundGradient(String json):设置 toolbar 整体渐变背景
+ * - setAlpha(Int 0-100):手动设置 toolbar 整体 alpha(同时清掉滚动联动规则)
+ * - setScrollAlphaRule(String json):启用 "scrollY → alpha" 滚动联动,
+ *   json 格式 {"startY":Int dp,"endY":Int dp,"startAlpha":0-100,"endAlpha":0-100}
+ * - disableScrollAlpha():禁用滚动联动(alpha 保持当前值)
  *
  * 线程模型:JS 接口默认在 WebView binder 线程被调用,
- * 所有 View 操作通过 Handler 切到主线程执行。
+ * 所有 View / Controller 操作通过 Handler 切到主线程执行。
  *
  * Lifecycle:不持有 WebToolbar 强引用,通过 provider 函数按需获取,
  * 避免 Fragment view 销毁后调用导致崩溃。
  */
-class WebToolbarBridge(private val toolbarProvider: WebToolbar?) {
+class WebToolbarBridge internal constructor(
+    private val toolbarProvider: WebToolbar?,
+    private val scrollAlphaController: ScrollAlphaController?
+) {
 
     private val mainHandler = Handler(Looper.getMainLooper())
 
@@ -71,6 +78,77 @@ class WebToolbarBridge(private val toolbarProvider: WebToolbar?) {
             }
         } catch (e: Exception) {
             Log.e(TAG, "setBackgroundGradient failed: $json", e)
+        }
+    }
+
+    /**
+     * 手动设置 toolbar alpha,接收百分比 0-100。
+     * 内部调 [ScrollAlphaController.setManualAlpha] —— 会自动清掉滚动联动规则,
+     * 避免下一次滚动事件把手动值覆盖。
+     */
+    @JavascriptInterface
+    fun setAlpha(alpha: Int) {
+        try {
+            mainHandler.post {
+                scrollAlphaController?.setManualAlpha(alpha)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "setAlpha failed: $alpha", e)
+        }
+    }
+
+    /**
+     * 启用 "WebView scrollY → toolbar alpha" 滚动联动。
+     *
+     * JSON 字段:
+     * - startY: Int,单位 dp(≈ CSS px,viewport=device-width 时一致)
+     * - endY: Int,单位 dp
+     * - startAlpha: Int,0-100
+     * - endAlpha: Int,0-100
+     *
+     * 任一字段缺失或 JSON 解析失败,整体忽略并打 Warning 日志,不抛异常。
+     * startY > endY 内部自动 swap(同步 swap alpha)。
+     */
+    @JavascriptInterface
+    fun setScrollAlphaRule(json: String) {
+        try {
+            val obj = JSONObject(json)
+            if (!obj.has(KEY_START_Y) || !obj.has(KEY_END_Y) ||
+                !obj.has(KEY_START_ALPHA) || !obj.has(KEY_END_ALPHA)
+            ) {
+                Log.w(TAG, "setScrollAlphaRule missing fields, ignored: $json")
+                return
+            }
+            val sy = obj.getInt(KEY_START_Y)
+            val ey = obj.getInt(KEY_END_Y)
+            val sa = obj.getInt(KEY_START_ALPHA)
+            val ea = obj.getInt(KEY_END_ALPHA)
+            mainHandler.post {
+                scrollAlphaController?.setRule(
+                    startScrollDp = sy,
+                    endScrollDp = ey,
+                    startAlpha = sa,
+                    endAlpha = ea
+                )
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "setScrollAlphaRule parse failed: $json", e)
+        }
+    }
+
+    /**
+     * 禁用滚动联动。toolbar 当前 alpha 保持不变,
+     * 后续 WebView 滚动不再改变 toolbar alpha。
+     * 若想恢复完全不透明,再调 [setAlpha](100)。
+     */
+    @JavascriptInterface
+    fun disableScrollAlpha() {
+        try {
+            mainHandler.post {
+                scrollAlphaController?.clearRule()
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "disableScrollAlpha failed", e)
         }
     }
 
@@ -123,5 +201,9 @@ class WebToolbarBridge(private val toolbarProvider: WebToolbar?) {
         private const val KEY_COLORS = "colors"
         private const val KEY_DIRECTION = "direction"
         private const val DEFAULT_DIRECTION = 0
+        private const val KEY_START_Y = "startY"
+        private const val KEY_END_Y = "endY"
+        private const val KEY_START_ALPHA = "startAlpha"
+        private const val KEY_END_ALPHA = "endAlpha"
     }
 }
