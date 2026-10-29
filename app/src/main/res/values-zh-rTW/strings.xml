@@ -37,7 +37,7 @@
     <string name="camera">拍照</string>
     <string name="photo_album">相冊</string>
     <string name="file">文件</string>
-    <string name="ocr_text">僅識別圖片中的文字</string>
+    <string name="ocr_text">圖片與文件會傳送給 AI</string>
     <string name="user_avatar">用戶頭像</string>
     <string name="thinking_process">思考過程</string>
     <string name="web_search">智能搜索</string>
@@ -69,4 +69,7 @@
     <string name="attachment_unavailable">檔案不可用</string>
     <string name="image_input_support">支援圖片輸入</string>
     <string name="image_input_support_desc">將圖片作為多模態內容傳送給此端點</string>
+
+    <string name="api_format_anthropic">Anthropic Messages</string>
+    <string name="api_format_openai">OpenAI Chat Completions</string>
 </resources>

@@ -11,14 +11,14 @@ import com.example.dodroidai.ai.attachments.EncodedAttachment
 import com.example.dodroidai.ai.attachments.PlaceholderReason
 import com.example.dodroidai.ai.config.AIConfig
 import com.example.dodroidai.ai.config.AppConfigManager
-import com.example.dodroidai.ai.model.AnthropicMessage
+import com.example.dodroidai.ai.model.ApiFormat
+import com.example.dodroidai.ai.model.ApiRequestFactory
 import com.example.dodroidai.ai.model.ChatAttachment
 import com.example.dodroidai.ai.model.ChatMessage
 import com.example.dodroidai.ai.model.ChatMessage.Companion.LOADING_THINKING
 import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_ASSISTANT
 import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_USER
 import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_TOOL
-import com.example.dodroidai.ai.model.ChatRequestBuilder
 import com.example.dodroidai.ai.model.StreamingCallback
 import com.example.dodroidai.ai.streaming.StreamingChatClient
 import com.example.dodroidai.ai.tools.RiskLevel
@@ -201,6 +201,9 @@ class ChatViewModel(
 
     private val streamingClient = StreamingChatClient(httpClient)
 
+    /** OpenCode Go 要求稳定会话 ID（x-opencode-session）；其他 OpenAI 兼容网关会忽略。 */
+    private val openCodeSessionId = "ses_" + UUID.randomUUID().toString().replace("-", "")
+
     private val attachmentEncoder = AttachmentEncoder(appContext)
 
     init {
@@ -293,7 +296,9 @@ class ChatViewModel(
                     emptyMap()
                 }
 
-                val requestMessages = ChatRequestBuilder.build(allMessages, encoded)
+                // 附件处理完成，恢复为思考状态
+                updateLoadingState(LOADING_THINKING)
+
                 val currentAttachments = allMessages.lastOrNull { it.role == ROLE_USER }
                     ?.let { encoded[it.timestamp] }
                     .orEmpty()
@@ -303,12 +308,12 @@ class ChatViewModel(
                 ) {
                     throw IllegalStateException("附件处理失败，没有可发送的内容")
                 }
-                if (requestMessages.isEmpty()) {
+                if (allMessages.isEmpty()) {
                     throw IllegalStateException("没有可发送的内容")
                 }
 
-                Log.i(TAG, "sendMessageStreaming messages count: ${requestMessages.size}")
-                val streamingResult = runToolLoop(config, requestMessages, tools)
+                Log.i(TAG, "sendMessageStreaming messages count: ${allMessages.size}")
+                val streamingResult = runToolLoop(config, allMessages, encoded, tools)
 
                 loadingJob.cancel()
 
@@ -366,10 +371,12 @@ class ChatViewModel(
      */
     private suspend fun runToolLoop(
         config: AIConfig,
-        requestMessages: List<AnthropicMessage>,
+        messages: List<ChatMessage>,
+        encoded: Map<Long, List<EncodedAttachment>>,
         tools: List<ToolDefinition>
     ): StreamingResult {
-        var streamingResult = sendMessageStreaming(config, requestMessages, tools)
+        var currentMessages = messages
+        var streamingResult = sendMessageStreaming(config, currentMessages, encoded, tools)
         var toolCallDepth = 0
         var currentToolCalls = streamingResult.toolCalls
 
@@ -382,10 +389,22 @@ class ChatViewModel(
             }
             val toolResults = executeToolCalls(currentToolCalls, currentFragment)
             val toolMessages = buildToolMessages(currentToolCalls, toolResults)
-            val messagesWithResults = requestMessages +
-                ChatRequestBuilder.build(toolMessages, emptyMap<Long, List<EncodedAttachment>>())
-            Log.i(TAG, "Second request messages count: ${messagesWithResults.size}")
-            val nextResult = sendMessageStreaming(config, messagesWithResults, tools)
+
+            // OpenAI 要求 tool 消息之前有对应的 assistant tool_calls 消息；
+            // Anthropic 分支保持原有行为，只追加 tool_result。
+            val assistantToolMessage = if (config.apiFormat == ApiFormat.OPENAI_CHAT_COMPLETIONS) {
+                ChatMessage(
+                    role = ROLE_ASSISTANT,
+                    content = streamingResult.content,
+                    toolCallPayloads = streamingResult.toolCalls
+                )
+            } else {
+                null
+            }
+            currentMessages = currentMessages + listOfNotNull(assistantToolMessage) + toolMessages
+
+            Log.i(TAG, "Second request messages count: ${currentMessages.size}")
+            val nextResult = sendMessageStreaming(config, currentMessages, encoded, tools)
             currentToolCalls = nextResult.toolCalls
             streamingResult = nextResult
         }
@@ -504,12 +523,20 @@ class ChatViewModel(
      */
     private suspend fun sendMessageStreaming(
         config: AIConfig,
-        messages: List<AnthropicMessage>,
+        messages: List<ChatMessage>,
+        encoded: Map<Long, List<EncodedAttachment>>,
         tools: List<ToolDefinition>
     ): StreamingResult {
         val result = CompletableDeferred<StreamingResult>()
+        val prepared = ApiRequestFactory.build(
+            config = config,
+            messages = messages,
+            encoded = encoded,
+            tools = tools,
+            sessionId = openCodeSessionId
+        )
 
-        streamingClient.stream(config, messages, tools, object : StreamingCallback {
+        streamingClient.stream(prepared, object : StreamingCallback {
             private val contentBuilder = StringBuilder()
             private val reasoningBuilder = StringBuilder()
             private val toolCalls = mutableListOf<ToolCall>()
@@ -675,15 +702,18 @@ class ChatViewModel(
         toolCalls: List<ToolCall>,
         results: List<ToolResult>
     ): List<ChatMessage> {
-        return results.map { result ->
+        return results.mapIndexed { index, result ->
+            val toolCall = toolCalls.getOrNull(index)
             ChatMessage(
                 role = ROLE_TOOL,
                 content = if (result.success) result.result else "Error: ${result.error}",
-                toolCallId = result.toolCallId,
+                // OpenAI 要求 tool_call_id 与 assistant tool_calls 的 id 完全一致；
+                // 部分工具的 ToolResult 不携带 id，这里以原始 toolCall 为准。
+                toolCallId = toolCall?.id ?: result.toolCallId,
                 toolCalls = listOf(
                     ToolCallDisplay(
                         name = result.toolName,
-                        argsSummary = result.toolCallId,
+                        argsSummary = toolCall?.id ?: result.toolCallId,
                         isSuccess = result.success,
                         resultSummary = if (result.success) result.result else result.error
                     )

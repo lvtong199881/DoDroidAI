@@ -15,8 +15,8 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
   └─> ChatViewModel.sendMessage()
         ├─ 取最近 20 条消息（MAX_CONTEXT_MESSAGES）
         ├─ 按开关决定是否把 web_search 放进工具列表
-        ├─ StreamingChatClient → POST {baseUrl}/v1/messages
-        │    （Anthropic Messages 协议 + SSE 流式）
+        ├─ ApiRequestFactory → POST /v1/messages（Anthropic）或 /v1/chat/completions（OpenAI）
+        │    （对应 SSE 流式解析）
         ├─ 解析 content / thinking / tool_use 增量
         ├─ tool_use → ToolExecutor.execute()
         │     ├─ HIGH 风险：先弹应用内确认框
@@ -69,9 +69,10 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
 | 应用入口、Drawer、主题/语言注入、快捷方式跳转 | `app/src/main/java/com/example/dodroidai/MainActivity.kt` |
 | Application、全局 ChatRepository / ToolExecutor | `app/src/main/java/com/example/dodroidai/DoDroidAIApplication.kt` |
 | AI 配置模型、多配置持久化与旧数据迁移 | `ai/config/AIConfig.kt`、`ai/config/AppConfigManager.kt` |
-| 附件模型、编码与请求构建 | `ai/model/ChatAttachment.kt`、`ai/model/ChatRequestBuilder.kt`、`ai/attachments/` |
+| 协议选择、URL 规范化与请求构建 | `ai/model/ApiFormat.kt`、`ai/model/ApiEndpoint.kt`、`ai/model/ApiRequestFactory.kt`、`ai/model/RequestFactory.kt` |
+| 附件模型、编码与请求构建 | `ai/model/ChatAttachment.kt`、`ai/model/ChatRequestBuilder.kt`、`ai/model/OpenAiChatRequestBuilder.kt`、`ai/attachments/` |
 | Anthropic 请求体构造 | `ai/model/RequestFactory.kt`、`ai/model/AnthropicModels.kt` |
-| SSE 客户端与事件解析 | `ai/streaming/StreamingChatClient.kt`、`ai/streaming/AnthropicSseListener.kt` |
+| SSE 客户端与事件解析 | `ai/streaming/StreamingChatClient.kt`、`ai/streaming/AnthropicSseListener.kt`、`ai/streaming/OpenAiSseListener.kt`、`ai/streaming/OpenAiSseParser.kt` |
 | 聊天状态机、流式更新、工具循环 | `ui/chat/ChatViewModel.kt` |
 | 聊天页面与列表 | `ui/chat/ChatFragment.kt`、`ui/chat/ChatListFragment.kt`、`ui/chat/adapter/`、`ui/chat/input/` |
 | 工具抽象、注册、Schema | `ai/tools/Tool.kt`、`ai/tools/ToolExecutor.kt`、`ai/tools/ToolsDefinition.kt`、`ai/tools/*Tool.kt` |
@@ -110,19 +111,24 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
 
 ### 4.2 AI 协议
 
-- 当前只支持 **Anthropic Messages** 协议（`ApiFormat` 仅一个枚举值）。`RequestFactory` 负责构造请求，
-  `AnthropicSseListener` 解析 `content_block_start` / `content_block_delta`（`text_delta`、
-  `thinking_delta`、`input_json_delta`）/ `content_block_stop` / `message_delta` / `message_stop`；
-  连接异常走 `EventSourceListener.onFailure`。
-- 请求 URL 固定为 `${baseUrl}/v1/messages`，因此 **baseUrl 必须填到 `/v1/messages` 的父路径**，
-  不要再带 `/v1`，也不要带 `/v1/messages`。
-- 认证头使用 `X-Api-Key`（不是 `Authorization: Bearer`）。新增认证方式要同时改 `createStreamingRequest`
-  和目标服务端约定。
-- baseUrl 必须是 HTTPS：targetSdk 36 默认禁止明文 HTTP，应用未配置 `usesCleartextTraffic`。
-- 上下文窗口固定取最近 20 条（`getRecentMessages()`）；调整前评估 token 成本与工具结果占用。
-- 工具循环上限 5 轮；达到上限后直接把当前内容作为最终回复。
-- 新增 provider 预设只需在 `AIConfig.default()` 增加分支（provider 枚举 + baseUrl + 模型名），
-  不要改请求协议；provider 只是模板，协议始终是 Anthropic Messages。
+- 支持两种格式，由 `AIConfig.apiFormat` 选择：
+  - `ANTHROPIC_MESSAGES`：`{base}/v1/messages`，`X-Api-Key`，由 `AnthropicSseListener` 解析。
+  - `OPENAI_CHAT_COMPLETIONS`：`{base}/v1/chat/completions`，`Authorization: Bearer`，由
+    `OpenAiSseListener` + `OpenAiSseParser` 解析。
+- `baseUrl` 统一视为根地址；`ApiEndpoint.normalizeBaseUrl()` 会自动去掉尾部 `/v1`、
+  `/v1/messages`、`/v1/chat/completions`，不要让用户填完整路径。
+- Anthropic 事件：`content_block_start/delta/stop`、`message_delta`、`message_stop`，异常走
+  `onFailure`。
+- OpenAI 事件：`choices[].delta.content`、`reasoning_content`/`reasoning`、分片
+  `tool_calls`（按 index 合并 arguments）、`finish_reason`、`[DONE]`；错误体 `{"error":{...}}`。
+- OpenAI 工具循环必须包含 assistant `tool_calls` 消息，再接 `role=tool` 消息；
+  Anthropic 保持只追加 `tool_result`。`ChatMessage.toolCallPayloads` 只用于请求构建，
+  UI 仍用 `ChatMessage.toolCalls`。
+- 上下文窗口固定取最近 20 条（`getRecentMessages()`）；工具循环上限 5 轮。
+- 新增第三种格式时：`ApiFormat` 增加枚举 → `ApiRequestFactory` 分支 → 新 listener/parser →
+  对应请求与解析单测；不要把多种协议塞进一个巨型条件分支。
+- 新增 provider 预设只需在 `AIConfig.default()` 增加分支（provider 枚举 + baseUrl + 模型名 +
+  apiFormat），不要改协议实现。
 
 ### 4.3 配置与持久化
 
@@ -196,9 +202,8 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
 
 按影响排序，修 bug 或重构时优先关注：
 
-1. **baseUrl 与 URL 拼接冲突**：`AIConfig.default(OPENAI)` 的默认 baseUrl 是 `https://api.openai.com/v1`，
-   而请求固定拼 `/v1/messages`，会得到 `/v1/v1/messages`。使用 OpenAI 预设时必须手动把 baseUrl 改成
-   不带 `/v1` 的兼容端点（且该端点需支持 Anthropic Messages）。
+1. **baseUrl 约定**：配置里应填根地址；`ApiEndpoint.normalizeBaseUrl` 会自动去掉 `/v1` 等后缀。
+   UI 提示仍应引导用户填根地址，避免误填完整路径。
 2. **附件链路有边界**：图片作为 `image` block 发送，PDF/TXT 抽取文本；扫描件 PDF 不做 OCR，
    Word 不支持；只有最近 3 条 user 消息的附件会参与编码，更早的会降级为占位文本。
    请求构建在 `ChatRequestBuilder`，编码在 `AttachmentEncoder`。

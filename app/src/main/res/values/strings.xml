@@ -40,7 +40,7 @@
     <string name="camera">Camera</string>
     <string name="photo_album">Photo Album</string>
     <string name="file">File</string>
-    <string name="ocr_text">仅识别图片中的文字</string>
+    <string name="ocr_text">Images and documents are sent to the AI</string>
     <string name="user_avatar">User avatar</string>
     <string name="delete">Delete</string>
     <string name="camera_permission_denied">Camera permission denied</string>
@@ -60,6 +60,7 @@
     <string name="ai_sonnet_model">Sonnet Default Model</string>
     <string name="ai_opus_model">Opus Default Model</string>
     <string name="api_format_anthropic">Anthropic Messages</string>
+    <string name="api_format_openai">OpenAI Chat Completions</string>
     <string name="error_fields_required">Please fill in: %s</string>
     <string name="save_success">Saved successfully</string>
     <string name="copy">Copy</string>

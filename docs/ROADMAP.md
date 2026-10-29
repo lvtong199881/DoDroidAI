@@ -124,6 +124,7 @@
 | P0-3 | 安全与配置修复（Key 加密、URL、转义、日志、签名） | P0 | 高 | 中 | 低 | v1.1 |
 | P0-4 | 测试与 CI 门禁 | P0 | 高 | 中 | 低 | v1.1 |
 | P0-5 | `add_note` 落库 + 引入 Room | P0 | 中 | 中 | 低 | v1.1 |
+| P0-6 | 支持 OpenAI Chat Completions 格式 ✅ | P0 | 高 | 中 | 中 | v1.1 |
 | P1-1 | 存储层迁移 Room（会话/消息分页与搜索） | P1 | 高 | 高 | 中 | v1.2 |
 | P1-2 | 长期记忆 MVP（事实 + 摘要 + 检索） | P1 | 高 | 高 | 中 | v1.2 |
 | P1-3 | 定时/触发任务（WorkManager + 通知） | P1 | 高 | 中 | 中 | v1.2 |
@@ -274,6 +275,16 @@ release 可正常出包并混淆；日志中搜不到 Key 与消息正文。
 **估时**：4–5 天。
 
 ---
+
+
+### P0-6 支持 OpenAI Chat Completions 格式 ✅（2026-10 已实现，待随 v1.1 发布）
+
+**现状**：原实现只支持 Anthropic Messages，OpenAI 官方端点不可用。
+**实现**：新增 `OPENAI_CHAT_COMPLETIONS` 与 `ApiEndpoint` 规范化；`OpenAiChatRequestBuilder`
+生成文本/图片/工具调用请求；`OpenAiSseParser` 解析增量、reasoning 与分片 tool_calls；
+AI 配置页可选择格式，OpenAI 预设改为官方 Chat Completions 端点。
+**未做**：OpenAI Responses API、Assistants、Realtime。
+**估时**：约 1 天（含测试）。
 
 ### P1-1 存储层迁移 Room
 

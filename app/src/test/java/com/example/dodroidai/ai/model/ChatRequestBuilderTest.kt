@@ -28,7 +28,7 @@ class ChatRequestBuilderTest {
 
     @Test
     fun `plain text is sent as a string content`() {
-        val result = ChatRequestBuilder.build(
+        val result = ChatRequestBuilder.buildAnthropic(
             listOf(chatMessage(ChatMessage.ROLE_USER, "hello")),
             emptyMap()
         )
@@ -45,7 +45,7 @@ class ChatRequestBuilderTest {
                 EncodedAttachment.Image("photo.jpg", "image/jpeg", "ZmFrZQ==", 4)
             )
         )
-        val result = ChatRequestBuilder.build(
+        val result = ChatRequestBuilder.buildAnthropic(
             listOf(chatMessage(ChatMessage.ROLE_USER, "看图", 1L)),
             encoded
         )
@@ -71,7 +71,7 @@ class ChatRequestBuilderTest {
                 EncodedAttachment.Text("report.pdf", "第一行\n第二行", truncated = false, rawBytes = 20)
             )
         )
-        val result = ChatRequestBuilder.build(
+        val result = ChatRequestBuilder.buildAnthropic(
             listOf(chatMessage(ChatMessage.ROLE_USER, "", 1L)),
             encoded
         )
@@ -90,7 +90,7 @@ class ChatRequestBuilderTest {
                 EncodedAttachment.Placeholder("scan.pdf", PlaceholderReason.NO_TEXT)
             )
         )
-        val result = ChatRequestBuilder.build(
+        val result = ChatRequestBuilder.buildAnthropic(
             listOf(chatMessage(ChatMessage.ROLE_USER, "总结这个文件", 1L)),
             encoded
         )
@@ -105,7 +105,7 @@ class ChatRequestBuilderTest {
     @Test
     fun `tool result is structured and safely escaped`() {
         val content = "第一行 \"quoted\"\n第二行 \\ backslash"
-        val result = ChatRequestBuilder.build(
+        val result = ChatRequestBuilder.buildAnthropic(
             listOf(
                 chatMessage(
                     role = ChatMessage.ROLE_TOOL,
@@ -129,7 +129,7 @@ class ChatRequestBuilderTest {
 
     @Test
     fun `empty user message without attachments is dropped`() {
-        val result = ChatRequestBuilder.build(
+        val result = ChatRequestBuilder.buildAnthropic(
             listOf(
                 chatMessage(ChatMessage.ROLE_USER, "   ", 1L),
                 chatMessage(ChatMessage.ROLE_USER, "hello", 2L)

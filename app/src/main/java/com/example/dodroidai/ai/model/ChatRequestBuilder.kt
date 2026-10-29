@@ -17,7 +17,7 @@ object ChatRequestBuilder {
      * @param messages 参与本次请求的消息（通常已裁剪到最近 N 条）
      * @param encoded  以 `message.timestamp` 为 key 的附件编码结果
      */
-    fun build(
+    fun buildAnthropic(
         messages: List<ChatMessage>,
         encoded: Map<Long, List<EncodedAttachment>>
     ): List<AnthropicMessage> {

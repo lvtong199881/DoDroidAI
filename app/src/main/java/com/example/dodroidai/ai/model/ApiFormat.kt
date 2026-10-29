@@ -5,5 +5,8 @@ package com.example.dodroidai.ai.model
  */
 enum class ApiFormat {
     /** Anthropic Messages 原生格式 */
-    ANTHROPIC_MESSAGES
+    ANTHROPIC_MESSAGES,
+
+    /** OpenAI Chat Completions 兼容格式 */
+    OPENAI_CHAT_COMPLETIONS
 }

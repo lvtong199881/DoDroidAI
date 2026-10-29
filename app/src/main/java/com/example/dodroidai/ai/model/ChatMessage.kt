@@ -1,5 +1,6 @@
 package com.example.dodroidai.ai.model
 
+import com.example.dodroidai.ai.tools.ToolCall
 import com.example.dodroidai.ai.tools.ToolCallDisplay
 import com.google.gson.annotations.SerializedName
 
@@ -31,6 +32,12 @@ data class ChatMessage(
     val loadingSeconds: Int = 0,
     @SerializedName("toolCalls")
     val toolCalls: List<ToolCallDisplay>? = emptyList(),
+    /**
+     * assistant 工具调用的原始载荷，仅用于请求构建（OpenAI 需要 assistant tool_calls 消息）。
+     * UI 展示仍使用 [toolCalls]。
+     */
+    @SerializedName("toolCallPayloads")
+    val toolCallPayloads: List<ToolCall>? = null,
     @SerializedName("attachments")
     val attachments: List<ChatAttachment>? = null,
     @SerializedName("toolCallId")

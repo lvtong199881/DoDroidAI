@@ -54,11 +54,11 @@ data class AIConfig(
                 AIProvider.OPENAI -> AIConfig(
                     provider = AIProvider.OPENAI,
                     apiKey = "",
-                    baseUrl = "https://api.openai.com/v1",
+                    baseUrl = "https://api.openai.com",
                     model = "gpt-4o",
                     providerName = "OpenAI",
                     officialUrl = "https://openai.com",
-                    apiFormat = ApiFormat.ANTHROPIC_MESSAGES,
+                    apiFormat = ApiFormat.OPENAI_CHAT_COMPLETIONS,
                     mainModel = "gpt-4o",
                     haikuModel = "gpt-4o",
                     sonnetModel = "gpt-4o",

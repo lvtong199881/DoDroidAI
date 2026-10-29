@@ -3,16 +3,15 @@ package com.example.dodroidai.ai.model
 import com.example.dodroidai.ai.config.AIConfig
 import com.example.dodroidai.ai.tools.ToolDefinition
 import com.example.dodroidai.util.GsonUtil
+import com.google.gson.JsonObject
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 
 /**
- * 创建流式 SSE 请求。
- *
- * 消息已经由 [ChatRequestBuilder] 转换为 [AnthropicMessage]，这里只负责组装请求。
+ * Anthropic Messages 请求。
  */
-fun createStreamingRequest(
+fun createAnthropicRequest(
     config: AIConfig,
     messages: List<AnthropicMessage>,
     tools: List<ToolDefinition>?
@@ -25,15 +24,35 @@ fun createStreamingRequest(
     )
     val requestJson = GsonUtil.toJson(requestBody)
 
-    val headers = listOf(
-        "Content-Type" to "application/json",
-        "X-Api-Key" to config.apiKey,
-        "Accept" to "text/event-stream"
-    )
-
     return Request.Builder()
-        .url("${config.baseUrl}/v1/messages")
-        .apply { headers.forEach { (n, v) -> addHeader(n, v) } }
+        .url(ApiEndpoint.anthropicMessagesUrl(config.baseUrl))
+        .addHeader("Content-Type", "application/json")
+        .addHeader("X-Api-Key", config.apiKey)
+        .addHeader("Accept", "text/event-stream")
+        .post((requestJson ?: "{}").toRequestBody("application/json".toMediaType()))
+        .build()
+}
+
+/**
+ * OpenAI Chat Completions 请求。
+ */
+fun createOpenAiRequest(
+    config: AIConfig,
+    body: JsonObject,
+    sessionId: String? = null
+): Request {
+    val requestJson = GsonUtil.toJson(body)
+    return Request.Builder()
+        .url(ApiEndpoint.openAiChatCompletionsUrl(config.baseUrl))
+        .addHeader("Content-Type", "application/json")
+        .addHeader("Authorization", "Bearer ${config.apiKey}")
+        .addHeader("Accept", "text/event-stream")
+        .apply {
+            // OpenCode Go 要求稳定的会话 ID 用于路由与 prompt cache
+            if (!sessionId.isNullOrBlank()) {
+                addHeader("x-opencode-session", sessionId)
+            }
+        }
         .post((requestJson ?: "{}").toRequestBody("application/json".toMediaType()))
         .build()
 }

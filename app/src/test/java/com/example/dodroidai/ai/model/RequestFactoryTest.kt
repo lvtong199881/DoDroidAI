@@ -19,7 +19,7 @@ class RequestFactoryTest {
 
     @Test
     fun `request contains url headers and text content`() {
-        val request = createStreamingRequest(
+        val request = createAnthropicRequest(
             config = config(),
             messages = listOf(
                 AnthropicMessage(role = "user", content = com.google.gson.JsonPrimitive("hi"))
@@ -53,7 +53,7 @@ class RequestFactoryTest {
             )
         )
 
-        val request = createStreamingRequest(
+        val request = createAnthropicRequest(
             config = config(),
             messages = listOf(
                 AnthropicMessage(role = "user", content = com.google.gson.JsonPrimitive("现在几点"))

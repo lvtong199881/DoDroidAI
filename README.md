@@ -11,7 +11,8 @@ input runs fully offline on top of `whisper.cpp`.
 ## Features
 
 - **Multiple AI configurations** — create, clone, activate and delete provider profiles (OpenAI,
-  DeepSeek, MiniMax or a custom endpoint). All requests use an Anthropic Messages-compatible API.
+  DeepSeek, MiniMax or a custom endpoint). Supports both Anthropic Messages and OpenAI Chat
+  Completions-compatible endpoints.
 - **Streaming responses** — Server-Sent Events; text and extended-thinking deltas are rendered as they
   arrive, with a collapsible thinking block.
 - **Tool calling with guardrails** — the model can call six phone tools. High-risk tools require an
@@ -87,9 +88,10 @@ Or open the project in Android Studio and run the `app` configuration on a conne
 1. Open **Settings → AI Configuration** and add a configuration (the `+` action). Pick a preset or
    `Custom`.
 2. Fill in:
-   - **Base URL** — the base of an Anthropic Messages-compatible endpoint. The app appends
-     `/v1/messages` to it, so the value must **not** end with `/v1` or `/v1/messages`.
-   - **API Key** — sent as the `X-Api-Key` header.
+   - **API Format** — `Anthropic Messages` or `OpenAI Chat Completions`.
+   - **Base URL** — the root URL only. The app appends `/v1/messages` (Anthropic) or
+     `/v1/chat/completions` (OpenAI), so do **not** include `/v1` or the full path.
+   - **API Key** — sent as `X-Api-Key` for Anthropic, or `Authorization: Bearer` for OpenAI.
    - **Model** — the model name understood by that endpoint.
 3. Save the configuration and mark it active.
 4. Optional: configure **Settings → Web Search** with a
@@ -97,13 +99,13 @@ Or open the project in Android Studio and run the `app` configuration on a conne
 5. Go back to the chat and try something like *"Set an alarm for 7:30 tomorrow"* or *"What's the
    weather in Shanghai?"*. High-risk actions such as sending an SMS will ask for confirmation first.
 
-Preset examples (these are templates — any Anthropic Messages-compatible gateway works):
+Preset examples (these are templates — any compatible gateway works):
 
 | Preset | Base URL | Default model |
 | --- | --- | --- |
-| DeepSeek | `https://api.deepseek.com/anthropic` | `DeepSeek-V4-Flash` |
-| MiniMax | `https://api.minimaxi.com/anthropic` | `MiniMax-M2.7` |
-| OpenAI | `https://api.openai.com/v1` | `gpt-4o` — preset only; the official endpoint does not speak the Anthropic Messages protocol, so point it at a compatible gateway instead |
+| DeepSeek | `https://api.deepseek.com/anthropic` | `DeepSeek-V4-Flash` — Anthropic Messages format |
+| MiniMax | `https://api.minimaxi.com/anthropic` | `MiniMax-M2.7` — Anthropic Messages format |
+| OpenAI | `https://api.openai.com` | `gpt-4o` — OpenAI Chat Completions format |
 | Custom | — | — |
 
 HTTPS is required: cleartext HTTP is blocked by the app's target SDK and no cleartext exception is
@@ -224,8 +226,8 @@ Risk levels are defined in `ToolDefinition`; `HIGH` triggers the confirmation di
 - Scanned PDFs are not OCR'd; only PDFs with an extractable text layer are sent.
 - Word files are not supported yet; convert them to PDF or TXT.
 - `add_note` does not persist anything yet.
-- Only Anthropic Messages-compatible endpoints are supported. The official OpenAI endpoint is not one
-  of them; the OpenAI preset needs a compatible gateway.
+- Only Anthropic Messages and OpenAI Chat Completions formats are supported; the OpenAI Responses
+  API is not implemented.
 - No unit/UI tests are included, and CI only builds releases on manual dispatch.
 - Traditional Chinese (`values-zh-rTW`) has fewer translated strings than English/Simplified Chinese;
   missing entries fall back to English.

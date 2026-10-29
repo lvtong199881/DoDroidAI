@@ -120,11 +120,28 @@ class AIConfigFragment : Fragment() {
     }
 
     private fun setupApiFormatDropdown() {
-        apiFormatDropdown?.setText(getApiFormatDisplayName(ApiFormat.ANTHROPIC_MESSAGES), false)
+        val options = listOf(
+            getString(R.string.api_format_anthropic),
+            getString(R.string.api_format_openai)
+        )
+        apiFormatDropdown?.setAdapter(
+            ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, options)
+        )
+        apiFormatDropdown?.setText(getApiFormatDisplayName(currentApiFormat), false)
+        apiFormatDropdown?.setOnItemClickListener { _, _, position, _ ->
+            currentApiFormat = if (position == 0) {
+                ApiFormat.ANTHROPIC_MESSAGES
+            } else {
+                ApiFormat.OPENAI_CHAT_COMPLETIONS
+            }
+        }
     }
 
     private fun getApiFormatDisplayName(format: ApiFormat): String {
-        return getString(R.string.api_format_anthropic)
+        return when (format) {
+            ApiFormat.ANTHROPIC_MESSAGES -> getString(R.string.api_format_anthropic)
+            ApiFormat.OPENAI_CHAT_COMPLETIONS -> getString(R.string.api_format_openai)
+        }
     }
 
     private fun setupQuickProviderCards() {

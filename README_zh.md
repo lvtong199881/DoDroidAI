@@ -11,7 +11,7 @@ tool calling 真正操作手机：闹钟、日历、短信、笔记（占位实�
 ## 功能
 
 - **多套 AI 配置**：新增、克隆、启用、删除 AI 配置（OpenAI、DeepSeek、MiniMax 或自定义端点）。
-  所有请求统一走 Anthropic Messages 兼容接口。
+  支持 Anthropic Messages 与 OpenAI Chat Completions 两种兼容格式。
 - **流式输出**：基于 SSE，正文和扩展思考过程边生成边展示，思考内容可折叠查看。
 - **带防护的工具调用**：模型可调用 6 个手机工具。高风险工具执行前会弹应用内确认框；
   缺少运行时权限时先请求权限再执行。
@@ -83,9 +83,11 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 1. 打开 **设置 → AI 配置**，点击 `+` 新增配置，选择一个预设或 `自定义`。
 2. 填写：
-   - **接口地址（Base URL）**：Anthropic Messages 兼容接口的前缀。应用会在后面拼接
-     `/v1/messages`，所以**不要**以 `/v1` 或 `/v1/messages` 结尾。
-   - **API Key**：通过 `X-Api-Key` 请求头发送。
+   - **API 格式**：`Anthropic Messages` 或 `OpenAI Chat Completions`。
+   - **接口地址（Base URL）**：只填根地址。应用会按格式拼接 `/v1/messages` 或
+     `/v1/chat/completions`，所以**不要**包含 `/v1` 或完整路径。
+   - **API Key**：Anthropic 格式通过 `X-Api-Key` 发送，OpenAI 格式通过
+     `Authorization: Bearer` 发送。
    - **模型**：该接口支持的模型名。
 3. 保存后把这条配置设为启用。
 4. 可选：在 **设置 → 联网搜索** 填入
@@ -93,13 +95,13 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 5. 回到聊天页，试着说 *“明天早上 7:30 设个闹钟”* 或 *“上海天气怎么样”*。
    发短信这类高风险操作会先弹确认框。
 
-预设示例（只是模板，任何兼容 Anthropic Messages 的网关都可以）：
+预设示例（只是模板，任何兼容网关都可以）：
 
 | 预设 | 接口地址 | 默认模型 |
 | --- | --- | --- |
-| DeepSeek | `https://api.deepseek.com/anthropic` | `DeepSeek-V4-Flash` |
-| MiniMax | `https://api.minimaxi.com/anthropic` | `MiniMax-M2.7` |
-| OpenAI | `https://api.openai.com/v1` | `gpt-4o`——仅为预设；官方端点不支持 Anthropic Messages 协议，请改填兼容网关地址 |
+| DeepSeek | `https://api.deepseek.com/anthropic` | `DeepSeek-V4-Flash`——Anthropic Messages 格式 |
+| MiniMax | `https://api.minimaxi.com/anthropic` | `MiniMax-M2.7`——Anthropic Messages 格式 |
+| OpenAI | `https://api.openai.com` | `gpt-4o`——OpenAI Chat Completions 格式 |
 | 自定义 | — | — |
 
 接口必须使用 HTTPS：应用的 targetSdk 默认禁止明文 HTTP，也没有配置明文例外。
@@ -212,8 +214,7 @@ DoDroidAI/
 - 扫描版 PDF 不做 OCR，只发送能抽取到文本层的 PDF。
 - 暂不支持 Word，请先转为 PDF 或 TXT。
 - `add_note` 尚未真正持久化任何内容。
-- 只支持 Anthropic Messages 兼容端点；OpenAI 官方端点不属于此类，使用 OpenAI 预设时需要改填
-  兼容网关。
+- 只支持 Anthropic Messages 与 OpenAI Chat Completions 两种格式；暂不支持 OpenAI Responses API。
 - 没有单元测试 / UI 测试，CI 只在手动触发时构建 release。
 - 繁体中文（`values-zh-rTW`）的翻译条目少于英文和简体中文，缺失项会回退英文。
 - 聊天界面没有“停止生成”按钮。
