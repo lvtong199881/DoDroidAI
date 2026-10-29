@@ -2,7 +2,7 @@ package com.example.dodroidai.ai.streaming
 
 import android.util.Log
 import com.example.dodroidai.ai.config.AIConfig
-import com.example.dodroidai.ai.model.ChatMessage
+import com.example.dodroidai.ai.model.AnthropicMessage
 import com.example.dodroidai.ai.model.StreamingCallback
 import com.example.dodroidai.ai.model.createStreamingRequest
 import com.example.dodroidai.ai.tools.ToolDefinition
@@ -22,7 +22,7 @@ class StreamingChatClient(private val httpClient: OkHttpClient) {
      */
     fun stream(
         config: AIConfig,
-        messages: List<ChatMessage>,
+        messages: List<AnthropicMessage>,
         tools: List<ToolDefinition>?,
         callback: StreamingCallback
     ): EventSource {

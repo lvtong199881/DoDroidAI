@@ -88,6 +88,14 @@ dependencies {
   // Markdown
   implementation("io.noties.markwon:core:4.6.2")
 
+  // Attachments
+  implementation("com.tom-roush:pdfbox-android:2.0.27.0")
+  implementation("androidx.exifinterface:exifinterface:1.4.1")
+  implementation("io.coil-kt.coil3:coil:3.2.0")
+
+  // Unit tests
+  testImplementation("junit:junit:4.13.2")
+
   // Internal modules
   implementation(project(":webview-sdk"))
 }

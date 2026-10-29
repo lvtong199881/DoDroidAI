@@ -21,6 +21,7 @@ import com.example.dodroidai.ai.model.AIProvider
 import com.example.dodroidai.ai.model.ApiFormat
 import com.example.dodroidai.ui.common.Toolbar
 import com.google.android.material.card.MaterialCardView
+import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 
@@ -41,6 +42,7 @@ class AIConfigFragment : Fragment() {
     private var haikuModelInput: TextInputEditText? = null
     private var sonnetModelInput: TextInputEditText? = null
     private var opusModelInput: TextInputEditText? = null
+    private var visionSwitch: MaterialSwitch? = null
     private var saveButton: Button? = null
     private var deleteButton: Button? = null
     private var setActiveButton: Button? = null
@@ -100,6 +102,7 @@ class AIConfigFragment : Fragment() {
         haikuModelInput = view.findViewById(R.id.haikuModelInput)
         sonnetModelInput = view.findViewById(R.id.sonnetModelInput)
         opusModelInput = view.findViewById(R.id.opusModelInput)
+        visionSwitch = view.findViewById(R.id.visionSwitch)
         saveButton = view.findViewById(R.id.saveButton)
         deleteButton = view.findViewById(R.id.deleteButton)
         setActiveButton = view.findViewById(R.id.setActiveButton)
@@ -140,6 +143,7 @@ class AIConfigFragment : Fragment() {
         sonnetModelInput?.setText(defaultConfig.sonnetModel)
         opusModelInput?.setText(defaultConfig.opusModel)
         providerNameInput?.setText(defaultConfig.providerName)
+        visionSwitch?.isChecked = defaultConfig.supportsVision ?: true
         currentApiFormat = defaultConfig.apiFormat
         apiFormatDropdown?.setText(getApiFormatDisplayName(defaultConfig.apiFormat), false)
         scrollView?.scrollTo(0, 0)
@@ -155,6 +159,7 @@ class AIConfigFragment : Fragment() {
         haikuModelInput?.text?.clear()
         sonnetModelInput?.text?.clear()
         opusModelInput?.text?.clear()
+        visionSwitch?.isChecked = true
     }
 
     private fun setupSaveButton() {
@@ -252,7 +257,8 @@ class AIConfigFragment : Fragment() {
             mainModel = mainModelInput?.text.toString().trim(),
             haikuModel = haikuModelInput?.text.toString().trim(),
             sonnetModel = sonnetModelInput?.text.toString().trim(),
-            opusModel = opusModelInput?.text.toString().trim()
+            opusModel = opusModelInput?.text.toString().trim(),
+            supportsVision = visionSwitch?.isChecked ?: true
         )
 
         viewModel?.saveConfig(newConfig, isEditMode) { success ->
@@ -292,6 +298,7 @@ class AIConfigFragment : Fragment() {
         haikuModelInput?.setText(config.haikuModel)
         sonnetModelInput?.setText(config.sonnetModel)
         opusModelInput?.setText(config.opusModel)
+        visionSwitch?.isChecked = config.supportsVision ?: true
         currentApiFormat = config.apiFormat
         apiFormatDropdown?.setText(getApiFormatDisplayName(config.apiFormat), false)
     }

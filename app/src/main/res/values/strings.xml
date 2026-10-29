@@ -101,4 +101,14 @@
     <!-- App Shortcut -->
     <string name="shortcut_look_around_short">Look</string>
     <string name="shortcut_look_around_long">Open Web View</string>
+
+    <!-- Attachments -->
+    <string name="attachment_processing">Processing attachments…</string>
+    <string name="attachment_limit_count">You can attach up to %1$d files per message</string>
+    <string name="attachment_too_large">File is too large</string>
+    <string name="attachment_word_unsupported">Word files are not supported yet. Convert to PDF or TXT first.</string>
+    <string name="attachment_open_failed">No app available to open this file</string>
+    <string name="attachment_unavailable">File unavailable</string>
+    <string name="image_input_support">Image input</string>
+    <string name="image_input_support_desc">Send images as multimodal content to this endpoint</string>
 </resources>

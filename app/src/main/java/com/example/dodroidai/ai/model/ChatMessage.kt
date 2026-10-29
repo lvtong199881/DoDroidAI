@@ -31,6 +31,8 @@ data class ChatMessage(
     val loadingSeconds: Int = 0,
     @SerializedName("toolCalls")
     val toolCalls: List<ToolCallDisplay>? = emptyList(),
+    @SerializedName("attachments")
+    val attachments: List<ChatAttachment>? = null,
     @SerializedName("toolCallId")
     val toolCallId: String? = null,
     @SerializedName("reasoningContent")
@@ -45,6 +47,7 @@ data class ChatMessage(
         const val ROLE_TOOL = "tool"
 
         const val LOADING_THINKING = "thinking"
+        const val LOADING_ATTACHMENTS = "attachments"
     }
 }
 

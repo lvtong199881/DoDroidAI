@@ -3,16 +3,19 @@ package com.example.dodroidai.ui.chat
 import android.Manifest
 import android.content.ContentValues
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.provider.OpenableColumns
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -24,6 +27,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dodroidai.DoDroidAIApplication
 import com.example.dodroidai.MainActivity
 import com.example.dodroidai.R
+import com.example.dodroidai.ai.attachments.AttachmentLimits
+import com.example.dodroidai.ai.attachments.AttachmentRejection
 import com.example.dodroidai.chatRepository
 import com.example.dodroidai.toolExecutor
 import com.example.dodroidai.ui.chat.adapter.ChatMessageAdapter
@@ -62,6 +67,7 @@ class ChatFragment : Fragment() {
             ChatViewModel.Factory(
                 requireContext().chatRepository,
                 requireContext().toolExecutor,
+                requireContext().applicationContext,
                 sessionId,
                 this
             )
@@ -100,7 +106,7 @@ class ChatFragment : Fragment() {
 
     // 相册选择
     private val pickImageLauncher = registerForActivityResult(
-        ActivityResultContracts.GetContent()
+        ActivityResultContracts.OpenDocument()
     ) { uri ->
         uri?.let { addAttachment(it) }
     }
@@ -240,15 +246,25 @@ class ChatFragment : Fragment() {
         }
 
         chatAddOptions?.onPhotoAlbumClick = {
-            pickImageLauncher.launch("image/*")
+            pickImageLauncher.launch(arrayOf("image/*"))
         }
 
         chatAddOptions?.onFileClick = {
-            pickFileLauncher.launch(arrayOf("image/*", "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain"))
+            pickFileLauncher.launch(
+                arrayOf("image/*", "application/pdf", "text/plain")
+            )
         }
 
-        chatInputBox?.onSendClick = { message, _ ->
-            viewModel.sendMessage(message, isWebSearchEnabled)
+        chatInputBox?.onSendClick = { message, attachments ->
+            val chatAttachments = attachments.map { item ->
+                AttachmentLimits.toChatAttachment(
+                    uri = item.uri.toString(),
+                    name = item.name,
+                    mimeType = item.mimeType,
+                    size = item.size
+                )
+            }
+            viewModel.sendMessage(message, chatAttachments, isWebSearchEnabled)
             hideKeyboard()
             chatInputBox?.clearInput()
         }
@@ -319,6 +335,15 @@ class ChatFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.toolPermission.collect { request ->
                     showPermissionRequestDialog(request)
+                }
+            }
+        }
+
+        // 监听附件处理警告
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.attachmentWarning.collect { message ->
+                    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -448,30 +473,70 @@ class ChatFragment : Fragment() {
     }
 
     private fun addAttachment(uri: Uri) {
-        val mimeType = requireContext().contentResolver.getType(uri) ?: "application/octet-stream"
-        if (!isSupportedMimeType(mimeType)) {
-            Toast.makeText(context, R.string.file_format_unsupported, Toast.LENGTH_SHORT).show()
+        val mimeType = resolveMimeType(uri)
+        if (mimeType == MIME_WORD || mimeType == MIME_WORD_DOCX) {
+            Toast.makeText(context, R.string.attachment_word_unsupported, Toast.LENGTH_SHORT).show()
             return
         }
-        val fileName = getFileName(uri)
+
         val size = getFileSize(uri)
-        val item = AttachmentItem(uri, fileName, size, mimeType)
+        val rejection = AttachmentLimits.validateForAdd(
+            existingCount = chatInputBox?.attachmentCount() ?: 0,
+            size = size,
+            mimeType = mimeType
+        )
+        if (rejection != null) {
+            val message = when (rejection) {
+                AttachmentRejection.TOO_MANY -> getString(
+                    R.string.attachment_limit_count,
+                    AttachmentLimits.MAX_ATTACHMENTS_PER_MESSAGE
+                )
+                AttachmentRejection.TOO_LARGE -> getString(R.string.attachment_too_large)
+                AttachmentRejection.UNSUPPORTED -> getString(R.string.file_format_unsupported)
+            }
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        persistUriPermission(uri)
+        val item = AttachmentItem(uri, getFileName(uri), size, mimeType)
         chatInputBox?.addAttachment(item)
     }
 
-    private fun isSupportedMimeType(mimeType: String): Boolean {
-        val supportedTypes = listOf(
-            "image/", "application/pdf", "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            "text/plain"
-        )
-        return supportedTypes.any { mimeType.startsWith(it) || mimeType == it }
+    private fun resolveMimeType(uri: Uri): String {
+        val fromResolver = requireContext().contentResolver.getType(uri)
+        if (!fromResolver.isNullOrBlank()) return fromResolver
+
+        val extension = MimeTypeMap.getFileExtensionFromUrl(uri.toString())
+        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+            ?: "application/octet-stream"
+    }
+
+    /**
+     * 相册/文件选择返回的是临时授权，持久化后历史会话重开仍可读取。
+     * 相机写入 MediaStore 的 URI 不支持持久化，忽略即可。
+     */
+    private fun persistUriPermission(uri: Uri) {
+        try {
+            requireContext().contentResolver.takePersistableUriPermission(
+                uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
+        } catch (e: SecurityException) {
+            Log.w("ChatFragment", "persist uri permission failed: $uri", e)
+        }
     }
 
     private fun getFileName(uri: Uri): String {
-        var name = "image"
-        requireContext().contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-            val nameIndex = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME)
+        var name = uri.lastPathSegment ?: "attachment"
+        requireContext().contentResolver.query(
+            uri,
+            arrayOf(OpenableColumns.DISPLAY_NAME),
+            null,
+            null,
+            null
+        )?.use { cursor ->
+            val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
             if (nameIndex >= 0 && cursor.moveToFirst()) {
                 name = cursor.getString(nameIndex) ?: name
             }
@@ -481,9 +546,15 @@ class ChatFragment : Fragment() {
 
     private fun getFileSize(uri: Uri): Long {
         var size = 0L
-        requireContext().contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-            val sizeIndex = cursor.getColumnIndex(MediaStore.MediaColumns.SIZE)
-            if (sizeIndex >= 0 && cursor.moveToFirst()) {
+        requireContext().contentResolver.query(
+            uri,
+            arrayOf(OpenableColumns.SIZE),
+            null,
+            null,
+            null
+        )?.use { cursor ->
+            val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
+            if (sizeIndex >= 0 && cursor.moveToFirst() && !cursor.isNull(sizeIndex)) {
                 size = cursor.getLong(sizeIndex)
             }
         }
@@ -531,7 +602,7 @@ class ChatFragment : Fragment() {
                     voiceInputDialog = null
                     if (text.isNotBlank()) {
                         chatInputBox?.clearInput()
-                        viewModel.sendMessage(text, isWebSearchEnabled)
+                        viewModel.sendMessage(text, emptyList(), isWebSearchEnabled)
                     }
                 }
             }
@@ -564,6 +635,9 @@ class ChatFragment : Fragment() {
 
     companion object {
         private const val ARG_SESSION_ID = "session_id"
+        private const val MIME_WORD = "application/msword"
+        private const val MIME_WORD_DOCX =
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 
         fun newInstance(sessionId: String? = null): ChatFragment {
             return ChatFragment().apply {

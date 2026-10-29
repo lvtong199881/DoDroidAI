@@ -59,4 +59,14 @@
     <!-- App Shortcut -->
     <string name="shortcut_look_around_short">去看看</string>
     <string name="shortcut_look_around_long">打開網頁</string>
+
+    <!-- 附件 -->
+    <string name="attachment_processing">正在處理附件…</string>
+    <string name="attachment_limit_count">每則訊息最多加入 %1$d 個附件</string>
+    <string name="attachment_too_large">檔案過大</string>
+    <string name="attachment_word_unsupported">暫不支援 Word，請先轉為 PDF 或 TXT</string>
+    <string name="attachment_open_failed">沒有可開啟此檔案的應用程式</string>
+    <string name="attachment_unavailable">檔案不可用</string>
+    <string name="image_input_support">支援圖片輸入</string>
+    <string name="image_input_support_desc">將圖片作為多模態內容傳送給此端點</string>
 </resources>

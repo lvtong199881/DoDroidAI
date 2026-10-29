@@ -1,16 +1,24 @@
 package com.example.dodroidai.ui.chat
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.dodroidai.ai.attachments.AttachmentEncoder
+import com.example.dodroidai.ai.attachments.AttachmentLimits
+import com.example.dodroidai.ai.attachments.EncodedAttachment
+import com.example.dodroidai.ai.attachments.PlaceholderReason
 import com.example.dodroidai.ai.config.AIConfig
 import com.example.dodroidai.ai.config.AppConfigManager
+import com.example.dodroidai.ai.model.AnthropicMessage
+import com.example.dodroidai.ai.model.ChatAttachment
 import com.example.dodroidai.ai.model.ChatMessage
 import com.example.dodroidai.ai.model.ChatMessage.Companion.LOADING_THINKING
 import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_ASSISTANT
 import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_USER
 import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_TOOL
+import com.example.dodroidai.ai.model.ChatRequestBuilder
 import com.example.dodroidai.ai.model.StreamingCallback
 import com.example.dodroidai.ai.streaming.StreamingChatClient
 import com.example.dodroidai.ai.tools.RiskLevel
@@ -28,6 +36,7 @@ import com.google.gson.reflect.TypeToken
 import com.example.dodroidai.util.GsonUtil
 import okhttp3.OkHttpClient
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,6 +46,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.UUID
 
 /**
@@ -114,6 +124,7 @@ sealed class ToolPermissionResult {
 class ChatViewModel(
     private val chatRepository: ChatRepository,
     private val toolExecutor: ToolExecutor,
+    private val appContext: Context,
     private val sessionId: String? = null,
     private val fragment: androidx.fragment.app.Fragment? = null
 ) : ViewModel() {
@@ -144,6 +155,12 @@ class ChatViewModel(
      */
     private val _responseComplete = MutableSharedFlow<String>()
     val responseComplete: SharedFlow<String> = _responseComplete.asSharedFlow()
+
+    /**
+     * 附件处理警告（Toast 展示）
+     */
+    private val _attachmentWarning = MutableSharedFlow<String>()
+    val attachmentWarning: SharedFlow<String> = _attachmentWarning.asSharedFlow()
 
     /**
      * 发送工具调用确认请求给 UI
@@ -184,6 +201,8 @@ class ChatViewModel(
 
     private val streamingClient = StreamingChatClient(httpClient)
 
+    private val attachmentEncoder = AttachmentEncoder(appContext)
+
     init {
         if (sessionId != null) {
             loadSession(sessionId)
@@ -204,13 +223,18 @@ class ChatViewModel(
         }
     }
 
-    fun sendMessage(content: String, webSearchEnabled: Boolean = false) {
-        if (content.isBlank()) return
+    fun sendMessage(
+        content: String,
+        attachments: List<ChatAttachment> = emptyList(),
+        webSearchEnabled: Boolean = false
+    ) {
+        if (content.isBlank() && attachments.isEmpty()) return
 
         viewModelScope.launch {
             val userMessage = ChatMessage(
                 role = ROLE_USER,
-                content = content.trim()
+                content = content.trim(),
+                attachments = if (attachments.isEmpty()) null else attachments
             )
 
             val loadingMessage = ChatMessage(
@@ -257,37 +281,38 @@ class ChatViewModel(
                     toolExecutor.getToolDefinitions().filter { it.name != "web_search" }
                 }
 
-                // 使用流式发送
-                Log.i(TAG, "sendMessageStreaming messages count: ${allMessages.size}")
-                Log.i(TAG, "sendMessageStreaming messages: ${allMessages.map { it.role to it.content.take(30) }}")
-                var streamingResult = sendMessageStreaming(config, allMessages, tools)
-
-                // 处理工具调用循环
-                var toolCallDepth = 0
-                var currentToolCalls = streamingResult.toolCalls
-                while (currentToolCalls.isNotEmpty() && toolCallDepth < MAX_TOOL_CALL_DEPTH) {
-                    toolCallDepth++
-                    // 执行工具调用
-                    val currentFragment = fragment
-                    if (currentFragment == null) {
-                        Log.w(TAG, "Fragment 不可用,跳过工具调用")
-                        break
+                // 附件处理阶段：编码图片/PDF/TXT
+                val encoded: Map<Long, List<EncodedAttachment>> = if (attachments.isNotEmpty()) {
+                    updateLoadingState(ChatMessage.LOADING_ATTACHMENTS)
+                    val (result, warnings) = encodeAttachments(allMessages, config)
+                    if (warnings.isNotEmpty()) {
+                        _attachmentWarning.emit(warnings.take(3).joinToString("\n"))
                     }
-                    val toolResults = executeToolCalls(currentToolCalls, currentFragment)
-                    // 添加工具结果消息
-                    val toolMessages = buildToolMessages(currentToolCalls, toolResults)
-                    val messagesWithResults = allMessages + toolMessages
-                    Log.i(TAG, "Second request messages count: ${messagesWithResults.size}")
-                    Log.i(TAG, "Second request messages: ${messagesWithResults.map { it.role to it.content.take(30) }}")
-                    // 继续流式请求
-                    val nextResult = sendMessageStreaming(config, messagesWithResults, tools)
-                    currentToolCalls = nextResult.toolCalls
-                    streamingResult = nextResult
+                    result
+                } else {
+                    emptyMap()
                 }
+
+                val requestMessages = ChatRequestBuilder.build(allMessages, encoded)
+                val currentAttachments = allMessages.lastOrNull { it.role == ROLE_USER }
+                    ?.let { encoded[it.timestamp] }
+                    .orEmpty()
+                if (content.isBlank() &&
+                    currentAttachments.isNotEmpty() &&
+                    currentAttachments.all { it is EncodedAttachment.Placeholder }
+                ) {
+                    throw IllegalStateException("附件处理失败，没有可发送的内容")
+                }
+                if (requestMessages.isEmpty()) {
+                    throw IllegalStateException("没有可发送的内容")
+                }
+
+                Log.i(TAG, "sendMessageStreaming messages count: ${requestMessages.size}")
+                val streamingResult = runToolLoop(config, requestMessages, tools)
 
                 loadingJob.cancel()
 
-                Log.d("ChatViewModel", "Final response: content='${streamingResult.content}', toolCalls=${streamingResult.toolCalls.size}")
+                Log.d(TAG, "Final response: content='${streamingResult.content}', toolCalls=${streamingResult.toolCalls.size}")
                 val toolDisplays = buildToolDisplays(streamingResult.toolCalls, emptyList())
                 val assistantMessage = ChatMessage(
                     role = ROLE_ASSISTANT,
@@ -313,12 +338,17 @@ class ChatViewModel(
                 loadingJob.cancel()
                 Log.e(TAG, "sendMessage 失败", e)
 
+                val errorText = e.message ?: "Unknown error"
+                val hint = if (attachments.any { it.isImage } && errorText.contains("400")) {
+                    "\n\n提示：当前服务商可能不支持图片输入，可在 AI 配置中关闭图片支持后重试。"
+                } else ""
+
                 val currentMessages = _uiState.value.messages.toMutableList()
                 val lastIndex = currentMessages.lastIndex
                 if (lastIndex >= 0 && currentMessages[lastIndex].isLoading) {
                     currentMessages[lastIndex] = ChatMessage(
                         role = ROLE_ASSISTANT,
-                        content = e.message ?: "Unknown error",
+                        content = errorText + hint,
                         isLoading = false
                     )
                 }
@@ -328,6 +358,110 @@ class ChatViewModel(
                     isLoading = false
                 )
             }
+        }
+    }
+
+    /**
+     * 执行流式请求与工具调用循环，返回最终结果。
+     */
+    private suspend fun runToolLoop(
+        config: AIConfig,
+        requestMessages: List<AnthropicMessage>,
+        tools: List<ToolDefinition>
+    ): StreamingResult {
+        var streamingResult = sendMessageStreaming(config, requestMessages, tools)
+        var toolCallDepth = 0
+        var currentToolCalls = streamingResult.toolCalls
+
+        while (currentToolCalls.isNotEmpty() && toolCallDepth < MAX_TOOL_CALL_DEPTH) {
+            toolCallDepth++
+            val currentFragment = fragment
+            if (currentFragment == null) {
+                Log.w(TAG, "Fragment 不可用,跳过工具调用")
+                break
+            }
+            val toolResults = executeToolCalls(currentToolCalls, currentFragment)
+            val toolMessages = buildToolMessages(currentToolCalls, toolResults)
+            val messagesWithResults = requestMessages +
+                ChatRequestBuilder.build(toolMessages, emptyMap<Long, List<EncodedAttachment>>())
+            Log.i(TAG, "Second request messages count: ${messagesWithResults.size}")
+            val nextResult = sendMessageStreaming(config, messagesWithResults, tools)
+            currentToolCalls = nextResult.toolCalls
+            streamingResult = nextResult
+        }
+        return streamingResult
+    }
+
+    /**
+     * 编码参与本次请求的附件。
+     *
+     * 只有最近若干条 user 消息会携带附件；更早的附件、超出预算的附件会降级为占位文本。
+     */
+    private suspend fun encodeAttachments(
+        messages: List<ChatMessage>,
+        config: AIConfig
+    ): Pair<Map<Long, List<EncodedAttachment>>, List<String>> = withContext(Dispatchers.IO) {
+        val encoded = mutableMapOf<Long, List<EncodedAttachment>>()
+        val warnings = mutableListOf<String>()
+        val currentUserTimestamp = messages.lastOrNull { it.role == ROLE_USER }?.timestamp
+        val recentUserTimestamps = messages.asReversed()
+            .filter { it.role == ROLE_USER }
+            .take(AttachmentLimits.ATTACHMENT_HISTORY_USER_MESSAGES)
+            .map { it.timestamp }
+            .toSet()
+        val visionEnabled = config.supportsVision ?: true
+        var remainingBytes = AttachmentLimits.MAX_REQUEST_ATTACHMENT_BYTES.toLong()
+
+        // 从最新消息开始处理，保证当前消息优先占用预算
+        for (message in messages.asReversed()) {
+            val attachments = message.attachments.orEmpty()
+            if (attachments.isEmpty()) continue
+
+            val results = attachments.map { attachment ->
+                when {
+                    attachment.isImage && !visionEnabled ->
+                        EncodedAttachment.Placeholder(attachment.name, PlaceholderReason.VISION_DISABLED)
+                    message.timestamp !in recentUserTimestamps ->
+                        EncodedAttachment.Placeholder(attachment.name, PlaceholderReason.HISTORY_LIMIT)
+                    else -> {
+                        val result = attachmentEncoder.encode(attachment)
+                        if (result.rawBytes > 0 && result.rawBytes > remainingBytes) {
+                            EncodedAttachment.Placeholder(attachment.name, PlaceholderReason.BUDGET_EXCEEDED)
+                        } else {
+                            remainingBytes -= result.rawBytes
+                            result
+                        }
+                    }
+                }
+            }
+            encoded[message.timestamp] = results
+
+            if (message.timestamp == currentUserTimestamp) {
+                results.filterIsInstance<EncodedAttachment.Placeholder>()
+                    .forEach { warnings.add(attachmentWarningText(it)) }
+            }
+        }
+        encoded to warnings
+    }
+
+    private fun updateLoadingState(state: String) {
+        val messages = _uiState.value.messages.toMutableList()
+        val lastIndex = messages.lastIndex
+        if (lastIndex >= 0 && messages[lastIndex].isLoading) {
+            messages[lastIndex] = messages[lastIndex].copy(loadingState = state)
+            _uiState.value = _uiState.value.copy(messages = messages)
+        }
+    }
+
+    private fun attachmentWarningText(placeholder: EncodedAttachment.Placeholder): String {
+        return when (placeholder.reason) {
+            PlaceholderReason.VISION_DISABLED -> "「${placeholder.label}」未发送：当前配置已关闭图片输入"
+            PlaceholderReason.BUDGET_EXCEEDED -> "「${placeholder.label}」未发送：本次请求附件总量超限"
+            PlaceholderReason.HISTORY_LIMIT -> "「${placeholder.label}」未发送：仅最近几条消息的附件会随请求发送"
+            PlaceholderReason.NO_TEXT -> "「${placeholder.label}」未提取到文本，可能是扫描件"
+            PlaceholderReason.TOO_LARGE -> "「${placeholder.label}」文件过大"
+            PlaceholderReason.UNSUPPORTED_FORMAT -> "「${placeholder.label}」格式不支持"
+            PlaceholderReason.UNREADABLE -> "「${placeholder.label}」读取失败"
         }
     }
 
@@ -370,7 +504,7 @@ class ChatViewModel(
      */
     private suspend fun sendMessageStreaming(
         config: AIConfig,
-        messages: List<ChatMessage>,
+        messages: List<AnthropicMessage>,
         tools: List<ToolDefinition>
     ): StreamingResult {
         val result = CompletableDeferred<StreamingResult>()
@@ -655,14 +789,13 @@ class ChatViewModel(
         val session = if (existingSession != null) {
             existingSession.copy(
                 messages = messages,
-                title = if (existingSession.messages.isEmpty()) messages.first().content.take(20) else existingSession.title,
+                title = if (existingSession.messages.isEmpty()) sessionTitle(messages) else existingSession.title,
                 updatedAt = System.currentTimeMillis()
             )
         } else {
-            val firstMessage = messages.first().content
             ChatSession(
                 id = UUID.randomUUID().toString(),
-                title = firstMessage.take(20),
+                title = sessionTitle(messages),
                 messages = messages,
                 createdAt = System.currentTimeMillis(),
                 updatedAt = System.currentTimeMillis()
@@ -683,15 +816,23 @@ class ChatViewModel(
         _uiState.value = _uiState.value.copy(error = null)
     }
 
+    private fun sessionTitle(messages: List<ChatMessage>): String {
+        val first = messages.firstOrNull() ?: return "新对话"
+        val text = first.content.trim()
+        if (text.isNotEmpty()) return text.take(20)
+        return first.attachments?.firstOrNull()?.name?.take(20) ?: "新对话"
+    }
+
     class Factory(
         private val chatRepository: ChatRepository,
         private val toolExecutor: ToolExecutor,
+        private val appContext: Context,
         private val sessionId: String? = null,
         private val fragment: androidx.fragment.app.Fragment? = null
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return ChatViewModel(chatRepository, toolExecutor, sessionId, fragment) as T
+            return ChatViewModel(chatRepository, toolExecutor, appContext, sessionId, fragment) as T
         }
     }
 }

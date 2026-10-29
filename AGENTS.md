@@ -69,6 +69,7 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
 | 应用入口、Drawer、主题/语言注入、快捷方式跳转 | `app/src/main/java/com/example/dodroidai/MainActivity.kt` |
 | Application、全局 ChatRepository / ToolExecutor | `app/src/main/java/com/example/dodroidai/DoDroidAIApplication.kt` |
 | AI 配置模型、多配置持久化与旧数据迁移 | `ai/config/AIConfig.kt`、`ai/config/AppConfigManager.kt` |
+| 附件模型、编码与请求构建 | `ai/model/ChatAttachment.kt`、`ai/model/ChatRequestBuilder.kt`、`ai/attachments/` |
 | Anthropic 请求体构造 | `ai/model/RequestFactory.kt`、`ai/model/AnthropicModels.kt` |
 | SSE 客户端与事件解析 | `ai/streaming/StreamingChatClient.kt`、`ai/streaming/AnthropicSseListener.kt` |
 | 聊天状态机、流式更新、工具循环 | `ui/chat/ChatViewModel.kt` |
@@ -177,6 +178,20 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
   若跟随所在文件的现有风格硬编码，至少保持语言一致，不要中英混排。
 - 图标命名沿用现有前缀（`ic_*`、`bg_*`、`wv_ic_*`）。
 
+### 4.8 附件
+
+- `ChatMessage.attachments` 声明为 nullable（Gson 不会应用 Kotlin 默认值），读取统一 `orEmpty()`。
+- `ChatAttachment.uri` 使用 String；输入框仍用 `AttachmentItem`（Uri），发送时通过
+  `AttachmentLimits.toChatAttachment()` 转换。
+- 图片：长边 ≤1568 px、JPEG ≤3 MB、base64 使用 `android.util.Base64`（minSdk 24 不能用
+  `java.util.Base64`）；压缩/EXIF 方向处理在 `AttachmentEncoder`。
+- PDF：PDFBox-Android 抽取文本层，`DoDroidAIApplication.onCreate` 必须调用
+  `PDFBoxResourceLoader.init()`；扫描件不支持，Word 不支持。
+- `AnthropicMessage.content` 是 `JsonElement`：纯文本用 `JsonPrimitive`，含附件或 `tool_result`
+  时用 `JsonArray`；`tool_result` 必须用 `JsonObject` 构造，禁止字符串拼接 JSON。
+- 附件预算、历史窗口、数量/大小限制集中在 `AttachmentLimits`；调整时同步更新 README 与本文档。
+- 附件会发送给用户配置的 AI 服务商；不要在日志里打印 base64 或附件正文。
+
 ## 5. 已知问题与坑
 
 按影响排序，修 bug 或重构时优先关注：
@@ -184,21 +199,20 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
 1. **baseUrl 与 URL 拼接冲突**：`AIConfig.default(OPENAI)` 的默认 baseUrl 是 `https://api.openai.com/v1`，
    而请求固定拼 `/v1/messages`，会得到 `/v1/v1/messages`。使用 OpenAI 预设时必须手动把 baseUrl 改成
    不带 `/v1` 的兼容端点（且该端点需支持 Anthropic Messages）。
-2. **附件未参与请求**：`ChatFragment` 的 `onSendClick = { message, _ -> ... }` 丢弃了 `attachments`。
-   图片/PDF/Word 只做了选择与预览，没有发给模型。
+2. **附件链路有边界**：图片作为 `image` block 发送，PDF/TXT 抽取文本；扫描件 PDF 不做 OCR，
+   Word 不支持；只有最近 3 条 user 消息的附件会参与编码，更早的会降级为占位文本。
+   请求构建在 `ChatRequestBuilder`，编码在 `AttachmentEncoder`。
 3. **`add_note` 是占位实现**：`AddNoteTool` 只返回“笔记已添加”的字符串，没有真正写入任何笔记应用。
-4. **`tool_result` 用字符串拼 JSON**：`RequestFactory.toAnthropicMessage()` 直接把内容嵌入
-   `[{"type":"tool_result",...}]`。工具结果含引号、换行、反斜杠时可能产生非法 JSON，改动这里时注意转义。
-5. **没有测试与自动 CI 校验**：`.github/workflows/appbuildfjhfjh.yml` 仅手动触发，执行 `assembleRelease`
-   并发布 GitHub Release。
-6. **Release 使用仓库内测试 keystore**：`keystore/release.keystore`，口令硬编码在 `app/build.gradle.kts`。
+4. **没有测试与自动 CI 校验**：`.github/workflows/appbuildfjhfjh.yml` 仅手动触发，执行 `assembleRelease`
+   并发布 GitHub Release。新增的单测在 `app/src/test`，尚未接入 CI。
+5. **Release 使用仓库内测试 keystore**：`keystore/release.keystore`，口令硬编码在 `app/build.gradle.kts`。
    仅用于本地/CI 出包，正式发布必须换成自己的签名配置。
-7. **Release 未开启混淆**：`isMinifyEnabled = false`，且仓库中没有 `proguard-rules.pro` 文件
+6. **Release 未开启混淆**：`isMinifyEnabled = false`，且仓库中没有 `proguard-rules.pro` 文件
    （`app/build.gradle.kts` 已引用该路径）。开启混淆前需先创建该文件并补 keep 规则
    （Gson 模型、JNI 方法、webview-sdk 回调）。
-8. **`plan/` 是历史快照**：里面的方案可能与当前实现不一致，以代码为准。
-9. **`checkAndRequestPermissions()` 未被调用**；`ChatViewModel` 持有 Fragment 引用。重构时留意。
-10. **没有“停止生成”入口**：`StreamingChatClient` 只在新请求发起时取消上一条连接，UI 未暴露取消按钮。
+7. **`plan/` 是历史快照**：里面的方案可能与当前实现不一致，以代码为准。
+8. **`checkAndRequestPermissions()` 未被调用**；`ChatViewModel` 持有 Fragment 引用。重构时留意。
+9. **没有“停止生成”入口**：`StreamingChatClient` 只在新请求发起时取消上一条连接，UI 未暴露取消按钮。
 
 ## 6. 修改守则
 
@@ -230,4 +244,5 @@ Don't：
 
 - 本文件是工程约定的唯一来源；`CLAUDE.md` 通过 `@AGENTS.md` 引用本文件，避免两份漂移。
 - 用户向文档是 `README.md`（英文）和 `README_zh.md`（中文）；功能、命令、结构变化时同步更新两份。
+- 产品迭代方向与优先级见 `docs/ROADMAP.md`；它是讨论稿，不代表已排期。
 - `plan/` 存放设计过程文档（`.claude/settings.json` 中 `plansDirectory: "plan"`），不要当作当前实现的说明。

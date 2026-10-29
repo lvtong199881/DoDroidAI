@@ -3,6 +3,8 @@ package com.example.dodroidai.ui.chat.adapter
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,7 +17,10 @@ import android.widget.Toast
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import coil3.load
+import coil3.request.crossfade
 import com.example.dodroidai.R
+import com.example.dodroidai.ai.model.ChatAttachment
 import com.example.dodroidai.ai.model.ChatMessage
 import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_ASSISTANT
 import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_USER
@@ -94,9 +99,47 @@ class ChatMessageAdapter(
 
     class UserMessageViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         private val textMessage: TextView = view.findViewById(R.id.textMessage)
+        private val attachmentContainer: LinearLayout = view.findViewById(R.id.attachmentContainer)
 
         fun bind(message: ChatMessage) {
-            textMessage.text = message.content
+            val attachments = message.attachments.orEmpty()
+
+            if (message.content.isBlank()) {
+                textMessage.visibility = View.GONE
+            } else {
+                textMessage.visibility = View.VISIBLE
+                textMessage.text = message.content
+            }
+
+            attachmentContainer.removeAllViews()
+            attachmentContainer.visibility =
+                if (attachments.isEmpty()) View.GONE else View.VISIBLE
+
+            val inflater = LayoutInflater.from(itemView.context)
+            attachments.forEach { attachment ->
+                val attachmentView = inflater.inflate(
+                    R.layout.item_message_attachment,
+                    attachmentContainer,
+                    false
+                )
+                val icon = attachmentView.findViewById<ImageView>(R.id.ivAttachmentIcon)
+                val name = attachmentView.findViewById<TextView>(R.id.tvAttachmentName)
+                val size = attachmentView.findViewById<TextView>(R.id.tvAttachmentSize)
+
+                name.text = attachment.name
+                size.text = formatFileSize(attachment.size)
+
+                if (attachment.isImage) {
+                    icon.load(Uri.parse(attachment.uri)) { crossfade(true) }
+                } else {
+                    icon.setImageResource(R.drawable.ic_file)
+                }
+
+                attachmentView.setOnClickListener {
+                    openAttachment(attachmentView.context, attachment)
+                }
+                attachmentContainer.addView(attachmentView)
+            }
         }
     }
 
@@ -142,6 +185,8 @@ class ChatMessageAdapter(
 
                 if (message.loadingState == "tool_call") {
                     textLoading.text = "正在调用工具..."
+                } else if (message.loadingState == ChatMessage.LOADING_ATTACHMENTS) {
+                    textLoading.text = itemView.context.getString(R.string.attachment_processing)
                 } else {
                     textLoading.text = "AI思考中..."
                 }
@@ -296,5 +341,25 @@ class ChatMessageAdapter(
         private const val VIEW_TYPE_ASSISTANT = 1
         const val PAYLOAD_STREAMING = "streaming"
         const val PAYLOAD_REASONING_EXPANDED = "reasoning_expanded"
+
+        private fun formatFileSize(size: Long): String {
+            return when {
+                size < 1024 -> "${size}B"
+                size < 1024 * 1024 -> "${size / 1024}KB"
+                else -> String.format(java.util.Locale.US, "%.1fMB", size / (1024f * 1024f))
+            }
+        }
+
+        private fun openAttachment(context: Context, attachment: ChatAttachment) {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(Uri.parse(attachment.uri), attachment.mimeType)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                context.startActivity(intent)
+            } catch (e: Exception) {
+                Toast.makeText(context, R.string.attachment_open_failed, Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.example.dodroidai.ai.model
 
+import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
 
 /**
@@ -27,12 +28,15 @@ data class AnthropicRequestBody(
 
 /**
  * Anthropic 消息结构
+ *
+ * [content] 为纯文本时是 JsonPrimitive，包含图片/文档/tool_result 时是 JsonArray。
+ * 使用 JsonElement 而不是 String，避免手工拼接 JSON 带来的转义问题。
  */
 data class AnthropicMessage(
     @SerializedName("role")
     val role: String,
     @SerializedName("content")
-    val content: String,
+    val content: JsonElement,
     @SerializedName("tool_call_id")
     val toolCallId: String? = null
 )

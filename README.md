@@ -21,8 +21,8 @@ input runs fully offline on top of `whisper.cpp`.
 - **Web search** — a `web_search` tool backed by the Brave Search API (10-minute in-memory cache).
 - **Markdown rendering** — assistant messages are rendered with Markwon.
 - **Chat history** — sessions and messages are persisted locally with DataStore.
-- **Attachments** — pick images, PDF, Word or text files from camera/gallery/file picker (preview only
-  for now; see [Known limitations](#known-limitations)).
+- **Attachments** — pick images, PDF or text files from camera/gallery/file picker. Images are sent as
+  multimodal content; PDF/TXT text is extracted and sent as context. Word files are rejected for now.
 - **Home-screen widgets** — 1×2, 1×4 and 2×2 widgets that jump straight into a new conversation.
 - **"Look" shortcut** — opens the built-in `webview-sdk` demo page with a JS bridge that drives the
   native toolbar (title, colors, gradient, scroll-linked alpha).
@@ -161,9 +161,13 @@ DoDroidAI/
 ├── webview-sdk/                          Standalone WebView library (Fragment + toolbar + JS bridge)
 ├── src/ + include/                       whisper.cpp sources
 ├── gradle/libs.versions.toml             Version catalog for the app module
+├── docs/ROADMAP.md                       Forward-looking roadmap and priorities
 ├── plan/                                 Design notes and historical plans
 └── .github/workflows/                    Manual release build
 ```
+
+Candidate directions, priorities and open questions are tracked in
+[docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Built-in tools
 
@@ -187,6 +191,7 @@ Risk levels are defined in `ToolDefinition`; `HIGH` triggers the confirmation di
 | UI | XML Views, Material 3, Markwon (Markdown), fragments |
 | Architecture | Single Activity + MVVM (ViewModel + Repository), no DI framework |
 | Networking | OkHttp + `okhttp-sse` (Retrofit is on the classpath but the chat request is built with OkHttp directly) |
+| Attachments | PDFBox-Android (PDF text extraction), Coil (thumbnails), Android `Bitmap`/EXIF processing |
 | Storage | DataStore Preferences + Gson |
 | Speech | whisper.cpp via JNI/CMake, Android `TextToSpeech` |
 | Build | Gradle 9.1.0, AGP 9.0.1, JDK 17, `compileSdk` 36, `minSdk` 24 |
@@ -207,6 +212,8 @@ Risk levels are defined in `ToolDefinition`; `HIGH` triggers the confirmation di
 
 - API keys and other settings are stored in the app-private DataStore (plain preferences, protected
   only by the OS sandbox). They are not hardware-encrypted.
+- Attachments (images, PDF/TXT text) are sent to the AI endpoint you configure. Avoid attaching
+  sensitive files.
 - Tool calls perform real system actions. SMS and note operations require confirmation; review the
   code before trusting a new endpoint.
 - The repository ships a **test-only** release keystore (`keystore/release.keystore`). Replace the
@@ -214,7 +221,8 @@ Risk levels are defined in `ToolDefinition`; `HIGH` triggers the confirmation di
 
 ## Known limitations
 
-- Attachments can be selected and previewed, but they are currently **not sent to the model**.
+- Scanned PDFs are not OCR'd; only PDFs with an extractable text layer are sent.
+- Word files are not supported yet; convert them to PDF or TXT.
 - `add_note` does not persist anything yet.
 - Only Anthropic Messages-compatible endpoints are supported. The official OpenAI endpoint is not one
   of them; the OpenAI preset needs a compatible gateway.

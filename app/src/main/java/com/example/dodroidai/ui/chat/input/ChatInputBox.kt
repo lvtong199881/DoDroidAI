@@ -182,7 +182,11 @@ class ChatInputBox @JvmOverloads constructor(
 
     fun clearInput() {
         inputText?.text?.clear()
+        attachments.clear()
+        updateAttachmentsUi()
     }
+
+    fun attachmentCount(): Int = attachments.size
 
     fun addAttachment(item: AttachmentItem) {
         attachments.add(item)

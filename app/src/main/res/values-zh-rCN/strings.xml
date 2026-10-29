@@ -101,4 +101,14 @@
     <!-- App Shortcut -->
     <string name="shortcut_look_around_short">去看看</string>
     <string name="shortcut_look_around_long">打开网页</string>
+
+    <!-- 附件 -->
+    <string name="attachment_processing">正在处理附件…</string>
+    <string name="attachment_limit_count">每条消息最多添加 %1$d 个附件</string>
+    <string name="attachment_too_large">文件过大</string>
+    <string name="attachment_word_unsupported">暂不支持 Word，请先转为 PDF 或 TXT</string>
+    <string name="attachment_open_failed">没有可打开该文件的应用</string>
+    <string name="attachment_unavailable">文件不可用</string>
+    <string name="image_input_support">支持图片输入</string>
+    <string name="image_input_support_desc">将图片作为多模态内容发送给该端点</string>
 </resources>

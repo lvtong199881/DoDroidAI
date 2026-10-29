@@ -8,6 +8,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import coil3.load
+import coil3.request.crossfade
 import com.example.dodroidai.R
 
 /**
@@ -37,9 +39,11 @@ class AttachmentAdapter(
             tvFileName.text = item.name
             tvFileSize.text = formatFileSize(item.size)
 
-            ivFileIcon.setImageResource(
-                if (item.isImage) R.drawable.ic_photo else R.drawable.ic_file
-            )
+            if (item.isImage) {
+                ivFileIcon.load(item.uri) { crossfade(true) }
+            } else {
+                ivFileIcon.setImageResource(R.drawable.ic_file)
+            }
 
             btnDelete.setOnClickListener {
                 onDeleteClick(item)

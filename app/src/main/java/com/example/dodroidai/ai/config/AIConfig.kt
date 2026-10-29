@@ -35,6 +35,14 @@ data class AIConfig(
     val sonnetModel: String = "",
     @SerializedName("opusModel")
     val opusModel: String = "",
+    /**
+     * 当前端点是否支持图片输入。
+     *
+     * 使用可空类型是为了兼容旧配置：Gson 反序列化不会应用 Kotlin 默认值，
+     * 缺失字段会变成 null；读取时统一用 `supportsVision ?: true`。
+     */
+    @SerializedName("supportsVision")
+    val supportsVision: Boolean? = null,
     @SerializedName("createdAt")
     val createdAt: Long = System.currentTimeMillis(),
     @SerializedName("updatedAt")

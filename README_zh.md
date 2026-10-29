@@ -20,8 +20,8 @@ tool calling 真正操作手机：闹钟、日历、短信、笔记（占位实�
 - **联网搜索**：`web_search` 工具接入 Brave Search API，内存缓存 10 分钟。
 - **Markdown 渲染**：AI 回复通过 Markwon 渲染。
 - **会话历史**：会话与消息通过 DataStore 持久化在本地。
-- **附件选择**：支持拍照、相册、文件（图片、PDF、Word、TXT）的选择与预览
-  （目前仅预览，见[已知限制](#已知限制)）。
+- **附件**：支持拍照、相册、文件（图片、PDF、TXT）。图片作为多模态内容发送；
+  PDF/TXT 抽取文本后作为上下文；Word 暂不支持。
 - **桌面小组件**：1×2、1×4、2×2 三种尺寸，点击直接进入新对话。
 - **「去看看」快捷方式**：打开内置的 `webview-sdk` 示例页；H5 可通过 JS Bridge 控制原生
   Toolbar（标题、文字色、渐变背景、滚动联动透明度）。
@@ -154,9 +154,12 @@ DoDroidAI/
 ├── webview-sdk/                          独立 WebView 组件库（Fragment + Toolbar + JS Bridge）
 ├── src/ + include/                       whisper.cpp 源码
 ├── gradle/libs.versions.toml             app 模块的版本目录
+├── docs/ROADMAP.md                       迭代路线图
 ├── plan/                                 设计文档与历史方案
 └── .github/workflows/                    手动触发的发布构建
 ```
+
+候选方向、优先级与待决策问题见 [docs/ROADMAP.md](docs/ROADMAP.md)。
 
 ## 内置工具
 
@@ -179,6 +182,7 @@ DoDroidAI/
 | UI | XML Views、Material 3、Markwon（Markdown）、Fragment |
 | 架构 | 单 Activity + MVVM（ViewModel + Repository），无 DI 框架 |
 | 网络 | OkHttp + `okhttp-sse`（依赖里有 Retrofit，但聊天请求由 OkHttp 直接构造） |
+| 附件 | PDFBox-Android（PDF 文本抽取）、Coil（缩略图）、Android Bitmap/EXIF 处理 |
 | 存储 | DataStore Preferences + Gson |
 | 语音 | whisper.cpp（JNI/CMake）、Android `TextToSpeech` |
 | 构建 | Gradle 9.1.0、AGP 9.0.1、JDK 17、`compileSdk` 36、`minSdk` 24 |
@@ -198,13 +202,15 @@ DoDroidAI/
 ## 安全说明
 
 - API Key 等配置保存在应用私有 DataStore 中（普通偏好存储，仅由系统沙箱保护），并非硬件级加密。
+- 附件（图片、PDF/TXT 文本）会发送给你配置的 AI 服务商，请避免附加敏感文件。
 - 工具调用会执行真实的系统操作。短信、笔记类操作需要用户确认；接入新的 AI 网关前请先审查代码。
 - 仓库内的 release 签名文件（`keystore/release.keystore`）**仅供测试**。正式发布前请替换为
   自己的签名配置。
 
 ## 已知限制
 
-- 附件可以选择和预览，但目前**不会发送给模型**。
+- 扫描版 PDF 不做 OCR，只发送能抽取到文本层的 PDF。
+- 暂不支持 Word，请先转为 PDF 或 TXT。
 - `add_note` 尚未真正持久化任何内容。
 - 只支持 Anthropic Messages 兼容端点；OpenAI 官方端点不属于此类，使用 OpenAI 预设时需要改填
   兼容网关。
