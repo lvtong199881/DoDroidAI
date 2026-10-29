@@ -177,14 +177,19 @@ class ChatFragment : Fragment() {
         recyclerView = view.findViewById(R.id.recyclerView)
         tvEmptyHint = view.findViewById(R.id.tvEmptyHint)
 
-        adapter = ChatMessageAdapter { position, expanded ->
-            val messages = adapter?.currentList?.toMutableList() ?: return@ChatMessageAdapter
-            if (position in messages.indices) {
-                val message = messages[position]
-                messages[position] = message.copy(isReasoningExpanded = expanded)
-                adapter?.submitList(messages)
+        adapter = ChatMessageAdapter(
+            onReasoningToggle = { position, expanded ->
+                val messages = adapter?.currentList?.toMutableList() ?: return@ChatMessageAdapter
+                if (position in messages.indices) {
+                    val message = messages[position]
+                    messages[position] = message.copy(isReasoningExpanded = expanded)
+                    adapter?.submitList(messages)
+                }
+            },
+            onRetryClick = {
+                viewModel.retryLastMessage()
             }
-        }
+        )
         recyclerView?.layoutManager = LinearLayoutManager(context).apply {
             stackFromEnd = true
         }
@@ -269,6 +274,10 @@ class ChatFragment : Fragment() {
             chatInputBox?.clearInput()
         }
 
+        chatInputBox?.onStopClick = {
+            viewModel.stopGeneration()
+        }
+
         // 语音输入监听
         chatInputBox?.onVoiceInputListener = object : ChatInputBox.OnVoiceInputListener {
             override fun onVoiceStart() {
@@ -291,6 +300,7 @@ class ChatFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
+                    chatInputBox?.setLoading(state.isLoading)
                     adapter?.submitList(state.messages) {
                         if (state.messages.isNotEmpty()) {
                             recyclerView?.scrollToPosition(state.messages.size - 1)
@@ -398,7 +408,13 @@ class ChatFragment : Fragment() {
 
     private fun summarizeArgs(argsJson: String): String {
         return try {
-            val map = GsonUtil.fromJsonWithTypeToken(argsJson, object : TypeToken<Map<String, Any>>() {})
+            val map = GsonUtil.fromJsonWithTypeToken(
+                argsJson,
+                @Suppress("UNCHECKED_CAST")
+                TypeToken.getParameterized(
+                    Map::class.java, String::class.java, Any::class.java
+                ) as TypeToken<Map<String, Any>>
+            )
             map?.entries?.joinToString(", ") { "${it.key}: ${it.value}" } ?: argsJson.take(50)
         } catch (e: Exception) {
             Log.w("ChatFragment", "summarizeArgs 解析失败", e)

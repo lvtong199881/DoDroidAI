@@ -4,6 +4,10 @@ import com.example.dodroidai.ai.config.AppConfigManager
 import com.example.dodroidai.ai.tools.ToolExecutor
 import com.example.dodroidai.data.repository.ChatRepository
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 /**
  * 应用 Application 类，管理全局配置
@@ -14,9 +18,18 @@ class DoDroidAIApplication : android.app.Application() {
 
     val toolExecutor: ToolExecutor by lazy { ToolExecutor(this) }
 
+    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
     override fun onCreate() {
         super.onCreate()
         AppConfigManager.init(this)
+        // 旧版单配置迁移 + 明文 Key 加密
+        applicationScope.launch {
+            runCatching {
+                AppConfigManager.migrateIfNeeded()
+                AppConfigManager.ensureEncryptedIfNeeded()
+            }
+        }
         // PDFBox 需要先加载 Android 资源（字体/编码表），否则解析 PDF 会失败
         PDFBoxResourceLoader.init(applicationContext)
     }

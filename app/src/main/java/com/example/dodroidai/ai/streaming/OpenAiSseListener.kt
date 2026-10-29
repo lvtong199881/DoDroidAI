@@ -28,7 +28,7 @@ class OpenAiSseListener(callback: StreamingCallback) : EventSourceListener() {
         } catch (e: Exception) {
             null
         }
-        Log.e(TAG, "OpenAI SSE failed. code=${response?.code} body=$body", t)
+        Log.e(TAG, "OpenAI SSE failed. code=${response?.code}", t)
         val message = buildString {
             append("OpenAI SSE failed")
             response?.code?.let { append(" (HTTP ").append(it).append(")") }

@@ -56,7 +56,7 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
 
 验证约定（重要）：
 
-- 仓库当前**没有**单元测试/仪器测试（`app/src` 下只有 `main`），CI 也没有 PR 自动检查。
+- 仓库已有 JVM 单元测试（`app/src/test`，40 个），CI 仍没有 PR 自动检查。
 - 最低验证标准：改动模块 `assembleDebug` 通过 + `lintDebug` 无新增严重问题 + 真机回归相关流程。
 - 改 `:webview-sdk` 时同时构建 `:webview-sdk:assembleDebug` 和 `:app:assembleDebug`（app 依赖该模块）。
 - 改 AI / 工具逻辑时重点回归：流式输出、thinking 展示、工具确认弹窗、权限拒绝分支、会话保存与恢复。
@@ -137,8 +137,9 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
   不要在那里访问 DataStore 或调用 suspend 方法，否则会阻塞启动。
 - 多配置存储为 `configs`（JSON 数组）+ `activeConfigId`；旧版单配置键的迁移在 `migrateIfNeeded()`。
   改 `AIConfig` 字段时保留默认值和迁移路径，Gson 反序列化依赖字段名。
-- 配置以明文保存在 app 私有 DataStore 中。不要新增会打印 API Key、token 的日志；现有日志会打印消息内容，
-  排查问题时注意脱敏。
+- API Key 在 DataStore 中以 Android Keystore AES-GCM 加密（`SecretStore`，格式 `enc:v1:`）；
+  旧明文配置在 `Application.onCreate` 中由 `ensureEncryptedIfNeeded()` 自动迁移。
+- 日志已脱敏：不要打印消息正文、工具参数、Key；错误日志只保留类型/HTTP code。
 - `ChatRepository` 每次读改写整个 sessions JSON（`filter` 掉同 id 再追加），没有增量存储。
   会话数量增长时注意主线程外 IO 与写放大。
 
@@ -146,6 +147,8 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
 
 - `ChatViewModel` 持有 `ChatUiState`（StateFlow）驱动消息列表；流式增量通过 `streamingMessagePosition` /
   `streamingContentUpdate` 直达对应 ViewHolder，避免每次增量都全量 `notifyDataSetChanged`。
+- 停止生成：`stopGeneration()` 取消 `sendJob` 与 SSE，保留已生成内容；`ChatInputBox.setLoading()` 切换
+  发送/停止图标。重试：`retryLastMessage()` 移除失败 assistant + 原 user 后重新发送。
 - `ChatViewModel` 构造时接收 `Fragment` 引用（用于工具确认弹窗和权限请求）。不要在这个方向上再增加
   长生命周期持有；如果重构，优先改为通过 UI 事件回调。
 - `checkAndRequestPermissions()` 是遗留的未调用方法；实际权限请求在 `executeToolCalls()` 内完成，
@@ -210,14 +213,14 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
 3. **`add_note` 是占位实现**：`AddNoteTool` 只返回“笔记已添加”的字符串，没有真正写入任何笔记应用。
 4. **没有测试与自动 CI 校验**：`.github/workflows/appbuildfjhfjh.yml` 仅手动触发，执行 `assembleRelease`
    并发布 GitHub Release。新增的单测在 `app/src/test`，尚未接入 CI。
-5. **Release 使用仓库内测试 keystore**：`keystore/release.keystore`，口令硬编码在 `app/build.gradle.kts`。
-   仅用于本地/CI 出包，正式发布必须换成自己的签名配置。
-6. **Release 未开启混淆**：`isMinifyEnabled = false`，且仓库中没有 `proguard-rules.pro` 文件
-   （`app/build.gradle.kts` 已引用该路径）。开启混淆前需先创建该文件并补 keep 规则
-   （Gson 模型、JNI 方法、webview-sdk 回调）。
+5. **Release 签名**：优先读取 `RELEASE_STORE_FILE` / `RELEASE_STORE_PASSWORD` / `RELEASE_KEY_ALIAS` /
+   `RELEASE_KEY_PASSWORD` 环境变量（CI secret）；缺失时回退仓库测试 keystore，正式发布必须配置 secret。
+6. **Release 已开启 R8 混淆与资源压缩**：keep 规则在 `app/proguard-rules.pro`（Gson 模型、JNI、
+   JS Bridge、组件）。新增反射/JNI 入口时必须补规则，否则 release 可能运行时崩溃。
 7. **`plan/` 是历史快照**：里面的方案可能与当前实现不一致，以代码为准。
 8. **`checkAndRequestPermissions()` 未被调用**；`ChatViewModel` 持有 Fragment 引用。重构时留意。
-9. **没有“停止生成”入口**：`StreamingChatClient` 只在新请求发起时取消上一条连接，UI 未暴露取消按钮。
+9. **取消与重试**：生成中发送按钮变为停止，`ChatViewModel.stopGeneration()` 取消 SSE 并保留已生成内容；
+   失败消息带重试入口，重试会移除原失败对后重新发送。
 
 ## 6. 修改守则
 

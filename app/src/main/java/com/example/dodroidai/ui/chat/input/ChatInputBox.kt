@@ -42,6 +42,7 @@ class ChatInputBox @JvmOverloads constructor(
     private var isWebSearchEnabled = false
     private var isAddOptionsVisible = false
     private var isKeyboardVisible = false
+    private var isLoading = false
 
     private val attachments = mutableListOf<AttachmentItem>()
     private val attachmentAdapter = AttachmentAdapter { item ->
@@ -54,6 +55,7 @@ class ChatInputBox @JvmOverloads constructor(
     var onAddClick: (() -> Unit)? = null
     var onFocusChange: ((Boolean) -> Unit)? = null
     var onSendClick: ((String, List<AttachmentItem>) -> Unit)? = null
+    var onStopClick: (() -> Unit)? = null
     var onAttachmentsChange: ((List<AttachmentItem>) -> Unit)? = null
 
     /**
@@ -111,6 +113,10 @@ class ChatInputBox @JvmOverloads constructor(
         }
 
         btnSend?.setOnClickListener {
+            if (isLoading) {
+                onStopClick?.invoke()
+                return@setOnClickListener
+            }
             val text = inputText?.text?.toString() ?: ""
             if (text.isNotBlank() || attachments.isNotEmpty()) {
                 onSendClick?.invoke(text, attachments.toList())
@@ -178,6 +184,21 @@ class ChatInputBox @JvmOverloads constructor(
 
     fun isAddOptionsVisible(): Boolean = isAddOptionsVisible
 
+    /**
+     * 根据生成状态切换发送/停止按钮。
+     */
+    fun setLoading(loading: Boolean) {
+        isLoading = loading
+        if (loading) {
+            btnSend?.setImageResource(R.drawable.ic_stop)
+            btnSend?.isVisible = true
+            btnModeSwitch?.isVisible = false
+        } else {
+            btnSend?.setImageResource(R.drawable.ic_send)
+            updateSendButtonVisibility()
+        }
+    }
+
     fun isKeyboardVisible(): Boolean = isKeyboardVisible
 
     fun clearInput() {
@@ -210,6 +231,11 @@ class ChatInputBox @JvmOverloads constructor(
     }
 
     private fun updateSendButtonVisibility() {
+        if (isLoading) {
+            btnSend?.isVisible = true
+            btnModeSwitch?.isVisible = false
+            return
+        }
         val hasText = inputText?.text?.isNotBlank() == true
         val hasAttachments = attachments.isNotEmpty()
         btnModeSwitch?.isVisible = !hasText && !hasAttachments

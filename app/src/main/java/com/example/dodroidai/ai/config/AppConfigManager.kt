@@ -132,14 +132,19 @@ object AppConfigManager {
     private val configsKey = stringPreferencesKey("configs")
     private val activeConfigIdKey = stringPreferencesKey("active_config_id")
 
-    private val configsListTypeToken = object : TypeToken<List<AIConfig>>() {}
+    @Suppress("UNCHECKED_CAST")
+    private val configsListTypeToken = TypeToken.getParameterized(
+        List::class.java, AIConfig::class.java
+    ) as TypeToken<List<AIConfig>>
 
     val configsFlow: Flow<List<AIConfig>> = context.aiDataStore.data.map { preferences ->
         val configsJson = preferences[configsKey]
         if (configsJson.isNullOrEmpty()) {
             emptyList()
         } else {
-            GsonUtil.fromJsonWithTypeToken(configsJson, configsListTypeToken) ?: emptyList()
+            GsonUtil.fromJsonWithTypeToken(configsJson, configsListTypeToken)
+                ?.map { it.copy(apiKey = SecretStore.decrypt(it.apiKey)) }
+                ?: emptyList()
         }
     }
 
@@ -165,7 +170,7 @@ object AppConfigManager {
         context.aiDataStore.edit { preferences ->
             val configs = getConfigsList(preferences)
             val updatedConfigs = configs + newConfig
-            preferences[configsKey] = GsonUtil.toJson(updatedConfigs) ?: "[]"
+            preferences[configsKey] = GsonUtil.toJson(encryptConfigs(updatedConfigs)) ?: "[]"
             // 如果是第一个配置，自动设为激活
             if (configs.isEmpty()) {
                 preferences[activeConfigIdKey] = newConfig.id
@@ -184,7 +189,7 @@ object AppConfigManager {
                     it
                 }
             }
-            preferences[configsKey] = GsonUtil.toJson(updatedConfigs) ?: "[]"
+            preferences[configsKey] = GsonUtil.toJson(encryptConfigs(updatedConfigs)) ?: "[]"
         }
     }
 
@@ -192,7 +197,7 @@ object AppConfigManager {
         context.aiDataStore.edit { preferences ->
             val configs = getConfigsList(preferences)
             val updatedConfigs = configs.filter { it.id != configId }
-            preferences[configsKey] = GsonUtil.toJson(updatedConfigs) ?: "[]"
+            preferences[configsKey] = GsonUtil.toJson(encryptConfigs(updatedConfigs)) ?: "[]"
 
             // 如果删除的是激活配置，且还有其他配置，选第一个
             val currentActiveId = preferences[activeConfigIdKey]
@@ -267,7 +272,29 @@ object AppConfigManager {
         return if (configsJson.isNullOrEmpty()) {
             emptyList()
         } else {
-            GsonUtil.fromJsonWithTypeToken(configsJson, configsListTypeToken) ?: emptyList()
+            GsonUtil.fromJsonWithTypeToken(configsJson, configsListTypeToken)
+                ?.map { it.copy(apiKey = SecretStore.decrypt(it.apiKey)) }
+                ?: emptyList()
+        }
+    }
+
+    private fun encryptConfigs(configs: List<AIConfig>): List<AIConfig> {
+        return configs.map { it.copy(apiKey = SecretStore.encrypt(it.apiKey)) }
+    }
+
+    /**
+     * 把已有的明文 Key 重写为密文（旧版本升级路径）。
+     */
+    suspend fun ensureEncryptedIfNeeded() {
+        val preferences = context.aiDataStore.data.first()
+        val configsJson = preferences[configsKey] ?: return
+        if (configsJson.isBlank() || configsJson.contains(SecretStore.PREFIX)) return
+
+        val configs = GsonUtil.fromJsonWithTypeToken(configsJson, configsListTypeToken) ?: return
+        if (configs.none { it.apiKey.isNotBlank() }) return
+
+        context.aiDataStore.edit { prefs ->
+            prefs[configsKey] = GsonUtil.toJson(encryptConfigs(configs)) ?: "[]"
         }
     }
 

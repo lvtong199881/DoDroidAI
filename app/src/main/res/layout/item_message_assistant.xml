@@ -126,6 +126,17 @@
             android:src="@drawable/ic_copy"
             android:contentDescription="@string/copy" />
 
+        <ImageButton
+            android:id="@+id/btnRetry"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/retry"
+            android:src="@drawable/ic_refresh"
+            android:visibility="gone"
+            app:tint="?attr/colorOnSurfaceVariant" />
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

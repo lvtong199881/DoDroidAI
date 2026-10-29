@@ -18,6 +18,7 @@ import com.example.dodroidai.R
 import com.example.dodroidai.ai.config.AIConfig
 import com.example.dodroidai.ai.config.AppConfigManager
 import com.example.dodroidai.ai.model.AIProvider
+import com.example.dodroidai.ai.model.ApiEndpoint
 import com.example.dodroidai.ai.model.ApiFormat
 import com.example.dodroidai.ui.common.Toolbar
 import com.google.android.material.card.MaterialCardView
@@ -261,11 +262,19 @@ class AIConfigFragment : Fragment() {
             AIProvider.CUSTOM
         }
 
+        val normalizedBaseUrl = ApiEndpoint.normalizeBaseUrl(
+            baseUrlInput?.text.toString().trim()
+        )
+        if (!normalizedBaseUrl.startsWith("https://")) {
+            Toast.makeText(context, R.string.invalid_base_url, Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val newConfig = AIConfig(
             id = editingConfigId ?: "",
             provider = provider,
             apiKey = apiKeyInput?.text.toString().trim(),
-            baseUrl = baseUrlInput?.text.toString().trim(),
+            baseUrl = normalizedBaseUrl,
             model = mainModelInput?.text.toString().trim(),
             providerName = providerNameInput?.text.toString().trim(),
             description = descriptionInput?.text.toString().trim(),

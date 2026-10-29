@@ -19,15 +19,25 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = rootProject.file("keystore/release.keystore")
-            storePassword = "DodroidAI2024"
-            keyAlias = "dodroid"
-            keyPassword = "DodroidAI2024"
+            val envStoreFile = System.getenv("RELEASE_STORE_FILE")
+            if (!envStoreFile.isNullOrBlank()) {
+                storeFile = file(envStoreFile)
+                storePassword = System.getenv("RELEASE_STORE_PASSWORD")
+                keyAlias = System.getenv("RELEASE_KEY_ALIAS")
+                keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+            } else {
+                // 本地/CI 无 secret 时回退仓库测试 keystore，仅用于测试出包
+                storeFile = rootProject.file("keystore/release.keystore")
+                storePassword = "DodroidAI2024"
+                keyAlias = "dodroid"
+                keyPassword = "DodroidAI2024"
+            }
         }
     }
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.getByName("release")
         }
@@ -76,7 +86,6 @@ dependencies {
   implementation(libs.okhttp)
   implementation(libs.okhttp.sse)
   implementation(libs.okhttp.logging)
-  implementation(libs.retrofit)
   implementation(libs.kotlinx.serialization.json)
 
   // DataStore

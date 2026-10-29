@@ -112,4 +112,6 @@
     <string name="attachment_unavailable">文件不可用</string>
     <string name="image_input_support">支持图片输入</string>
     <string name="image_input_support_desc">将图片作为多模态内容发送给该端点</string>
+    <string name="retry">重试</string>
+    <string name="invalid_base_url">Base URL 必须以 https:// 开头</string>
 </resources>

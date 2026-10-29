@@ -14,6 +14,7 @@ import com.example.dodroidai.ai.config.AppConfigManager
 import com.example.dodroidai.ai.model.ApiFormat
 import com.example.dodroidai.ai.model.ApiRequestFactory
 import com.example.dodroidai.ai.model.ChatAttachment
+import com.example.dodroidai.ai.model.ChatErrorParser
 import com.example.dodroidai.ai.model.ChatMessage
 import com.example.dodroidai.ai.model.ChatMessage.Companion.LOADING_THINKING
 import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_ASSISTANT
@@ -35,9 +36,13 @@ import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import com.example.dodroidai.util.GsonUtil
 import okhttp3.OkHttpClient
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -195,11 +200,24 @@ class ChatViewModel(
     private var isAwaitingPermission = false
 
     private val httpClient = OkHttpClient.Builder()
-        .connectTimeout(30L, java.util.concurrent.TimeUnit.SECONDS)
+        .connectTimeout(15L, java.util.concurrent.TimeUnit.SECONDS)
+        .writeTimeout(30L, java.util.concurrent.TimeUnit.SECONDS)
         .readTimeout(120L, java.util.concurrent.TimeUnit.SECONDS)
         .build()
 
     private val streamingClient = StreamingChatClient(httpClient)
+
+    /** 当前发送协程，用于停止生成 */
+    private var sendJob: Job? = null
+
+    /** 最近一次失败请求，用于重试 */
+    private var lastFailedRequest: FailedRequest? = null
+
+    private data class FailedRequest(
+        val content: String,
+        val attachments: List<ChatAttachment>,
+        val webSearchEnabled: Boolean
+    )
 
     /** OpenCode Go 要求稳定会话 ID（x-opencode-session）；其他 OpenAI 兼容网关会忽略。 */
     private val openCodeSessionId = "ses_" + UUID.randomUUID().toString().replace("-", "")
@@ -233,7 +251,10 @@ class ChatViewModel(
     ) {
         if (content.isBlank() && attachments.isEmpty()) return
 
-        viewModelScope.launch {
+        sendJob?.cancel()
+        sendJob = viewModelScope.launch {
+            lastFailedRequest = null
+
             val userMessage = ChatMessage(
                 role = ROLE_USER,
                 content = content.trim(),
@@ -317,7 +338,7 @@ class ChatViewModel(
 
                 loadingJob.cancel()
 
-                Log.d(TAG, "Final response: content='${streamingResult.content}', toolCalls=${streamingResult.toolCalls.size}")
+                Log.d(TAG, "Final response: length=${streamingResult.content.length}, toolCalls=${streamingResult.toolCalls.size}")
                 val toolDisplays = buildToolDisplays(streamingResult.toolCalls, emptyList())
                 val assistantMessage = ChatMessage(
                     role = ROLE_ASSISTANT,
@@ -339,11 +360,23 @@ class ChatViewModel(
 
                 saveCurrentSession()
                 _responseComplete.emit(assistantMessage.content)
+            } catch (e: CancellationException) {
+                // 用户主动停止或新请求覆盖；stopGeneration 已处理 UI
+                loadingJob.cancel()
+                return@launch
             } catch (e: Exception) {
                 loadingJob.cancel()
-                Log.e(TAG, "sendMessage 失败", e)
+                Log.e(TAG, "sendMessage 失败: ${e.javaClass.simpleName}")
 
-                val errorText = e.message ?: "Unknown error"
+                val chatError = ChatErrorParser.parse(e)
+                lastFailedRequest = FailedRequest(content, attachments, webSearchEnabled)
+                val detail = e.message?.take(200)
+                val errorText = buildString {
+                    append(chatError.message)
+                    if (!detail.isNullOrBlank()) {
+                        append("\n\n").append(detail)
+                    }
+                }
                 val hint = if (attachments.any { it.isImage } && errorText.contains("400")) {
                     "\n\n提示：当前服务商可能不支持图片输入，可在 AI 配置中关闭图片支持后重试。"
                 } else ""
@@ -354,7 +387,8 @@ class ChatViewModel(
                     currentMessages[lastIndex] = ChatMessage(
                         role = ROLE_ASSISTANT,
                         content = errorText + hint,
-                        isLoading = false
+                        isLoading = false,
+                        isError = true
                     )
                 }
 
@@ -364,6 +398,50 @@ class ChatViewModel(
                 )
             }
         }
+    }
+
+    /**
+     * 停止当前生成：取消请求与协程，保留已生成内容。
+     */
+    fun stopGeneration() {
+        if (!_uiState.value.isLoading) return
+
+        streamingClient.cancel()
+        sendJob?.cancel()
+        sendJob = null
+        lastFailedRequest = null
+
+        val messages = _uiState.value.messages.toMutableList()
+        val lastIndex = messages.lastIndex
+        if (lastIndex >= 0 && messages[lastIndex].isLoading) {
+            val current = messages[lastIndex]
+            messages[lastIndex] = current.copy(
+                content = current.content.ifBlank { "已停止生成" },
+                isLoading = false,
+                loadingState = null
+            )
+        }
+        _uiState.value = _uiState.value.copy(messages = messages, isLoading = false)
+        viewModelScope.launch { saveCurrentSession() }
+    }
+
+    /**
+     * 重试最近一次失败的请求：移除失败消息与原用户消息后重新发送。
+     */
+    fun retryLastMessage() {
+        if (_uiState.value.isLoading) return
+        val request = lastFailedRequest ?: return
+
+        val messages = _uiState.value.messages.toMutableList()
+        val errorIndex = messages.indexOfLast {
+            it.role == ROLE_ASSISTANT && it.isError == true
+        }
+        if (errorIndex >= 0) messages.removeAt(errorIndex)
+        val userIndex = messages.indexOfLast { it.role == ROLE_USER }
+        if (userIndex >= 0) messages.removeAt(userIndex)
+
+        _uiState.value = _uiState.value.copy(messages = messages, error = null)
+        sendMessage(request.content, request.attachments, request.webSearchEnabled)
     }
 
     /**
@@ -381,6 +459,7 @@ class ChatViewModel(
         var currentToolCalls = streamingResult.toolCalls
 
         while (currentToolCalls.isNotEmpty() && toolCallDepth < MAX_TOOL_CALL_DEPTH) {
+            currentCoroutineContext().ensureActive()
             toolCallDepth++
             val currentFragment = fragment
             if (currentFragment == null) {
@@ -778,7 +857,13 @@ class ChatViewModel(
 
     private fun summarizeArgs(argsJson: String): String {
         return try {
-            val map = GsonUtil.fromJsonWithTypeToken(argsJson, object : TypeToken<Map<String, Any>>() {})
+            val map = GsonUtil.fromJsonWithTypeToken(
+                argsJson,
+                @Suppress("UNCHECKED_CAST")
+                TypeToken.getParameterized(
+                    Map::class.java, String::class.java, Any::class.java
+                ) as TypeToken<Map<String, Any>>
+            )
             map?.entries?.joinToString(", ") { "${it.key}: ${it.value}" } ?: argsJson.take(50)
         } catch (e: Exception) {
             Log.w(TAG, "summarizeArgs 解析失败", e)

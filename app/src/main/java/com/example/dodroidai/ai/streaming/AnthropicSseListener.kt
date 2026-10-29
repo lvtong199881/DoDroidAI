@@ -23,7 +23,7 @@ class AnthropicSseListener(
     private var isProcessingToolCall: Boolean = false
 
     override fun onEvent(eventSource: EventSource, id: String?, type: String?, data: String) {
-        Log.i(TAG, "SSE event: $data")
+        Log.d(TAG, "SSE event type=${type ?: "message"}")
 
         if (data == "[DONE]") {
             // [DONE] 是旧格式，保留作为 fallback
@@ -119,8 +119,8 @@ class AnthropicSseListener(
     }
 
     override fun onFailure(eventSource: EventSource, t: Throwable?, response: Response?) {
-        Log.e(TAG, "SSE connection failed. Response: $response", t)
-        callback.onError(t ?: RuntimeException("SSE connection failed. Response: $response"))
+        Log.e(TAG, "SSE connection failed. code=${response?.code}", t)
+        callback.onError(t ?: RuntimeException("SSE connection failed (HTTP ${response?.code})"))
     }
 
     private data class ToolCallBufferEntry(

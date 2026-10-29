@@ -31,4 +31,12 @@ class StreamingChatClient(private val httpClient: OkHttpClient) {
         currentEventSource = eventSource
         return eventSource
     }
+
+    /**
+     * 主动中止当前流式请求。可在任意线程调用。
+     */
+    fun cancel() {
+        currentEventSource?.cancel()
+        currentEventSource = null
+    }
 }

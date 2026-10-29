@@ -14,6 +14,7 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -30,7 +31,8 @@ import io.noties.markwon.Markwon
  * 聊天消息适配器
  */
 class ChatMessageAdapter(
-    private val onReasoningToggle: (Int, Boolean) -> Unit
+    private val onReasoningToggle: (Int, Boolean) -> Unit,
+    private val onRetryClick: ((ChatMessage) -> Unit)? = null
 ) : ListAdapter<ChatMessage, RecyclerView.ViewHolder>(DiffCallback()) {
 
     private val expandedStates = mutableMapOf<Long, Boolean>()
@@ -60,9 +62,11 @@ class ChatMessageAdapter(
             }
             else -> {
                 val view = inflater.inflate(R.layout.item_message_assistant, parent, false)
-                AssistantMessageViewHolder(view) { pos, expanded ->
-                    onReasoningToggle(pos, expanded)
-                }
+                AssistantMessageViewHolder(
+                    view = view,
+                    onReasoningToggle = { pos, expanded -> onReasoningToggle(pos, expanded) },
+                    onRetryClick = onRetryClick
+                )
             }
         }
     }
@@ -145,13 +149,15 @@ class ChatMessageAdapter(
 
     class AssistantMessageViewHolder(
         view: View,
-        private val onReasoningToggle: (Int, Boolean) -> Unit
+        private val onReasoningToggle: (Int, Boolean) -> Unit,
+        private val onRetryClick: ((ChatMessage) -> Unit)? = null
     ) : RecyclerView.ViewHolder(view) {
         private val textMessage: TextView = view.findViewById(R.id.textMessage)
         private val progressBar: ProgressBar = view.findViewById(R.id.progressBar)
         private val textLoading: TextView = view.findViewById(R.id.textLoading)
         private val actionBar: LinearLayout = view.findViewById(R.id.actionBar)
         private val btnCopy: ImageButton = view.findViewById(R.id.btnCopy)
+        private val btnRetry: ImageButton = view.findViewById(R.id.btnRetry)
         private val toolCallContainer: LinearLayout = view.findViewById(R.id.toolCallContainer)
         private val reasoningCard: LinearLayout = view.findViewById(R.id.reasoningCard)
         private val reasoningHeader: LinearLayout = view.findViewById(R.id.reasoningHeader)
@@ -256,6 +262,10 @@ class ChatMessageAdapter(
                 }
 
                 if (showActions) {
+                    btnRetry.isVisible = message.isError == true
+                    btnRetry.setOnClickListener {
+                        onRetryClick?.invoke(message)
+                    }
                     btnCopy.setOnClickListener {
                         val context = itemView.context
                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
