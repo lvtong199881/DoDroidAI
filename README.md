@@ -1,51 +1,242 @@
 # DoDroidAI
 
-An Android Agent application that allows users to control their phone through natural language conversations.
+DoDroidAI is an on-device Android agent. Talk to it in natural language and it operates your phone
+through LLM tool calling: alarms, calendar events, SMS, notes (placeholder) and web search. Voice
+input runs fully offline on top of `whisper.cpp`.
+
+> 中文说明见 [README_zh.md](README_zh.md)。
 
 ---
 
 ## Features
 
-- **Multi-Provider AI Support**: OpenAI, DeepSeek, MiniMax, Custom endpoints
-- **Conversational Interface**: Chat UI with message history
-- **Attachment Support**: Camera, gallery, file attachments (images, PDF, Word, TXT)
-- **Markdown Rendering**: AI responses support Markdown format
-- **Extended Reasoning**: Toggle extended reasoning for complex problems
-- **Local Voice Recognition**: Fully offline speech-to-text based on Whisper.cpp
-- **Voice/Text Input**: Switch between typing and voice input modes
-- **Web Search**: Brave Search API real-time web search
-- **AI Tool Use**: System operations like alarms, calendar, SMS, notes
-- **Text-to-Speech**: AI response voice reading
-- **Theme Customization**: Light, dark, follow system
-- **Multi-language**: English, Simplified Chinese, Traditional Chinese
+- **Multiple AI configurations** — create, clone, activate and delete provider profiles (OpenAI,
+  DeepSeek, MiniMax or a custom endpoint). All requests use an Anthropic Messages-compatible API.
+- **Streaming responses** — Server-Sent Events; text and extended-thinking deltas are rendered as they
+  arrive, with a collapsible thinking block.
+- **Tool calling with guardrails** — the model can call six phone tools. High-risk tools require an
+  in-app confirmation, and missing runtime permissions are requested before execution.
+- **Offline speech-to-text** — bundled `whisper.cpp` + tiny q8_0 model (~43 MB), no network needed.
+- **Text-to-speech** — read assistant replies aloud with the system TTS engine.
+- **Web search** — a `web_search` tool backed by the Brave Search API (10-minute in-memory cache).
+- **Markdown rendering** — assistant messages are rendered with Markwon.
+- **Chat history** — sessions and messages are persisted locally with DataStore.
+- **Attachments** — pick images, PDF, Word or text files from camera/gallery/file picker (preview only
+  for now; see [Known limitations](#known-limitations)).
+- **Home-screen widgets** — 1×2, 1×4 and 2×2 widgets that jump straight into a new conversation.
+- **"Look" shortcut** — opens the built-in `webview-sdk` demo page with a JS bridge that drives the
+  native toolbar (title, colors, gradient, scroll-linked alpha).
+- **Theme and language** — light / dark / system theme; English, Simplified Chinese and Traditional
+  Chinese.
 
 ---
 
 ## Requirements
 
-- Android 7.0 (API 24) or higher
-- Camera permission (for taking photos)
-- Network connection (for AI API calls)
+- Android 7.0 (API 24) or newer on an **ARM device** (`arm64-v8a` or `armeabi-v7a`). No x86_64 ABI is
+  packaged, so most x86 emulators cannot install the APK directly.
+- Network access for the AI endpoint and web search.
+- For building: JDK 17, Android SDK 36, NDK + CMake (for the whisper native library). Gradle is
+  provided by the wrapper.
 
 ---
 
-## Getting Started
+## Build
 
-1. Configure your AI provider in Settings > AI Configuration
-2. Enter your API key and model settings
-3. Start a new conversation and chat naturally
+```bash
+git clone https://github.com/lvtong199881/DoDroidAI.git
+cd DoDroidAI
+
+# Optional: point Gradle at your SDK (Android Studio generates this automatically)
+# local.properties: sdk.dir=/path/to/Android/sdk
+
+./gradlew assembleDebug
+```
+
+The APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
+
+Other useful commands:
+
+| Command | Purpose |
+| --- | --- |
+| `./gradlew :app:assembleDebug` | Build the app module only |
+| `./gradlew :webview-sdk:assembleDebug` | Build the standalone WebView library |
+| `./gradlew assembleRelease` | Build a release APK (uses the bundled test keystore) |
+| `./gradlew lintDebug` | Run Android Lint |
+| `./gradlew clean` | Clean build outputs |
+
+Notes:
+
+- The Gradle wrapper downloads its distribution from a Tencent Cloud mirror. If that mirror is not
+  reachable, edit `gradle/wrapper/gradle-wrapper.properties`.
+- The first build compiles `whisper.cpp` and `ggml` through CMake and takes noticeably longer.
+- `local.properties` is machine-specific and must not be committed.
+
+## Install
+
+```bash
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+```
+
+Or open the project in Android Studio and run the `app` configuration on a connected device.
 
 ---
 
-## Tech Stack
+## Configuration
 
-- Kotlin
-- XML Views
-- Material Design 3
-- Markwon (Markdown rendering)
-- OkHttp + Retrofit (Networking)
-- DataStore (Local storage)
-- whisper.cpp (Local voice recognition)
-- Android TTS (Text-to-Speech)
-- MVVM Architecture
-- NDK (C++ compilation)
+1. Open **Settings → AI Configuration** and add a configuration (the `+` action). Pick a preset or
+   `Custom`.
+2. Fill in:
+   - **Base URL** — the base of an Anthropic Messages-compatible endpoint. The app appends
+     `/v1/messages` to it, so the value must **not** end with `/v1` or `/v1/messages`.
+   - **API Key** — sent as the `X-Api-Key` header.
+   - **Model** — the model name understood by that endpoint.
+3. Save the configuration and mark it active.
+4. Optional: configure **Settings → Web Search** with a
+   [Brave Search API](https://brave.com/search/api/) key to enable the `web_search` tool.
+5. Go back to the chat and try something like *"Set an alarm for 7:30 tomorrow"* or *"What's the
+   weather in Shanghai?"*. High-risk actions such as sending an SMS will ask for confirmation first.
+
+Preset examples (these are templates — any Anthropic Messages-compatible gateway works):
+
+| Preset | Base URL | Default model |
+| --- | --- | --- |
+| DeepSeek | `https://api.deepseek.com/anthropic` | `DeepSeek-V4-Flash` |
+| MiniMax | `https://api.minimaxi.com/anthropic` | `MiniMax-M2.7` |
+| OpenAI | `https://api.openai.com/v1` | `gpt-4o` — preset only; the official endpoint does not speak the Anthropic Messages protocol, so point it at a compatible gateway instead |
+| Custom | — | — |
+
+HTTPS is required: cleartext HTTP is blocked by the app's target SDK and no cleartext exception is
+configured.
+
+---
+
+## How it works
+
+```mermaid
+flowchart TD
+    A[User message] --> B[ChatViewModel]
+    B --> C[StreamingChatClient<br/>Anthropic Messages + SSE]
+    C -->|text / thinking deltas| D[Chat UI]
+    C -->|tool_use| E[ToolExecutor]
+    E --> F{Risk / permission}
+    F -->|HIGH risk| G[Confirmation dialog]
+    F -->|missing permission| H[Runtime permission request]
+    G --> E
+    H --> E
+    E --> I[tool_result message]
+    I --> C
+    C -->|final reply| J[ChatRepository<br/>DataStore]
+    J --> D
+```
+
+- `ChatViewModel` sends the last 20 messages plus the enabled tool schemas to the endpoint and keeps a
+  tool loop running for up to 5 rounds.
+- Tool calls are executed on-device. Results are fed back as `tool_result` content blocks so the model
+  can produce the final answer.
+- Sessions are serialized as JSON into Preferences DataStore; there is no Room database.
+
+## Project layout
+
+```
+DoDroidAI/
+├── app/                                  Android application module
+│   └── src/main/
+│       ├── java/com/example/dodroidai/
+│       │   ├── MainActivity.kt           Entry point, drawer, theme/locale injection
+│       │   ├── DoDroidAIApplication.kt   App-scoped repository and tool executor
+│       │   ├── ai/
+│       │   │   ├── config/               AIConfig, multi-config persistence
+│       │   │   ├── model/                Request/response models, SSE request factory
+│       │   │   ├── streaming/            SSE client and Anthropic event listener
+│       │   │   ├── tools/                Tool abstraction, 6 tools, executor, schemas
+│       │   │   └── voice/                whisper.cpp JNI wrapper, recorder, TTS
+│       │   ├── data/                     ChatSession model and DataStore repository
+│       │   ├── ui/                       chat, settings, common widgets
+│       │   ├── alarm/                    AlarmReceiver
+│       │   └── widget/                   Home-screen widgets (1x2, 1x4, 2x2)
+│       ├── jni/                          CMake project, whisper JNI, bundled ggml
+│       ├── assets/models/                Bundled whisper tiny q8_0 model
+│       └── res/                          Layouts, drawables, strings (en / zh-rCN / zh-rTW), themes
+├── webview-sdk/                          Standalone WebView library (Fragment + toolbar + JS bridge)
+├── src/ + include/                       whisper.cpp sources
+├── gradle/libs.versions.toml             Version catalog for the app module
+├── plan/                                 Design notes and historical plans
+└── .github/workflows/                    Manual release build
+```
+
+## Built-in tools
+
+| Tool | Risk | Runtime permission | Behavior |
+| --- | --- | --- | --- |
+| `get_current_time` | Low | — | Returns the device date and time |
+| `set_alarm` | Medium | — | Fires `AlarmClock.ACTION_SET_ALARM` (system UI skipped) |
+| `add_calendar_event` | Medium | `READ_CALENDAR`, `WRITE_CALENDAR` | Inserts an event through `CalendarContract` |
+| `send_sms` | High | `SEND_SMS` | Sends an SMS after in-app confirmation |
+| `add_note` | High | — | Placeholder implementation; returns a success string without persisting anything |
+| `web_search` | Low | — | Brave Search API, 10-minute cache |
+
+Risk levels are defined in `ToolDefinition`; `HIGH` triggers the confirmation dialog, `MEDIUM` and
+`LOW` execute directly.
+
+## Tech stack
+
+| Layer | Technology |
+| --- | --- |
+| Language | Kotlin 2.0.21, C/C++ (whisper.cpp 1.6.0 + ggml) |
+| UI | XML Views, Material 3, Markwon (Markdown), fragments |
+| Architecture | Single Activity + MVVM (ViewModel + Repository), no DI framework |
+| Networking | OkHttp + `okhttp-sse` (Retrofit is on the classpath but the chat request is built with OkHttp directly) |
+| Storage | DataStore Preferences + Gson |
+| Speech | whisper.cpp via JNI/CMake, Android `TextToSpeech` |
+| Build | Gradle 9.1.0, AGP 9.0.1, JDK 17, `compileSdk` 36, `minSdk` 24 |
+
+## Permissions
+
+| Permission | Used for |
+| --- | --- |
+| `INTERNET` | AI API calls and web search |
+| `CAMERA` | In-app photo capture |
+| `RECORD_AUDIO` | Voice input |
+| `SEND_SMS` | `send_sms` tool |
+| `READ_CALENDAR`, `WRITE_CALENDAR` | `add_calendar_event` tool |
+| `SET_ALARM` | `set_alarm` tool |
+| `RECEIVE_BOOT_COMPLETED` | Declared in the manifest; not used by the current code |
+
+## Security notes
+
+- API keys and other settings are stored in the app-private DataStore (plain preferences, protected
+  only by the OS sandbox). They are not hardware-encrypted.
+- Tool calls perform real system actions. SMS and note operations require confirmation; review the
+  code before trusting a new endpoint.
+- The repository ships a **test-only** release keystore (`keystore/release.keystore`). Replace the
+  signing configuration before publishing a production build.
+
+## Known limitations
+
+- Attachments can be selected and previewed, but they are currently **not sent to the model**.
+- `add_note` does not persist anything yet.
+- Only Anthropic Messages-compatible endpoints are supported. The official OpenAI endpoint is not one
+  of them; the OpenAI preset needs a compatible gateway.
+- No unit/UI tests are included, and CI only builds releases on manual dispatch.
+- Traditional Chinese (`values-zh-rTW`) has fewer translated strings than English/Simplified Chinese;
+  missing entries fall back to English.
+- There is no "stop generation" control in the chat UI.
+- Release builds are not minified (`isMinifyEnabled = false`), and no ProGuard rules file is checked
+  in yet.
+
+## Release automation
+
+`.github/workflows/appbuildfjhfjh.yml` is triggered manually (`workflow_dispatch`). It sets up JDK 17
+and the Android SDK, runs `./gradlew assembleRelease`, renames the APK and publishes it to a GitHub
+Release tagged `release-<run_number>`.
+
+## Acknowledgements
+
+- [whisper.cpp](https://github.com/ggml-org/whisper.cpp) and [ggml](https://github.com/ggml-org/ggml)
+  for on-device speech recognition.
+- [Brave Search API](https://brave.com/search/api/) for web search.
+- [Markwon](https://github.com/noties/Markwon) for Markdown rendering.
+- [OkHttp](https://square.github.io/okhttp/) for networking.
+
+No license file is currently included in this repository; contact the author before redistributing.
