@@ -200,7 +200,7 @@ class ChatFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             val config = AppConfigManager.configFlow
             config.collect { cfg ->
-                android.util.Log.d("ChatFragment", "Current AI config: provider=${cfg.provider}, baseUrl=${cfg.baseUrl}, model=${cfg.model}, apiKey=${cfg.apiKey.take(10)}...")
+                android.util.Log.d("ChatFragment", "Current AI config: provider=${cfg.provider}, baseUrl=${cfg.baseUrl}, model=${cfg.model}")
             }
         }
 
