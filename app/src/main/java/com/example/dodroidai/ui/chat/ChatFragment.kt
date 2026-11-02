@@ -191,6 +191,11 @@ class ChatFragment : Fragment() {
                 viewModel.retryLastMessage()
             }
         )
+        recyclerView?.itemAnimator = androidx.recyclerview.widget.DefaultItemAnimator().apply {
+            addDuration = 160
+            changeDuration = 160
+            removeDuration = 120
+        }
         recyclerView?.layoutManager = LinearLayoutManager(context).apply {
             stackFromEnd = true
         }

@@ -278,13 +278,15 @@ class ChatMessageAdapter(
         }
 
         private fun updateReasoningUI(expanded: Boolean) {
-            if (expanded) {
-                reasoningArrow.rotation = 90f
-                textReasoning.visibility = View.VISIBLE
-            } else {
-                reasoningArrow.rotation = 0f
-                textReasoning.visibility = View.GONE
+            val parent = reasoningCard.parent as? android.view.ViewGroup
+            if (parent != null) {
+                androidx.transition.TransitionManager.beginDelayedTransition(parent)
             }
+            reasoningArrow.animate()
+                .rotation(if (expanded) 90f else 0f)
+                .setDuration(160)
+                .start()
+            textReasoning.visibility = if (expanded) View.VISIBLE else View.GONE
         }
 
         /**

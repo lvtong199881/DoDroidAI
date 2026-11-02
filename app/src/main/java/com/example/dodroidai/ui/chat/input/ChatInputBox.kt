@@ -189,14 +189,22 @@ class ChatInputBox @JvmOverloads constructor(
      */
     fun setLoading(loading: Boolean) {
         isLoading = loading
-        if (loading) {
-            btnSend?.setImageResource(R.drawable.ic_stop)
-            btnSend?.isVisible = true
-            btnModeSwitch?.isVisible = false
-        } else {
-            btnSend?.setImageResource(R.drawable.ic_send)
-            updateSendButtonVisibility()
-        }
+        btnSend?.animate()?.cancel()
+        btnSend?.animate()
+            ?.alpha(0f)
+            ?.setDuration(80)
+            ?.withEndAction {
+                if (loading) {
+                    btnSend?.setImageResource(R.drawable.ic_stop)
+                    btnSend?.isVisible = true
+                    btnModeSwitch?.isVisible = false
+                } else {
+                    btnSend?.setImageResource(R.drawable.ic_send)
+                    updateSendButtonVisibility()
+                }
+                btnSend?.animate()?.alpha(1f)?.setDuration(140)?.start()
+            }
+            ?.start()
     }
 
     fun isKeyboardVisible(): Boolean = isKeyboardVisible

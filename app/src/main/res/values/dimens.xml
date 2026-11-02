@@ -13,7 +13,7 @@
     <dimen name="widget_min_height_2x2">110dp</dimen>
 
     <!-- Common widget -->
-    <dimen name="widget_corner_radius">16dp</dimen>
+    <dimen name="widget_corner_radius">20dp</dimen>
     <dimen name="widget_padding">8dp</dimen>
     <dimen name="widget_icon_size">24dp</dimen>
     <dimen name="widget_text_size">14sp</dimen>

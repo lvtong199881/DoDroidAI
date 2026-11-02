@@ -12,7 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/widget_start_chat"
-        android:textColor="@color/white"
+        android:textColor="@color/m3_on_surface"
         android:textSize="@dimen/widget_text_size" />
 
     <TextView
@@ -20,7 +20,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:text="@string/widget_hint"
-        android:textColor="@color/white_70"
+        android:textColor="@color/m3_on_surface_variant"
         android:textSize="12sp" />
 
 </LinearLayout>
