@@ -23,7 +23,6 @@ import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_TOOL
 import com.example.dodroidai.ai.model.StreamingCallback
 import com.example.dodroidai.ai.streaming.StreamingChatClient
 import com.example.dodroidai.ai.tools.RiskLevel
-import com.example.dodroidai.ai.tools.Tool
 import com.example.dodroidai.ai.tools.ToolCall
 import com.example.dodroidai.ai.tools.ToolCallDisplay
 import com.example.dodroidai.ai.tools.ToolDefinition
@@ -38,6 +37,8 @@ import com.example.dodroidai.util.GsonUtil
 import okhttp3.OkHttpClient
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -101,8 +102,8 @@ data class ToolPermissionRequest(
     val toolCall: ToolCall,
     @SerializedName("toolName")
     val toolName: String,
-    @SerializedName("permission")
-    val permission: String,
+    @SerializedName("permissions")
+    val permissions: List<String>,
     @SerializedName("rationale")
     val rationale: String
 )
@@ -138,6 +139,7 @@ class ChatViewModel(
         private const val TAG = "ChatViewModel"
         private const val MAX_CONTEXT_MESSAGES = 20
         private const val MAX_TOOL_CALL_DEPTH = 5
+        private const val PERMISSION_TIMEOUT_MS = 60_000L
     }
 
     private val _uiState = MutableStateFlow(ChatUiState())
@@ -187,17 +189,15 @@ class ChatViewModel(
     /**
      * 已授予权限的工具调用
      */
-    private val grantedPermissions = mutableListOf<ToolCall>()
 
     /**
      * 被拒绝权限的工具调用ID
      */
-    private val deniedPermissionToolCalls = mutableSetOf<String>()
 
     /**
      * 是否正在等待权限授予
      */
-    private var isAwaitingPermission = false
+    private var pendingPermissionDeferred: CompletableDeferred<Boolean>? = null
 
     private val httpClient = OkHttpClient.Builder()
         .connectTimeout(15L, java.util.concurrent.TimeUnit.SECONDS)
@@ -583,17 +583,9 @@ class ChatViewModel(
      * 处理工具权限结果
      */
     fun onPermissionResult(result: ToolPermissionResult) {
-        viewModelScope.launch {
-            when (result) {
-                is ToolPermissionResult.Granted -> {
-                    grantedPermissions.add(result.toolCall)
-                }
-                is ToolPermissionResult.Denied -> {
-                    // 权限被拒绝，记录失败
-                    deniedPermissionToolCalls.add(result.toolCallId)
-                }
-            }
-            isAwaitingPermission = false
+        when (result) {
+            is ToolPermissionResult.Granted -> pendingPermissionDeferred?.complete(true)
+            is ToolPermissionResult.Denied -> pendingPermissionDeferred?.complete(false)
         }
     }
 
@@ -662,60 +654,34 @@ class ChatViewModel(
         fragment: androidx.fragment.app.Fragment
     ): List<ToolResult> {
         return toolCalls.map { toolCall ->
-            val tool = toolExecutor.getTool(toolCall.name)
-            if (tool == null) {
-                ToolResult(
+            when {
+                !toolExecutor.hasTool(toolCall.name) -> ToolResult(
                     toolCallId = toolCall.id,
                     toolName = toolCall.name,
                     success = false,
                     result = "",
                     error = "未知工具: ${toolCall.name}"
                 )
-            } else if (tool.riskLevel == RiskLevel.HIGH) {
-                // 高风险工具需要用户确认
-                val confirmed = requestToolConfirmation(tool, fragment)
-                if (!confirmed) {
-                    return@map ToolResult(
-                        toolCallId = toolCall.id,
-                        toolName = toolCall.name,
-                        success = false,
-                        result = "",
-                        error = "用户取消"
-                    )
-                }
-                // 继续执行权限检查和执行
-                if (!tool.hasPermissions(toolExecutor.context)) {
-                    val granted = requestToolPermission(tool, fragment)
-                    if (granted) {
-                        toolExecutor.execute(toolCall)
-                    } else {
-                        ToolResult(
-                            toolCallId = toolCall.id,
-                            toolName = toolCall.name,
-                            success = false,
-                            result = "",
-                            error = "权限被拒绝"
-                        )
-                    }
-                } else {
-                    toolExecutor.execute(toolCall)
-                }
-            } else if (!tool.hasPermissions(toolExecutor.context)) {
-                // 请求权限
-                val granted = requestToolPermission(tool, fragment)
-                if (granted) {
-                    toolExecutor.execute(toolCall)
-                } else {
-                    ToolResult(
-                        toolCallId = toolCall.id,
-                        toolName = toolCall.name,
-                        success = false,
-                        result = "",
-                        error = "权限被拒绝"
-                    )
-                }
-            } else {
-                toolExecutor.execute(toolCall)
+
+                toolExecutor.getToolRiskLevel(toolCall.name) == RiskLevel.HIGH &&
+                    !requestToolConfirmation(toolCall, fragment) -> ToolResult(
+                    toolCallId = toolCall.id,
+                    toolName = toolCall.name,
+                    success = false,
+                    result = "",
+                    error = "用户取消"
+                )
+
+                !toolExecutor.hasPermissions(toolCall.name) &&
+                    !requestToolPermission(toolCall) -> ToolResult(
+                    toolCallId = toolCall.id,
+                    toolName = toolCall.name,
+                    success = false,
+                    result = "",
+                    error = "权限被拒绝"
+                )
+
+                else -> toolExecutor.execute(toolCall)
             }
         }
     }
@@ -723,23 +689,39 @@ class ChatViewModel(
     /**
      * 请求工具权限
      */
-    private suspend fun requestToolPermission(tool: Tool, fragment: androidx.fragment.app.Fragment): Boolean {
+    private suspend fun requestToolPermission(toolCall: ToolCall): Boolean {
+        val permissions = toolExecutor.getRequiredPermissions(toolCall.name)
+        if (permissions.isEmpty()) return true
+
         val deferred = CompletableDeferred<Boolean>()
-        tool.requestPermissions(fragment.requireActivity()) { granted ->
-            deferred.complete(granted)
+        pendingPermissionDeferred = deferred
+        _toolPermission.emit(
+            ToolPermissionRequest(
+                toolCall = toolCall,
+                toolName = toolCall.name,
+                permissions = permissions,
+                rationale = "该工具需要以下权限：${permissions.joinToString()}"
+            )
+        )
+        return try {
+            withTimeout(PERMISSION_TIMEOUT_MS) { deferred.await() }
+        } catch (e: TimeoutCancellationException) {
+            Log.w(TAG, "权限请求超时")
+            false
+        } finally {
+            pendingPermissionDeferred = null
         }
-        return deferred.await()
     }
 
     /**
      * 请求高风险工具确认
      */
-    private suspend fun requestToolConfirmation(tool: Tool, fragment: androidx.fragment.app.Fragment): Boolean {
+    private suspend fun requestToolConfirmation(toolCall: ToolCall, fragment: androidx.fragment.app.Fragment): Boolean {
         val deferred = CompletableDeferred<Boolean>()
         fragment.activity?.runOnUiThread {
             val dialog = CustomDialog.Builder(fragment.requireContext())
                 .setTitle("确认执行")
-                .setDescription("即将执行【${tool.name}】工具，此操作风险较高，是否继续？")
+                .setDescription("即将执行【${toolCall.name}】工具，此操作风险较高，是否继续？")
                 .setButtons(
                     CustomDialog.ButtonInfo("确认", onClick = {
                         Log.i(TAG, "Confirm button clicked")
@@ -765,16 +747,6 @@ class ChatViewModel(
     }
 
     /**
-     * 检查并请求工具权限
-     */
-    private fun checkAndRequestPermissions(toolCalls: List<ToolCall>, activity: android.app.Activity): List<ToolCall> {
-        return toolCalls.filter { toolCall ->
-            val tool = toolExecutor.getTool(toolCall.name)
-            tool != null && !tool.hasPermissions(toolExecutor.context)
-        }
-    }
-
-    /**
      * 构建工具消息列表
      */
     private fun buildToolMessages(
@@ -786,9 +758,7 @@ class ChatViewModel(
             ChatMessage(
                 role = ROLE_TOOL,
                 content = if (result.success) result.result else "Error: ${result.error}",
-                // OpenAI 要求 tool_call_id 与 assistant tool_calls 的 id 完全一致；
-                // 部分工具的 ToolResult 不携带 id，这里以原始 toolCall 为准。
-                toolCallId = toolCall?.id ?: result.toolCallId,
+                toolCallId = result.toolCallId,
                 toolCalls = listOf(
                     ToolCallDisplay(
                         name = result.toolName,

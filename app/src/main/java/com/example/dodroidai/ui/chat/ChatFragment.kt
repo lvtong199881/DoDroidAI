@@ -129,13 +129,14 @@ class ChatFragment : Fragment() {
         }
     }
 
-    // 工具权限请求
+    // 工具权限请求（可能一次需要多个权限，如日历读写）
     private val toolPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { result ->
         val toolCall = pendingPermissionToolCall
         if (toolCall != null) {
-            if (isGranted) {
+            val granted = result.values.all { it }
+            if (granted) {
                 viewModel.onPermissionResult(ToolPermissionResult.Granted(toolCall))
             } else {
                 viewModel.onPermissionResult(ToolPermissionResult.Denied(toolCall.id))
@@ -395,7 +396,7 @@ class ChatFragment : Fragment() {
                     onClick = {
                         val toolCall = pendingPermissionToolCall
                         if (toolCall != null) {
-                            toolPermissionLauncher.launch(request.permission)
+                            toolPermissionLauncher.launch(request.permissions.toTypedArray())
                         }
                     }
                 )

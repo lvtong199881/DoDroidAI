@@ -9,3 +9,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# 模块级构建输出
+build/

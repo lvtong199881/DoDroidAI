@@ -56,7 +56,7 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
 
 验证约定（重要）：
 
-- 仓库已有 JVM 单元测试（`app/src/test`，40 个），CI 仍没有 PR 自动检查。
+- 仓库已有 JVM 单元测试（`app/src/test`，50 个），CI 仍没有 PR 自动检查。
 - 最低验证标准：改动模块 `assembleDebug` 通过 + `lintDebug` 无新增严重问题 + 真机回归相关流程。
 - 改 `:webview-sdk` 时同时构建 `:webview-sdk:assembleDebug` 和 `:app:assembleDebug`（app 依赖该模块）。
 - 改 AI / 工具逻辑时重点回归：流式输出、thinking 展示、工具确认弹窗、权限拒绝分支、会话保存与恢复。
@@ -75,7 +75,7 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
 | SSE 客户端与事件解析 | `ai/streaming/StreamingChatClient.kt`、`ai/streaming/AnthropicSseListener.kt`、`ai/streaming/OpenAiSseListener.kt`、`ai/streaming/OpenAiSseParser.kt` |
 | 聊天状态机、流式更新、工具循环 | `ui/chat/ChatViewModel.kt` |
 | 聊天页面与列表 | `ui/chat/ChatFragment.kt`、`ui/chat/ChatListFragment.kt`、`ui/chat/adapter/`、`ui/chat/input/` |
-| 工具抽象、注册、Schema | `ai/tools/Tool.kt`、`ai/tools/ToolExecutor.kt`、`ai/tools/ToolsDefinition.kt`、`ai/tools/*Tool.kt` |
+| 工具契约、注册、执行 | `ai/tools/ToolSpec.kt`、`ai/tools/ToolArgs.kt`、`ai/tools/ToolRegistry.kt`、`ai/tools/*Tool.kt`、`tool-processor/` |
 | 语音识别（whisper）与 TTS | `ai/voice/` |
 | 会话模型与存储 | `data/model/ChatSession.kt`、`data/repository/ChatRepository.kt` |
 | 闹钟触发接收器 | `alarm/AlarmReceiver.kt` |
@@ -94,20 +94,48 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
 
 ### 4.1 新增 / 修改工具
 
-工具是 LLM 的契约，改动要三处同步：
+工具由 KSP 自动注册（`@ToolProvider`），不再需要手写注册表。新增工具：
 
-1. 在 `ai/tools/` 新增 `Tool` 实现：`name`、`requiredPermissions`、`riskLevel`、`hasPermissions`、
-   `requestPermissions`、`execute`。
-2. 在 `ToolExecutor` 的 `tools` 列表注册，并同步 `ToolExecutor.TOOL_NAMES`。
-3. 在 `ToolsDefinition.getTools()` 增加对应的 `ToolDefinition`（description 和 JSON Schema 决定 LLM 何时调用）。
+1. 在 `ai/tools/` 新建 `XxxTool.kt`：
+
+   ```kotlin
+   @ToolProvider
+   object XxxTool {
+       fun spec(): ToolSpec = ToolSpec(
+           name = "xxx",
+           description = "...",
+           parameters = ToolParameters(
+               properties = mapOf(
+                   "arg" to ToolProperty("string", "参数说明")
+               ),
+               required = listOf("arg")
+           ),
+           riskLevel = RiskLevel.LOW,
+           requiredPermissions = emptyList(),
+           timeoutMillis = 15_000,
+           execute = { ctx, args ->
+               val arg = args.requireString("arg")
+               ToolOutput("...")
+           }
+       )
+   }
+   ```
+
+2. 构建时 `:tool-processor` 生成 `GeneratedTools.all`；`spec()` 缺失或返回类型不是 `ToolSpec`
+   会编译失败，不需要手动注册。
 
 约定：
 
-- `execute` 必须先检查权限，失败返回 `ToolResult(success = false, error = "...")`，不要抛异常给上层。
-- 会改变用户数据或对外发送的操作（短信、笔记等）应设为 `RiskLevel.HIGH`，让 UI 弹确认；
-  闹钟、日历这类可撤销的操作用 `MEDIUM`；只读操作 `LOW`。
-- 工具名是模型可见的稳定标识，改名属于破坏性变更，需评估历史会话与提示词。
-- 参数解析失败统一返回失败结果，不要让 Gson 异常冒泡。
+- 参数用 `ToolArgs` 读取（`requireString` / `requireInt(range)` / `requireIsoTime`）；缺字段、类型错误、
+  越界抛 `ToolArgumentException`，执行器统一转成 `INVALID_ARGS` 回给模型。
+- 工具执行在 `ToolRegistry` 的 IO 线程，有 `timeoutMillis`（默认 15s）和协程取消；不要在工具里
+  `runBlocking`，不要自己创建线程池。
+- 权限只声明 `requiredPermissions`，`ToolRegistry.hasPermissions` 统一检查，权限请求由编排层
+  （`ChatFragment` 的 ActivityResult + `ChatViewModel` 的 Deferred）负责。
+- `execute` 返回 `ToolOutput`，不要构造 `ToolResult` / `toolCallId`（由 `ToolRegistry` 统一填充）。
+- 高风险（短信、笔记等）`RiskLevel.HIGH`，编排层自动弹确认；闹钟/日历 `MEDIUM`；只读 `LOW`。
+- 工具名是模型可见的稳定标识，改名属于破坏性变更。
+- 需要外部依赖（如 `httpClient`）从 `ToolContext` 取，不要在 `spec()` 里 new。
 
 ### 4.2 AI 协议
 
@@ -151,8 +179,9 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
   发送/停止图标。重试：`retryLastMessage()` 移除失败 assistant + 原 user 后重新发送。
 - `ChatViewModel` 构造时接收 `Fragment` 引用（用于工具确认弹窗和权限请求）。不要在这个方向上再增加
   长生命周期持有；如果重构，优先改为通过 UI 事件回调。
-- `checkAndRequestPermissions()` 是遗留的未调用方法；实际权限请求在 `executeToolCalls()` 内完成，
-  不要重复实现一套。
+- 权限请求链路：`ChatViewModel.requestToolPermission()` 发 `ToolPermissionRequest` 事件，`ChatFragment`
+  用 `RequestMultiplePermissions` 拉起系统弹窗，结果经 `onPermissionResult()` 完成 Deferred；
+  不要绕过这条链路直接调 `Activity.requestPermissions`。
 - 工具调用消息以 `ToolCallDisplay` 存在 `ChatMessage.toolCalls` 中，用于 UI 折叠展示；修改数据结构要兼容
   已持久化的历史消息（Gson + 默认值）。
 
@@ -212,13 +241,13 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
    请求构建在 `ChatRequestBuilder`，编码在 `AttachmentEncoder`。
 3. **`add_note` 是占位实现**：`AddNoteTool` 只返回“笔记已添加”的字符串，没有真正写入任何笔记应用。
 4. **没有测试与自动 CI 校验**：`.github/workflows/appbuildfjhfjh.yml` 仅手动触发，执行 `assembleRelease`
-   并发布 GitHub Release。新增的单测在 `app/src/test`，尚未接入 CI。
+   并发布 GitHub Release。新增的单测在 `app/src/test`（50 个），尚未接入 CI。
 5. **Release 签名**：优先读取 `RELEASE_STORE_FILE` / `RELEASE_STORE_PASSWORD` / `RELEASE_KEY_ALIAS` /
    `RELEASE_KEY_PASSWORD` 环境变量（CI secret）；缺失时回退仓库测试 keystore，正式发布必须配置 secret。
 6. **Release 已开启 R8 混淆与资源压缩**：keep 规则在 `app/proguard-rules.pro`（Gson 模型、JNI、
    JS Bridge、组件）。新增反射/JNI 入口时必须补规则，否则 release 可能运行时崩溃。
 7. **`plan/` 是历史快照**：里面的方案可能与当前实现不一致，以代码为准。
-8. **`checkAndRequestPermissions()` 未被调用**；`ChatViewModel` 持有 Fragment 引用。重构时留意。
+8. **`ChatViewModel` 持有 Fragment 引用**（用于工具确认弹窗与权限事件）；重构时优先改为 UI 事件回调。
 9. **取消与重试**：生成中发送按钮变为停止，`ChatViewModel.stopGeneration()` 取消 SSE 并保留已生成内容；
    失败消息带重试入口，重试会移除原失败对后重新发送。
 
@@ -227,7 +256,7 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
 Do：
 
 - 小步提交，按模块验证；先跑 `assembleDebug`，再跑 `lintDebug`。
-- 新功能先复用现有抽象（`Tool`、`AIConfig`、`AppConfigManager`、`ChatRepository`），不要另起一套。
+- 新功能先复用现有抽象（`ToolSpec`、`AIConfig`、`AppConfigManager`、`ChatRepository`），不要另起一套。
 - 改 AI 协议、工具名、会话 JSON 结构时视为兼容性变更，考虑已安装用户的历史数据与 `migrateIfNeeded`。
 - 新增页面时遵循现有返回栈约定：MainActivity 的 `OnBackPressedCallback` 先关 Drawer；WebFragment 先
   处理 WebView 返回。

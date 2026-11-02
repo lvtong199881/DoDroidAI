@@ -72,7 +72,17 @@ data class AnthropicToolProperty(
     @SerializedName("type")
     val type: String,
     @SerializedName("description")
-    val description: String
+    val description: String,
+    @SerializedName("enum")
+    val enumValues: List<String>? = null,
+    @SerializedName("minimum")
+    val minimum: Int? = null,
+    @SerializedName("maximum")
+    val maximum: Int? = null,
+    @SerializedName("items")
+    val items: AnthropicToolProperty? = null,
+    @SerializedName("default")
+    val defaultValue: com.google.gson.JsonElement? = null
 )
 
 /**

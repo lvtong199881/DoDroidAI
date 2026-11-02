@@ -1,118 +1,82 @@
 package com.example.dodroidai.ai.tools
 
 import android.Manifest
-import android.app.Activity
 import android.content.ContentValues
-import android.content.Context
 import android.content.pm.PackageManager
 import android.provider.CalendarContract
-import android.util.Log
 import androidx.core.content.ContextCompat
-import com.example.dodroidai.util.GsonUtil
-import java.text.SimpleDateFormat
 import java.util.TimeZone
 
 /**
  * 添加日历事件工具
  */
-class AddCalendarEventTool(private val context: Context) : Tool {
-    /** 工具名称 */
-    override val name = "add_calendar_event"
+@ToolProvider
+object AddCalendarEventTool {
 
-    /** 需要日历读写权限 */
-    override val requiredPermissions = listOf(
-        Manifest.permission.READ_CALENDAR,
-        Manifest.permission.WRITE_CALENDAR
-    )
+    fun spec(): ToolSpec = ToolSpec(
+        name = "add_calendar_event",
+        description = "在日历中添加一个事件",
+        parameters = ToolParameters(
+            properties = mapOf(
+                "title" to ToolProperty("string", "事件标题"),
+                "description" to ToolProperty("string", "事件描述"),
+                "start_time" to ToolProperty("string", "开始时间（ISO 8601 格式，如 2024-01-15T10:00:00）"),
+                "end_time" to ToolProperty("string", "结束时间（ISO 8601 格式，如 2024-01-15T11:00:00）")
+            ),
+            required = listOf("title", "start_time")
+        ),
+        riskLevel = RiskLevel.MEDIUM,
+        requiredPermissions = listOf(
+            Manifest.permission.READ_CALENDAR,
+            Manifest.permission.WRITE_CALENDAR
+        ),
+        execute = { ctx, args ->
+            val title = args.requireString("title")
+            val description = args.optionalString("description") ?: ""
+            val startTimeMs = args.requireIsoTime("start_time")
+            val endTimeMs = args.optionalIsoTime("end_time") ?: (startTimeMs + 3_600_000)
 
-    /** 风险等级中 */
-    override val riskLevel = RiskLevel.MEDIUM
+            val permissionsGranted = listOf(
+                Manifest.permission.READ_CALENDAR,
+                Manifest.permission.WRITE_CALENDAR
+            ).all {
+                ContextCompat.checkSelfPermission(ctx.appContext, it) == PackageManager.PERMISSION_GRANTED
+            }
 
-    override fun hasPermissions(context: Context): Boolean {
-        return ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED
-    }
-
-    override fun requestPermissions(activity: Activity, callback: (Boolean) -> Unit) {
-        activity.requestPermissions(requiredPermissions.toTypedArray(), REQUEST_CODE)
-    }
-
-    override fun execute(context: Context, arguments: String): ToolResult {
-        if (!hasPermissions(context)) {
-            return failure("日历权限被拒绝，无法添加事件")
-        }
-
-        val args = parseArgs(arguments) ?: return failure("参数解析失败")
-
-        val startTimeMs = parseIsoTime(args.startTime)
-        val endTimeMs = args.endTime?.let { parseIsoTime(it) } ?: (startTimeMs + 3600000)
-
-        val values = ContentValues().apply {
-            put(CalendarContract.Events.TITLE, args.title)
-            put(CalendarContract.Events.DESCRIPTION, args.description ?: "")
-            put(CalendarContract.Events.DTSTART, startTimeMs)
-            put(CalendarContract.Events.DTEND, endTimeMs)
-            put(CalendarContract.Events.CALENDAR_ID, 1)
-            put(CalendarContract.Events.EVENT_TIMEZONE, TimeZone.getDefault().id)
-        }
-
-        return try {
-            val uri = context.contentResolver.insert(CalendarContract.Events.CONTENT_URI, values)
-            if (uri != null) {
-                ToolResult(
-                    toolCallId = "",
-                    toolName = name,
-                    success = true,
-                    result = "日历事件已添加: ${args.title}"
+            if (!permissionsGranted) {
+                ToolOutput(
+                    "日历权限被拒绝，无法添加事件",
+                    isError = true,
+                    errorCode = ToolErrorCode.PERMISSION_DENIED
                 )
             } else {
-                failure("日历事件添加失败，请检查日历权限是否授予")
+                val values = ContentValues().apply {
+                    put(CalendarContract.Events.TITLE, title)
+                    put(CalendarContract.Events.DESCRIPTION, description)
+                    put(CalendarContract.Events.DTSTART, startTimeMs)
+                    put(CalendarContract.Events.DTEND, endTimeMs)
+                    put(CalendarContract.Events.CALENDAR_ID, 1)
+                    put(CalendarContract.Events.EVENT_TIMEZONE, TimeZone.getDefault().id)
+                }
+
+                try {
+                    val uri = ctx.appContext.contentResolver
+                        .insert(CalendarContract.Events.CONTENT_URI, values)
+                    if (uri != null) {
+                        ToolOutput("日历事件已添加: $title")
+                    } else {
+                        ToolOutput("日历事件添加失败，请检查日历权限是否授予", isError = true)
+                    }
+                } catch (e: SecurityException) {
+                    ToolOutput(
+                        "日历权限被拒绝，无法添加事件",
+                        isError = true,
+                        errorCode = ToolErrorCode.PERMISSION_DENIED
+                    )
+                } catch (e: Exception) {
+                    ToolOutput("添加日历事件失败: ${e.message}", isError = true)
+                }
             }
-        } catch (e: SecurityException) {
-            failure("日历权限被拒绝，无法添加事件")
-        } catch (e: Exception) {
-            failure("添加日历事件失败: ${e.message}")
         }
-    }
-
-    private fun failure(error: String): ToolResult {
-        return ToolResult(
-            toolCallId = "",
-            toolName = name,
-            success = false,
-            result = "",
-            error = error
-        )
-    }
-
-    private data class Args(
-        val title: String,
-        val description: String? = null,
-        val start_time: String,
-        val end_time: String? = null
-    ) {
-        val startTime: String get() = start_time
-        val endTime: String? get() = end_time
-    }
-
-    private fun parseArgs(json: String): Args? {
-        return try {
-            GsonUtil.fromJson(json, Args::class.java)
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    private fun parseIsoTime(isoTime: String): Long {
-        return try {
-            val format = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault())
-            format.parse(isoTime)?.time ?: System.currentTimeMillis()
-        } catch (e: Exception) {
-            System.currentTimeMillis()
-        }
-    }
-
-    companion object {
-        private const val REQUEST_CODE = 100
-    }
+    )
 }

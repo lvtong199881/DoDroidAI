@@ -2,6 +2,7 @@ package com.example.dodroidai.ai.model
 
 import com.example.dodroidai.ai.config.AIConfig
 import com.example.dodroidai.ai.tools.ToolDefinition
+import com.example.dodroidai.ai.tools.ToolProperty
 import com.example.dodroidai.util.GsonUtil
 import com.google.gson.JsonObject
 import okhttp3.MediaType.Companion.toMediaType
@@ -57,6 +58,16 @@ fun createOpenAiRequest(
         .build()
 }
 
+private fun ToolProperty.toAnthropicProperty(): AnthropicToolProperty = AnthropicToolProperty(
+    type = type,
+    description = description,
+    enumValues = enumValues,
+    minimum = minimum,
+    maximum = maximum,
+    items = items?.toAnthropicProperty(),
+    defaultValue = defaultValue
+)
+
 private fun ToolDefinition.toAnthropicTool(): AnthropicTool {
     return AnthropicTool(
         name = name,
@@ -64,7 +75,15 @@ private fun ToolDefinition.toAnthropicTool(): AnthropicTool {
         inputSchema = AnthropicInputSchema(
             type = "object",
             properties = parameters.properties.mapValues { (_, prop) ->
-                AnthropicToolProperty(type = prop.type, description = prop.description)
+                AnthropicToolProperty(
+                    type = prop.type,
+                    description = prop.description,
+                    enumValues = prop.enumValues,
+                    minimum = prop.minimum,
+                    maximum = prop.maximum,
+                    items = prop.items?.toAnthropicProperty(),
+                    defaultValue = prop.defaultValue
+                )
             },
             required = parameters.required
         )

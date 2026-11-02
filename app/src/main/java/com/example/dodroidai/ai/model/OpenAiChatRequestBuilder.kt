@@ -133,6 +133,18 @@ object OpenAiChatRequestBuilder {
         return "[附件 \"${placeholder.label}\" 未随本次请求发送：${placeholder.reason.description}]"
     }
 
+    private fun com.example.dodroidai.ai.tools.ToolProperty.toJson(): JsonObject = JsonObject().apply {
+        addProperty("type", type)
+        addProperty("description", description)
+        enumValues?.let { values ->
+            add("enum", JsonArray().apply { values.forEach { add(it) } })
+        }
+        minimum?.let { addProperty("minimum", it) }
+        maximum?.let { addProperty("maximum", it) }
+        items?.let { add("items", it.toJson()) }
+        defaultValue?.let { add("default", it) }
+    }
+
     private fun ToolDefinition.toOpenAiTool(): JsonObject = JsonObject().apply {
         addProperty("type", "function")
         add("function", JsonObject().apply {
@@ -142,10 +154,7 @@ object OpenAiChatRequestBuilder {
                 addProperty("type", "object")
                 add("properties", JsonObject().apply {
                     parameters.properties.forEach { (key, property) ->
-                        add(key, JsonObject().apply {
-                            addProperty("type", property.type)
-                            addProperty("description", property.description)
-                        })
+                        add(key, property.toJson())
                     }
                 })
                 add("required", JsonArray().apply {

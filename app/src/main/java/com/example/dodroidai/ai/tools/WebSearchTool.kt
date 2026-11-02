@@ -1,117 +1,67 @@
 package com.example.dodroidai.ai.tools
 
-import android.content.Context
 import android.util.Log
 import com.example.dodroidai.ai.config.AppConfigManager
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import java.util.concurrent.TimeUnit
 
 /**
  * 联网搜索工具，使用 Brave Search API
  */
-class WebSearchTool(
-    private val httpClient: OkHttpClient
-) : Tool {
-    override val name = "web_search"
-
-    override val requiredPermissions = emptyList<String>()
-
-    override val riskLevel = RiskLevel.LOW
+@ToolProvider
+object WebSearchTool {
 
     private val gson = Gson()
 
-    /** 10分钟缓存，相同关键词复用结果 */
+    /** 10 分钟缓存，相同关键词复用结果 */
     private val cache: MutableMap<String, CacheEntry> = object : LinkedHashMap<String, CacheEntry>(16, 0.75f, true) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, CacheEntry>): Boolean {
             return size > MAX_CACHE_SIZE
         }
     }
 
-    private data class CacheEntry(
-        val result: String,
-        val timestamp: Long
+    private data class CacheEntry(val result: String, val timestamp: Long)
+
+    fun spec(): ToolSpec = ToolSpec(
+        name = "web_search",
+        description = "搜索互联网获取实时信息，如天气、新闻、股票等",
+        parameters = ToolParameters(
+            properties = mapOf(
+                "query" to ToolProperty("string", "搜索关键词")
+            ),
+            required = listOf("query")
+        ),
+        riskLevel = RiskLevel.LOW,
+        timeoutMillis = 20_000,
+        execute = { ctx, args ->
+            val query = args.requireString("query")
+
+            val cached = cache[query]
+            if (cached != null && System.currentTimeMillis() - cached.timestamp < CACHE_DURATION_MS) {
+                Log.d(TAG, "使用缓存结果")
+                ToolOutput(cached.result)
+            } else {
+                val apiKey = AppConfigManager.braveSearchApiKeyFlow.first()
+                if (apiKey.isBlank()) {
+                    ToolOutput("请先在设置中配置 Brave Search API Key", isError = true)
+                } else {
+                    try {
+                        val result = search(ctx.httpClient, query, apiKey)
+                        cache[query] = CacheEntry(result, System.currentTimeMillis())
+                        ToolOutput(result)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "搜索失败: ${e.javaClass.simpleName}")
+                        ToolOutput("搜索失败: ${e.message}", isError = true)
+                    }
+                }
+            }
+        }
     )
 
-    override fun hasPermissions(context: Context): Boolean = true
-
-    override fun requestPermissions(activity: android.app.Activity, callback: (Boolean) -> Unit) {
-        callback(true)
-    }
-
-    override fun execute(context: Context, arguments: String): ToolResult {
-        val query = parseQuery(arguments)
-        if (query.isBlank()) {
-            return ToolResult(
-                toolCallId = "",
-                toolName = name,
-                success = false,
-                result = "",
-                error = "搜索关键词不能为空"
-            )
-        }
-
-        // 检查缓存
-        val cached = cache[query]
-        if (cached != null && System.currentTimeMillis() - cached.timestamp < CACHE_DURATION_MS) {
-            Log.d(TAG, "使用缓存结果: $query")
-            return ToolResult(
-                toolCallId = "",
-                toolName = name,
-                success = true,
-                result = cached.result
-            )
-        }
-
-        val apiKey = runBlocking {
-            AppConfigManager.braveSearchApiKeyFlow.first()
-        }
-        if (apiKey.isBlank()) {
-            return ToolResult(
-                toolCallId = "",
-                toolName = name,
-                success = false,
-                result = "",
-                error = "请先在设置中配置 Brave Search API Key"
-            )
-        }
-
-        return try {
-            val result = search(query, apiKey)
-            // 存入缓存
-            cache[query] = CacheEntry(result, System.currentTimeMillis())
-            ToolResult(
-                toolCallId = "",
-                toolName = name,
-                success = true,
-                result = result
-            )
-        } catch (e: Exception) {
-            Log.e(TAG, "搜索失败", e)
-            ToolResult(
-                toolCallId = "",
-                toolName = name,
-                success = false,
-                result = "",
-                error = "搜索失败: ${e.message}"
-            )
-        }
-    }
-
-    private fun parseQuery(arguments: String): String {
-        return try {
-            val json = gson.fromJson(arguments, Arguments::class.java)
-            json.query
-        } catch (e: Exception) {
-            arguments.trim()
-        }
-    }
-
-    private fun search(query: String, apiKey: String): String {
+    private fun search(httpClient: OkHttpClient, query: String, apiKey: String): String {
         val url = "$BASE_URL?${mapOf(
             "q" to query,
             "count" to MAX_RESULTS.toString()
@@ -123,9 +73,8 @@ class WebSearchTool(
             .header("X-Subscription-Token", apiKey)
             .build()
 
-        val response = httpClient.newCall(request).execute()
-        response.use {
-            val body = it.body?.string()
+        httpClient.newCall(request).execute().use { response ->
+            val body = response.body?.string()
             if (body.isNullOrBlank()) {
                 Log.e(TAG, "空响应")
                 return "未找到相关结果"
@@ -147,22 +96,16 @@ class WebSearchTool(
                 }.joinToString("\n\n")
             }
         } catch (e: Exception) {
-            Log.e(TAG, "解析响应失败", e)
+            Log.e(TAG, "解析响应失败: ${e.javaClass.simpleName}")
             "未找到相关结果"
         }
     }
 
-    companion object {
-        private const val TAG = "WebSearchTool"
-        private const val BASE_URL = "https://api.search.brave.com/res/v1/web/search"
-        private const val MAX_RESULTS = 5
-        private const val CACHE_DURATION_MS = 10 * 60 * 1000L // 10分钟
-        private const val MAX_CACHE_SIZE = 100
-    }
-
-    data class Arguments(
-        val query: String
-    )
+    private const val TAG = "WebSearchTool"
+    private const val BASE_URL = "https://api.search.brave.com/res/v1/web/search"
+    private const val MAX_RESULTS = 5
+    private const val CACHE_DURATION_MS = 10 * 60 * 1000L
+    private const val MAX_CACHE_SIZE = 100
 
     data class BraveSearchResponse(
         @SerializedName("web")

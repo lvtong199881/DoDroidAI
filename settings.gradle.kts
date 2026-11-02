@@ -20,3 +20,4 @@ plugins {
 rootProject.name = "DoDroidAI"
 include(":app")
 include(":webview-sdk")
+include(":tool-processor")

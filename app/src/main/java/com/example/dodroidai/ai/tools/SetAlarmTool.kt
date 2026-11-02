@@ -1,90 +1,56 @@
 package com.example.dodroidai.ai.tools
 
-import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.provider.AlarmClock
-import android.util.Log
-import com.example.dodroidai.util.GsonUtil
 import java.util.Locale
 
 /**
  * 设置闹钟工具
  */
-class SetAlarmTool : Tool {
-    /** 工具名称 */
-    override val name = "set_alarm"
+@ToolProvider
+object SetAlarmTool {
 
-    /** 无需运行时权限，使用系统 Intent */
-    override val requiredPermissions = emptyList<String>()
+    fun spec(): ToolSpec = ToolSpec(
+        name = "set_alarm",
+        description = "设置一个闹钟。此工具会自动计算正确的日期（如果设置的时间已过，会自动设为明天），不需要先调用get_current_time。",
+        parameters = ToolParameters(
+            properties = mapOf(
+                "hour" to ToolProperty("integer", "小时（0-23）", minimum = 0, maximum = 23),
+                "minute" to ToolProperty("integer", "分钟（0-59）", minimum = 0, maximum = 59),
+                "label" to ToolProperty("string", "闹钟标签/备注")
+            ),
+            required = listOf("hour", "minute")
+        ),
+        riskLevel = RiskLevel.MEDIUM,
+        execute = { ctx, args ->
+            val hour = args.requireInt("hour", 0..23)
+            val minute = args.requireInt("minute", 0..59)
+            val label = args.optionalString("label") ?: "闹钟"
+            val timeStr = String.format(Locale.getDefault(), "%02d:%02d", hour, minute)
 
-    /** 风险等级中 */
-    override val riskLevel = RiskLevel.MEDIUM
+            val alarmIntent = Intent().apply {
+                action = AlarmClock.ACTION_SET_ALARM
+                putExtra(AlarmClock.EXTRA_HOUR, hour)
+                putExtra(AlarmClock.EXTRA_MINUTES, minute)
+                putExtra(AlarmClock.EXTRA_MESSAGE, label)
+                putExtra(AlarmClock.EXTRA_SKIP_UI, true)
+            }.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
-    override fun hasPermissions(context: Context): Boolean = true
-
-    override fun requestPermissions(activity: Activity, callback: (Boolean) -> Unit) {
-        callback(true)
-    }
-
-    override fun execute(context: Context, arguments: String): ToolResult {
-        val args = parseArgs(arguments) ?: return failure("参数解析失败")
-
-        val label = args.label ?: "闹钟"
-        val timeStr = String.format(Locale.getDefault(), "%02d:%02d", args.hour, args.minute)
-
-        val alarmIntent = Intent().apply {
-            action = AlarmClock.ACTION_SET_ALARM
-            putExtra(AlarmClock.EXTRA_HOUR, args.hour)
-            putExtra(AlarmClock.EXTRA_MINUTES, args.minute)
-            putExtra(AlarmClock.EXTRA_MESSAGE, label)
-            putExtra(AlarmClock.EXTRA_SKIP_UI, true)
-        }.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-
-        return try {
-            context.startActivity(alarmIntent)
-            ToolResult(
-                toolCallId = "",
-                toolName = name,
-                success = true,
-                result = "闹钟已设置: $timeStr，标签: $label"
-            )
-        } catch (e: SecurityException) {
-            val fallbackIntent = Intent(AlarmClock.ACTION_SHOW_ALARMS)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             try {
-                context.startActivity(fallbackIntent)
-                ToolResult(
-                    toolCallId = "",
-                    toolName = name,
-                    success = true,
-                    result = "已打开闹钟应用，请手动设置 $timeStr 的闹钟"
-                )
-            } catch (e2: Exception) {
-                failure("无法打开闹钟应用: ${e2.message}")
+                ctx.appContext.startActivity(alarmIntent)
+                ToolOutput("闹钟已设置: $timeStr，标签: $label")
+            } catch (e: SecurityException) {
+                try {
+                    val fallbackIntent = Intent(AlarmClock.ACTION_SHOW_ALARMS)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    ctx.appContext.startActivity(fallbackIntent)
+                    ToolOutput("已打开闹钟应用，请手动设置 $timeStr 的闹钟")
+                } catch (e2: Exception) {
+                    ToolOutput("无法打开闹钟应用: ${e2.message}", isError = true)
+                }
+            } catch (e: Exception) {
+                ToolOutput("设置闹钟失败: ${e.message}", isError = true)
             }
-        } catch (e: Exception) {
-            failure("设置闹钟失败: ${e.message}")
         }
-    }
-
-    private fun failure(error: String): ToolResult {
-        return ToolResult(
-            toolCallId = "",
-            toolName = name,
-            success = false,
-            result = "",
-            error = error
-        )
-    }
-
-    private data class Args(val hour: Int, val minute: Int, val label: String? = null)
-
-    private fun parseArgs(json: String): Args? {
-        return try {
-            GsonUtil.fromJson(json, Args::class.java)
-        } catch (e: Exception) {
-            null
-        }
-    }
+    )
 }

@@ -1,6 +1,7 @@
 plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlin.serialization)
+  id("com.google.devtools.ksp")
 }
 
 android {
@@ -93,6 +94,7 @@ dependencies {
 
   // Gson for JSON parsing
   implementation(libs.gson)
+  ksp(project(":tool-processor"))
 
   // Markdown
   implementation("io.noties.markwon:core:4.6.2")
