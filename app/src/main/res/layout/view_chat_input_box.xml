@@ -3,11 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardCornerRadius="16dp"
+    app:cardCornerRadius="24dp"
     app:cardElevation="0dp"
-    app:strokeWidth="1dp"
-    app:strokeColor="?attr/colorOutline"
-    app:cardBackgroundColor="?attr/colorCardBackground">
+    app:strokeWidth="0dp"
+    app:cardBackgroundColor="?attr/colorSurfaceContainer">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -15,131 +14,126 @@
         android:orientation="vertical"
         android:padding="12dp">
 
-    <!-- 附件列表（横向可滑动） -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvAttachments"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:clipToPadding="false"
-        android:paddingEnd="8dp"
-        android:paddingStart="8dp" />
-
-    <!-- 第一行：输入框 或 语音提示 -->
-    <FrameLayout
-        android:id="@+id/firstRowContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp">
-
-        <!-- 打字模式：输入框 -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/inputLayout"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        <!-- 附件列表（横向可滑动） -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvAttachments"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/chat_input_hint"
-            app:boxCornerRadiusBottomEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp">
+            android:visibility="gone"
+            android:clipToPadding="false"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/inputText"
+        <!-- 第一行：输入框 或 语音提示 -->
+        <FrameLayout
+            android:id="@+id/firstRowContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp">
+
+            <!-- 打字模式：输入框（无边框，仅 hint） -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/inputLayout"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text"
-                android:maxLines="1"
-                android:imeOptions="actionSend"
-                android:scrollbars="none" />
+                app:boxBackgroundMode="none"
+                app:boxStrokeWidth="0dp"
+                app:boxStrokeWidthFocused="0dp"
+                app:hintEnabled="false">
 
-        </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/inputText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:hint="@string/chat_input_hint"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:imeOptions="actionSend"
+                    android:scrollbars="none"
+                    android:textAppearance="@style/TextAppearance.DoDroid.BodyLarge" />
 
-        <!-- 语音模式：按住说话 -->
-        <TextView
-            android:id="@+id/voiceHint"
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- 语音模式：按住说话 -->
+            <TextView
+                android:id="@+id/voiceHint"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:gravity="center"
+                android:text="@string/voice_hold_to_speak"
+                android:textAppearance="@style/TextAppearance.DoDroid.BodyLarge"
+                android:background="@drawable/bg_voice_hint"
+                android:visibility="gone" />
+
+        </FrameLayout>
+
+        <!-- 第二行：模式 Chip、加号、语音/发送 -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:gravity="center"
-            android:text="@string/voice_hold_to_speak"
-            android:textSize="16sp"
-            android:textColor="?attr/colorOnSurface"
-            android:background="@drawable/bg_voice_hint"
-            android:visibility="gone" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-    </FrameLayout>
+            <com.google.android.material.chip.Chip
+                android:id="@+id/btnThink"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checkable="true"
+                android:text="@string/deep_think"
+                app:chipIcon="@drawable/ic_think"
+                app:chipIconSize="16dp" />
 
-    <!-- 第二行：深度思考按钮、加号、模式切换 -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+            <com.google.android.material.chip.Chip
+                android:id="@+id/btnWebSearch"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:checkable="true"
+                android:text="@string/web_search"
+                app:chipIcon="@drawable/ic_web_search"
+                app:chipIconSize="16dp" />
 
-        <!-- 深度思考按钮 -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnThink"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="wrap_content"
-            android:layout_height="36dp"
-            android:text="@string/deep_think"
-            android:textSize="10dp"
-            android:checkable="true"
-            android:gravity="center_vertical"
-            android:background="@drawable/bg_button_think"
-            app:icon="@drawable/ic_think"
-            app:iconSize="16dp" />
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
 
-        <!-- 智能搜索按钮 -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnWebSearch"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="wrap_content"
-            android:layout_height="36dp"
-            android:layout_marginStart="4dp"
-            android:text="@string/web_search"
-            android:textSize="10dp"
-            android:checkable="true"
-            android:gravity="center_vertical"
-            android:background="@drawable/bg_button_think"
-            app:icon="@drawable/ic_web_search"
-            app:iconSize="16dp" />
+            <ImageButton
+                android:id="@+id/btnAdd"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_add"
+                android:contentDescription="@string/add"
+                android:scaleType="centerInside" />
 
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+            <ImageButton
+                android:id="@+id/btnModeSwitch"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_mic"
+                android:contentDescription="@string/switch_mode"
+                android:scaleType="centerInside" />
 
-        <!-- 加号按钮 -->
-        <ImageButton
-            android:id="@+id/btnAdd"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_add"
-            android:contentDescription="@string/add" />
+            <ImageButton
+                android:id="@+id/btnSend"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="4dp"
+                android:background="@drawable/bg_send_button"
+                android:padding="12dp"
+                android:src="@drawable/ic_send"
+                android:contentDescription="@string/send"
+                android:scaleType="fitCenter"
+                android:visibility="gone" />
 
-        <ImageButton
-            android:id="@+id/btnModeSwitch"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_marginStart="8dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_mic"
-            android:contentDescription="@string/switch_mode" />
-
-        <ImageButton
-            android:id="@+id/btnSend"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_marginStart="8dp"
-            android:background="@drawable/bg_send_button"
-            android:src="@drawable/ic_send"
-            android:contentDescription="@string/send"
-            android:visibility="gone" />
-
-    </LinearLayout>
+        </LinearLayout>
 
     </LinearLayout>
 

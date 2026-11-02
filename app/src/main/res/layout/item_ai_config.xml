@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.DoDroid.Card.Settings"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginStart="16dp"
     android:layout_marginEnd="16dp"
-    android:layout_marginTop="8dp"
-    android:layout_marginBottom="8dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="2dp"
-    app:strokeWidth="0dp">
+    android:layout_marginTop="6dp"
+    android:layout_marginBottom="6dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:minHeight="76dp"
+        android:paddingStart="16dp"
+        android:paddingTop="14dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="14dp">
 
-        <!-- 激活状态指示器 -->
         <View
             android:id="@+id/activeIndicator"
             android:layout_width="4dp"
@@ -42,34 +43,30 @@
                 android:id="@+id/providerName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
-                android:textStyle="bold"
+                android:textAppearance="@style/TextAppearance.DoDroid.TitleMedium"
                 android:textColor="?attr/colorOnSurface" />
 
             <TextView
                 android:id="@+id/modelName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textSize="14sp"
-                android:alpha="0.6"
-                android:textColor="?attr/colorOnSurface" />
+                android:layout_marginTop="2dp"
+                android:textAppearance="@style/TextAppearance.DoDroid.BodyMedium"
+                android:textColor="?attr/colorOnSurfaceVariant" />
 
             <TextView
                 android:id="@+id/baseUrl"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:textSize="12sp"
-                android:alpha="0.4"
-                android:textColor="?attr/colorOnSurface" />
+                android:textAppearance="@style/TextAppearance.DoDroid.LabelMedium" />
 
         </LinearLayout>
 
         <ImageView
             android:id="@+id/activeIcon"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
             android:src="@drawable/ic_check"
             android:visibility="gone"
             android:contentDescription="@string/ai_config_active"

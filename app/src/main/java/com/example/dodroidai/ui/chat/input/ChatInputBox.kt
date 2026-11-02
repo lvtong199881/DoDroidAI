@@ -30,8 +30,8 @@ class ChatInputBox @JvmOverloads constructor(
     private var inputLayout: TextInputLayout? = null
     private var inputText: TextInputEditText? = null
     private var voiceHint: TextView? = null
-    private var btnThink: MaterialButton? = null
-    private var btnWebSearch: MaterialButton? = null
+    private var btnThink: com.google.android.material.chip.Chip? = null
+    private var btnWebSearch: com.google.android.material.chip.Chip? = null
     private var btnAdd: ImageButton? = null
     private var btnModeSwitch: ImageButton? = null
     private var btnSend: ImageButton? = null

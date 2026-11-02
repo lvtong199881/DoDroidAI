@@ -1,41 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
+    android:paddingStart="24dp"
+    android:paddingTop="20dp"
+    android:paddingEnd="24dp"
+    android:paddingBottom="8dp"
     android:background="@drawable/bg_dialog">
 
     <!-- 标题 -->
     <TextView
         android:id="@+id/tvTitle"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingStart="8dp"
-        android:paddingTop="8dp"
-        android:paddingEnd="8dp"
-        android:layout_gravity="center"
-        android:textColor="?attr/colorOnSurface"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        android:textAppearance="@style/TextAppearance.DoDroid.TitleLarge"
+        android:textColor="?attr/colorOnSurface" />
 
     <!-- 描述文案 -->
     <TextView
         android:id="@+id/tvDesc"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingStart="8dp"
-        android:paddingTop="8dp"
-        android:paddingEnd="8dp"
+        android:layout_marginTop="12dp"
+        android:textAppearance="@style/TextAppearance.DoDroid.BodyMedium"
         android:textColor="?attr/colorOnSurfaceVariant"
-        android:textSize="14sp"
-        android:lineSpacingExtra="4dp" />
+        android:lineSpacingExtra="3dp" />
 
     <!-- 自定义内容容器 -->
     <LinearLayout
         android:id="@+id/customContentContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
         android:orientation="vertical"
         android:visibility="gone" />
 
@@ -43,8 +41,10 @@
     <LinearLayout
         android:id="@+id/buttonContainer"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:orientation="horizontal"
-        android:background="@drawable/bg_dialog_button_container" />
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:minHeight="52dp"
+        android:gravity="end|center_vertical"
+        android:orientation="horizontal" />
 
 </LinearLayout>

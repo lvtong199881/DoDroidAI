@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- M3 语义色板：Light -->
+    <color name="m3_primary">#4C5FD5</color>
+    <color name="m3_on_primary">#FFFFFF</color>
+    <color name="m3_primary_container">#DDE2FF</color>
+    <color name="m3_on_primary_container">#101A44</color>
+    <color name="m3_secondary">#5A5F6B</color>
+    <color name="m3_on_secondary">#FFFFFF</color>
+    <color name="m3_background">#F7F8FA</color>
+    <color name="m3_on_background">#171A1F</color>
+    <color name="m3_surface">#FFFFFF</color>
+    <color name="m3_surface_container">#F1F3F7</color>
+    <color name="m3_surface_container_high">#E9ECF2</color>
+    <color name="m3_on_surface">#171A1F</color>
+    <color name="m3_on_surface_variant">#5B6270</color>
+    <color name="m3_outline">#C6CBD4</color>
+    <color name="m3_outline_variant">#E1E4EA</color>
+    <color name="m3_error">#BA1A1A</color>
+    <color name="m3_success">#1E8E5A</color>
+    <color name="m3_warning">#B26A00</color>
+</resources>

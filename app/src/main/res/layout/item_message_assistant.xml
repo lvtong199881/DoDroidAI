@@ -5,8 +5,8 @@
     android:layout_height="wrap_content"
     android:layout_marginTop="4dp"
     android:layout_marginBottom="4dp"
-    android:layout_marginStart="12dp"
-    android:layout_marginEnd="12dp">
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp">
 
     <!-- 消息内容区 -->
     <LinearLayout
@@ -14,7 +14,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="12dp"
+        android:padding="16dp"
         android:background="@drawable/bg_message_assistant"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -27,8 +27,8 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:background="@drawable/bg_reasoning_card"
-            android:padding="8dp"
-            android:layout_marginBottom="8dp"
+            android:padding="10dp"
+            android:layout_marginBottom="12dp"
             android:visibility="gone">
 
             <LinearLayout
@@ -38,40 +38,41 @@
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:background="?attr/selectableItemBackground"
-                android:padding="4dp">
+                android:padding="2dp">
 
                 <ImageView
                     android:id="@+id/reasoningArrow"
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:src="@drawable/ic_arrow_right" />
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_arrow_right"
+                    app:tint="?attr/colorOnSurfaceVariant" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
                     android:text="@string/thinking_process"
-                    android:textSize="12sp"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:layout_marginStart="4dp" />
+                    android:textAppearance="@style/TextAppearance.DoDroid.LabelMedium" />
             </LinearLayout>
 
             <TextView
                 android:id="@+id/textReasoning"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="14sp"
+                android:layout_marginTop="6dp"
+                android:textSize="13sp"
+                android:lineSpacingExtra="2dp"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:fontFamily="monospace"
-                android:visibility="gone"
-                android:layout_marginTop="4dp" />
+                android:visibility="gone" />
         </LinearLayout>
 
         <TextView
             android:id="@+id/textMessage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="?attr/colorOnSurface"
-            android:textSize="16sp" />
+            android:textAppearance="@style/TextAppearance.DoDroid.BodyLarge"
+            android:textColor="?attr/colorOnSurface" />
 
         <!-- 工具调用显示区 -->
         <LinearLayout
@@ -84,13 +85,14 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
             <ProgressBar
                 android:id="@+id/progressBar"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:visibility="gone" />
 
             <TextView
@@ -99,19 +101,19 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:textColor="?attr/colorOnSurfaceVariant"
-                android:textSize="14sp"
+                android:textAppearance="@style/TextAppearance.DoDroid.BodyMedium"
                 android:visibility="gone" />
 
         </LinearLayout>
 
     </LinearLayout>
 
-    <!-- 操作区：复制按钮（在背景外） -->
+    <!-- 操作区：复制/重试（在背景外） -->
     <LinearLayout
         android:id="@+id/actionBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="2dp"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:visibility="gone"
@@ -120,20 +122,22 @@
 
         <ImageButton
             android:id="@+id/btnCopy"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_copy"
-            android:contentDescription="@string/copy" />
+            android:contentDescription="@string/copy"
+            android:padding="14dp"
+            app:tint="?attr/colorOnSurfaceVariant" />
 
         <ImageButton
             android:id="@+id/btnRetry"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginStart="4dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/retry"
             android:src="@drawable/ic_refresh"
+            android:padding="14dp"
             android:visibility="gone"
             app:tint="?attr/colorOnSurfaceVariant" />
 

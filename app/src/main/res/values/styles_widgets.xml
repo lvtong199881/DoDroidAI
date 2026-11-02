@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 通用组件样式；颜色全部走 M3 token，禁止字面量 -->
+    <style name="Widget.DoDroid.Card.Settings" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardBackgroundColor">?attr/colorSurface</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="strokeColor">?attr/colorOutlineVariant</item>
+        <item name="cardCornerRadius">16dp</item>
+    </style>
+
+    <style name="Widget.DoDroid.Card.Tonal" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardBackgroundColor">?attr/colorSurfaceContainer</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeWidth">0dp</item>
+        <item name="cardCornerRadius">16dp</item>
+    </style>
+
+    <style name="Widget.DoDroid.Chip.Filter" parent="Widget.Material3.Chip.Filter">
+        <item name="chipCornerRadius">999dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.DoDroid.LabelLarge</item>
+    </style>
+
+    <style name="Widget.DoDroid.Button.Primary" parent="Widget.Material3.Button">
+        <item name="cornerRadius">999dp</item>
+    </style>
+
+    <style name="Widget.DoDroid.Button.Text" parent="Widget.Material3.Button.TextButton">
+        <item name="android:textAppearance">@style/TextAppearance.DoDroid.LabelLarge</item>
+    </style>
+
+    <style name="Widget.DoDroid.Divider" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:background">?attr/colorOutlineVariant</item>
+    </style>
+</resources>

@@ -6,10 +6,10 @@
 
     <ImageButton
         android:id="@+id/btnBack"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_gravity="start|center_vertical"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="4dp"
         android:background="@drawable/bg_circle_button"
         android:src="@drawable/ic_arrow_back"
         android:contentDescription="@string/back"
@@ -21,21 +21,20 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:gravity="center"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:textColor="?attr/colorOnSurface"
+        android:textAppearance="@style/TextAppearance.DoDroid.TitleLarge"
         android:maxLines="1"
         android:ellipsize="end" />
 
     <TextView
         android:id="@+id/tvRight"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         android:layout_gravity="end|center_vertical"
-        android:layout_marginEnd="8dp"
+        android:layout_marginEnd="4dp"
         android:gravity="center"
-        android:textSize="14sp"
-        android:textColor="@android:color/holo_blue_light"
+        android:minWidth="48dp"
+        android:textAppearance="@style/TextAppearance.DoDroid.LabelLarge"
+        android:textColor="?attr/colorPrimary"
         android:paddingStart="12dp"
         android:paddingEnd="12dp"
         android:background="?attr/selectableItemBackgroundBorderless"
@@ -46,8 +45,7 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_gravity="bottom"
-        android:background="?attr/colorOnSurface"
-        android:alpha="0.1"
+        android:background="?attr/colorOutlineVariant"
         android:visibility="gone" />
 
 </FrameLayout>

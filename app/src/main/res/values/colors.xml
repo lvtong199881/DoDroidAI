@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- 对话框按钮颜色 -->
-    <color name="dialog_button_primary">#6200EE</color>
-    <color name="dialog_button_secondary">#757575</color>
-    <color name="dialog_button_divider">#33000000</color>
-    <color name="divider_horizontal">#33000000</color>
+    <color name="dialog_button_primary">@color/m3_primary</color>
+    <color name="dialog_button_secondary">@color/m3_on_surface_variant</color>
+    <color name="dialog_button_divider">@color/m3_outline_variant</color>
+    <color name="divider_horizontal">@color/m3_outline_variant</color>
 
-    <!-- 闪屏页背景色 -->
-    <color name="splashBackground">#6200EE</color>
 
     <!-- Widget 颜色 -->
     <color name="white">#FFFFFF</color>

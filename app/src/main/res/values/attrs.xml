@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <attr name="colorCardBackground" format="color" />
+    <attr name="success" format="color" />
+    <attr name="warning" format="color" />
 </resources>

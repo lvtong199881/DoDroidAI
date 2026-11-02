@@ -24,82 +24,116 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingTop="16dp"
-            android:paddingBottom="16dp">
+            android:paddingBottom="24dp">
 
             <!-- AI 组 -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
+                android:layout_marginStart="20dp"
                 android:layout_marginEnd="16dp"
+                android:layout_marginBottom="8dp"
                 android:text="@string/group_ai"
-                android:textSize="14sp"
-                android:textColor="?attr/colorOnSurface"
-                android:alpha="0.6" />
+                android:textAppearance="@style/TextAppearance.DoDroid.LabelMedium"
+                android:letterSpacing="0.08"
+                android:textColor="?attr/colorOnSurfaceVariant" />
 
-            <com.example.dodroidai.ui.common.SettingsItemView
-                android:id="@+id/aiConfigCard"
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.DoDroid.Card.Settings"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="16dp" />
+                android:layout_marginEnd="16dp">
+
+                <com.example.dodroidai.ui.common.SettingsItemView
+                    android:id="@+id/aiConfigCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- 应用组 -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
+                android:layout_marginStart="20dp"
                 android:layout_marginTop="24dp"
                 android:layout_marginEnd="16dp"
+                android:layout_marginBottom="8dp"
                 android:text="@string/group_app"
-                android:textSize="14sp"
-                android:textColor="?attr/colorOnSurface"
-                android:alpha="0.6" />
+                android:textAppearance="@style/TextAppearance.DoDroid.LabelMedium"
+                android:letterSpacing="0.08"
+                android:textColor="?attr/colorOnSurfaceVariant" />
 
-            <com.example.dodroidai.ui.common.SettingsItemView
-                android:id="@+id/languageConfigCard"
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.DoDroid.Card.Settings"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="16dp" />
+                android:layout_marginEnd="16dp">
 
-            <com.example.dodroidai.ui.common.SettingsItemView
-                android:id="@+id/appearanceConfigCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="16dp" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
-            <com.example.dodroidai.ui.common.SettingsItemView
-                android:id="@+id/webSearchCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="16dp" />
+                    <com.example.dodroidai.ui.common.SettingsItemView
+                        android:id="@+id/languageConfigCard"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="16dp"
+                        android:background="?attr/colorOutlineVariant" />
+
+                    <com.example.dodroidai.ui.common.SettingsItemView
+                        android:id="@+id/appearanceConfigCard"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="16dp"
+                        android:background="?attr/colorOutlineVariant" />
+
+                    <com.example.dodroidai.ui.common.SettingsItemView
+                        android:id="@+id/webSearchCard"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- 关于组 -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
+                android:layout_marginStart="20dp"
                 android:layout_marginTop="24dp"
                 android:layout_marginEnd="16dp"
+                android:layout_marginBottom="8dp"
                 android:text="@string/group_about"
-                android:textSize="14sp"
-                android:textColor="?attr/colorOnSurface"
-                android:alpha="0.6" />
+                android:textAppearance="@style/TextAppearance.DoDroid.LabelMedium"
+                android:letterSpacing="0.08"
+                android:textColor="?attr/colorOnSurfaceVariant" />
 
-            <com.example.dodroidai.ui.common.SettingsItemView
-                android:id="@+id/aboutCard"
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.DoDroid.Card.Settings"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="16dp" />
+                android:layout_marginEnd="16dp">
+
+                <com.example.dodroidai.ui.common.SettingsItemView
+                    android:id="@+id/aboutCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
 
