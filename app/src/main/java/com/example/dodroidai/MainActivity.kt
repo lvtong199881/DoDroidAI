@@ -2,11 +2,18 @@ package com.example.dodroidai
 
 import android.content.Context
 import android.content.res.Configuration
+import android.graphics.Color
 import android.os.Bundle
+import android.view.View
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.GravityCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.example.dodroidai.ai.config.AppConfigManager
 import com.example.dodroidai.ui.chat.ChatFragment
@@ -39,6 +46,27 @@ class MainActivity : AppCompatActivity() {
         super.attachBaseContext(context)
     }
 
+    private fun applySystemBarInsets() {
+        val root = findViewById<View>(R.id.drawerLayout)
+        val fragmentContainer = findViewById<View>(R.id.fragment_container)
+        val drawerContainer = findViewById<View>(R.id.drawer_container)
+        // DrawerLayout 会消费 systemBars insets，这里在根上统一分配并返回 CONSUMED
+        ViewCompat.setOnApplyWindowInsetsListener(root) { _, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            fragmentContainer.setPadding(0, bars.top, 0, bars.bottom)
+            drawerContainer.setPadding(0, bars.top, 0, bars.bottom)
+            WindowInsetsCompat.CONSUMED
+        }
+    }
+
+    private fun applyBarAppearance() {
+        val controller = WindowCompat.getInsetsController(window, window.decorView)
+        val isDark = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
+            Configuration.UI_MODE_NIGHT_YES
+        controller.isAppearanceLightStatusBars = !isDark
+        controller.isAppearanceLightNavigationBars = !isDark
+    }
+
     private fun applyTheme(theme: String) {
         val mode = when (theme) {
             AppConfigManager.THEME_LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
@@ -62,9 +90,15 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = Color.TRANSPARENT
+        window.navigationBarColor = Color.TRANSPARENT
         setContentView(R.layout.activity_main)
-
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         drawerLayout = findViewById(R.id.drawerLayout)
+        applySystemBarInsets()
+        applyBarAppearance()
 
         if (savedInstanceState == null) {
             // 检测是否从 widget 点击启动新对话
