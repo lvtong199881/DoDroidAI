@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="12dp">
+        android:padding="8dp">
 
         <!-- 附件列表（横向可滑动） -->
         <androidx.recyclerview.widget.RecyclerView
@@ -29,7 +29,7 @@
             android:id="@+id/firstRowContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp">
+            android:layout_marginTop="2dp">
 
             <!-- 打字模式：输入框（无边框，仅 hint） -->
             <com.google.android.material.textfield.TextInputLayout
@@ -46,7 +46,9 @@
                     android:id="@+id/inputText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:minHeight="48dp"
+                    android:minHeight="40dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
                     android:hint="@string/chat_input_hint"
                     android:inputType="text"
                     android:maxLines="1"
@@ -73,7 +75,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="2dp"
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
@@ -105,8 +107,8 @@
 
             <ImageButton
                 android:id="@+id/btnAdd"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_add"
                 android:contentDescription="@string/add"
@@ -114,8 +116,8 @@
 
             <ImageButton
                 android:id="@+id/btnModeSwitch"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_mic"
                 android:contentDescription="@string/switch_mode"
@@ -123,11 +125,11 @@
 
             <ImageButton
                 android:id="@+id/btnSend"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:layout_marginStart="4dp"
                 android:background="@drawable/bg_send_button"
-                android:padding="12dp"
+                android:padding="10dp"
                 android:src="@drawable/ic_send"
                 android:contentDescription="@string/send"
                 android:scaleType="fitCenter"
