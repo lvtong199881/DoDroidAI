@@ -29,8 +29,10 @@ import com.example.dodroidai.ai.tools.ToolDefinition
 import com.example.dodroidai.ai.tools.ToolExecutor
 import com.example.dodroidai.ai.tools.ToolResult
 import com.example.dodroidai.ui.common.CustomDialog
+import com.example.dodroidai.data.local.PermissionPolicyStore
 import com.example.dodroidai.data.model.ChatSession
 import com.example.dodroidai.data.repository.ChatRepository
+import com.example.dodroidai.data.repository.ToolAuditRepository
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import com.example.dodroidai.util.GsonUtil
@@ -673,7 +675,7 @@ class ChatViewModel(
         toolCalls: List<ToolCall>,
         fragment: androidx.fragment.app.Fragment
     ): List<ToolResult> {
-        return toolCalls.map { toolCall ->
+        val results = toolCalls.map { toolCall ->
             when {
                 !toolExecutor.hasTool(toolCall.name) -> ToolResult(
                     toolCallId = toolCall.id,
@@ -704,6 +706,17 @@ class ChatViewModel(
                 else -> toolExecutor.execute(toolCall)
             }
         }
+
+        val auditRepository = ToolAuditRepository(appContext)
+        results.forEachIndexed { index, result ->
+            val call = toolCalls.getOrNull(index) ?: return@forEachIndexed
+            try {
+                auditRepository.record(call, result)
+            } catch (e: Exception) {
+                Log.w(TAG, "写入工具审计失败: ${e.javaClass.simpleName}")
+            }
+        }
+        return results
     }
 
     /**
@@ -712,6 +725,12 @@ class ChatViewModel(
     private suspend fun requestToolPermission(toolCall: ToolCall): Boolean {
         val permissions = toolExecutor.getRequiredPermissions(toolCall.name)
         if (permissions.isEmpty()) return true
+
+        // 用户拒绝过且系统权限仍缺失：不再反复弹窗，直接失败
+        if (permissions.all { PermissionPolicyStore.isDenied(appContext, toolCall.name, it) }) {
+            Log.i(TAG, "权限此前被拒绝: ${toolCall.name}")
+            return false
+        }
 
         val deferred = CompletableDeferred<Boolean>()
         pendingPermissionDeferred = deferred
@@ -723,7 +742,7 @@ class ChatViewModel(
                 rationale = "该工具需要以下权限：${permissions.joinToString()}"
             )
         )
-        return try {
+        val granted = try {
             withTimeout(PERMISSION_TIMEOUT_MS) { deferred.await() }
         } catch (e: TimeoutCancellationException) {
             Log.w(TAG, "权限请求超时")
@@ -731,6 +750,14 @@ class ChatViewModel(
         } finally {
             pendingPermissionDeferred = null
         }
+        permissions.forEach { permission ->
+            if (granted) {
+                PermissionPolicyStore.clearDenied(appContext, toolCall.name, permission)
+            } else {
+                PermissionPolicyStore.markDenied(appContext, toolCall.name, permission)
+            }
+        }
+        return granted
     }
 
     /**

@@ -79,6 +79,7 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
 | 语音识别（whisper）与 TTS | `ai/voice/` |
 | 会话模型与存储 | `data/model/ChatSession.kt`、`data/local/SessionEntity.kt`、`MessageEntity.kt`、`ChatDao.kt`、`data/repository/ChatRepository.kt` |
 | 笔记（Room） | `data/local/NoteEntity.kt`、`NoteDao.kt`、`AppDatabase.kt`、`data/repository/NoteRepository.kt` |
+| 权限策略 / 工具审计 | `data/local/PermissionPolicyStore.kt`、`ToolAuditEntity.kt`、`ToolAuditDao.kt`、`ui/setting/ToolAuditFragment.kt` |
 | 闹钟触发接收器 | `alarm/AlarmReceiver.kt` |
 | 桌面小组件（1x2 / 1x4 / 2x2） | `widget/` |
 | 设置页、AI 配置列表、笔记列表、关于页 | `ui/setting/` |
@@ -132,7 +133,9 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
 - 工具执行在 `ToolRegistry` 的 IO 线程，有 `timeoutMillis`（默认 15s）和协程取消；不要在工具里
   `runBlocking`，不要自己创建线程池。
 - 权限只声明 `requiredPermissions`，`ToolRegistry.hasPermissions` 统一检查，权限请求由编排层
-  （`ChatFragment` 的 ActivityResult + `ChatViewModel` 的 Deferred）负责。
+  （`ChatFragment` 的 ActivityResult + `ChatViewModel` 的 Deferred）负责。用户拒绝过的
+  工具权限记录在 `PermissionPolicyStore`，不会反复弹窗；可在设置 → 工具审计重置。
+- 每次工具执行会写入 `tool_audit_log`（工具名/参数摘要/结果），供设置 → 工具审计查看。
 - `execute` 返回 `ToolOutput`，不要构造 `ToolResult` / `toolCallId`（由 `ToolRegistry` 统一填充）。
 - 高风险（短信、笔记等）`RiskLevel.HIGH`，编排层自动弹确认；闹钟/日历 `MEDIUM`；只读 `LOW`。
 - 工具名是模型可见的稳定标识，改名属于破坏性变更。

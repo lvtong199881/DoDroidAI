@@ -116,4 +116,12 @@
     <string name="invalid_base_url">Base URL 必须以 https:// 开头</string>
     <string name="notes_title">笔记</string>
     <string name="notes_empty">暂无笔记</string>
+    <string name="tool_audit_title">工具审计</string>
+    <string name="tool_audit_empty">暂无工具调用</string>
+    <string name="tool_audit_clear">清空</string>
+    <string name="tool_audit_cleared">审计日志已清空</string>
+    <string name="tool_audit_success">成功</string>
+    <string name="tool_audit_failed">失败</string>
+    <string name="reset_permission_prompts">重置权限提示</string>
+    <string name="permission_reset_done">权限提示已重置</string>
 </resources>

@@ -116,4 +116,12 @@
     <string name="invalid_base_url">Base URL must start with https://</string>
     <string name="notes_title">Notes</string>
     <string name="notes_empty">No notes yet</string>
+    <string name="tool_audit_title">Tool Audit</string>
+    <string name="tool_audit_empty">No tool calls yet</string>
+    <string name="tool_audit_clear">Clear</string>
+    <string name="tool_audit_cleared">Audit log cleared</string>
+    <string name="tool_audit_success">Success</string>
+    <string name="tool_audit_failed">Failed</string>
+    <string name="reset_permission_prompts">Reset permission prompts</string>
+    <string name="permission_reset_done">Permission prompts reset</string>
 </resources>

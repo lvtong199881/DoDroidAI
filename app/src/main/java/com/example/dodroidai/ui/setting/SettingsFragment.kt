@@ -36,6 +36,7 @@ class SettingsFragment : Fragment() {
     private var appearanceConfigCard: SettingsItemView? = null
     private var webSearchCard: SettingsItemView? = null
     private var noteListCard: SettingsItemView? = null
+    private var toolAuditCard: SettingsItemView? = null
     private var aboutCard: SettingsItemView? = null
     private var toolbar: Toolbar? = null
     private var scrollView: ScrollView? = null
@@ -60,6 +61,7 @@ class SettingsFragment : Fragment() {
         appearanceConfigCard = view.findViewById(R.id.appearanceConfigCard)
         webSearchCard = view.findViewById(R.id.webSearchCard)
         noteListCard = view.findViewById(R.id.noteListCard)
+        toolAuditCard = view.findViewById(R.id.toolAuditCard)
         aboutCard = view.findViewById(R.id.aboutCard)
         toolbar = view.findViewById(R.id.toolbar)
         scrollView = view.findViewById(R.id.scrollView)
@@ -69,6 +71,7 @@ class SettingsFragment : Fragment() {
         appearanceConfigCard?.setTitle(R.string.appearance_title)
         webSearchCard?.setTitle(R.string.web_search_title)
         noteListCard?.setTitle(R.string.notes_title)
+        toolAuditCard?.setTitle(R.string.tool_audit_title)
         aboutCard?.setTitle(R.string.about_title)
 
         toolbar?.setTitle(R.string.settings_title)
@@ -109,6 +112,10 @@ class SettingsFragment : Fragment() {
 
         noteListCard?.setOnItemClickListener {
             navigateTo(NoteListFragment())
+        }
+
+        toolAuditCard?.setOnItemClickListener {
+            navigateTo(ToolAuditFragment())
         }
 
         aboutCard?.setOnItemClickListener {
