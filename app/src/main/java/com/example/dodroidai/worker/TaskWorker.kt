@@ -45,7 +45,7 @@ class TaskWorker(
 
         return try {
             val config = AppConfigManager.configFlow.first()
-            val result = withTimeout(TIMEOUT_MS) { runRequest(config, task.prompt) }
+            val result = withTimeout(TIMEOUT_MS) { runRequest(config, task.prompt, taskId) }
             repository.complete(taskId, "done", result)
             notifyResult(taskId, result)
             Result.success()
@@ -56,13 +56,14 @@ class TaskWorker(
         }
     }
 
-    private suspend fun runRequest(config: AIConfig, prompt: String): String {
+    private suspend fun runRequest(config: AIConfig, prompt: String, taskId: Long): String {
         val client = StreamingChatClient(OkHttpClient())
         val prepared = ApiRequestFactory.build(
             config = config,
             messages = listOf(ChatMessage(role = ChatMessage.ROLE_USER, content = prompt)),
             encoded = emptyMap(),
-            tools = emptyList()
+            tools = emptyList(),
+            sessionId = "task_$taskId"
         )
         val deferred = CompletableDeferred<String>()
         client.stream(prepared, object : StreamingCallback {
