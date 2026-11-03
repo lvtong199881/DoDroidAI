@@ -23,12 +23,12 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
         │     ├─ 缺运行时权限：先请求权限
         │     └─ 结果封装为 tool_result（role = tool）
         ├─ 带工具结果再次请求（最多 5 轮，MAX_TOOL_CALL_DEPTH）
-        └─ 最终回复写入 ChatRepository（DataStore）
+        └─ 最终回复写入 ChatRepository（Room：sessions/messages）
 ```
 
 - 包名 / applicationId / namespace：`com.example.dodroidai`
 - 模块：`:app`（应用）、`:webview-sdk`（可独立复用的 WebView 组件库）
-- 架构：单 Activity + Fragment + MVVM（ViewModel + DataStore Repository）；没有 DI 框架，没有 Room
+- 架构：单 Activity + Fragment + MVVM；存储用 Room（会话/消息/笔记）+ DataStore（配置）；没有 DI 框架
 - UI：XML Views + Material 3，ViewBinding 未启用（使用 `findViewById`）
 - 语言：Kotlin 2.0.21；C/C++（whisper.cpp + ggml，JNI）
 - 构建：Gradle 9.1.0（wrapper）/ AGP 9.0.1 / JDK 17 / compileSdk 36 / minSdk 24
@@ -77,7 +77,7 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
 | 聊天页面与列表 | `ui/chat/ChatFragment.kt`、`ui/chat/ChatListFragment.kt`、`ui/chat/adapter/`、`ui/chat/input/` |
 | 工具契约、注册、执行 | `ai/tools/ToolSpec.kt`、`ai/tools/ToolArgs.kt`、`ai/tools/ToolRegistry.kt`、`ai/tools/*Tool.kt`、`tool-processor/` |
 | 语音识别（whisper）与 TTS | `ai/voice/` |
-| 会话模型与存储 | `data/model/ChatSession.kt`、`data/repository/ChatRepository.kt` |
+| 会话模型与存储 | `data/model/ChatSession.kt`、`data/local/SessionEntity.kt`、`MessageEntity.kt`、`ChatDao.kt`、`data/repository/ChatRepository.kt` |
 | 笔记（Room） | `data/local/NoteEntity.kt`、`NoteDao.kt`、`AppDatabase.kt`、`data/repository/NoteRepository.kt` |
 | 闹钟触发接收器 | `alarm/AlarmReceiver.kt` |
 | 桌面小组件（1x2 / 1x4 / 2x2） | `widget/` |
@@ -169,8 +169,8 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
 - API Key 在 DataStore 中以 Android Keystore AES-GCM 加密（`SecretStore`，格式 `enc:v1:`）；
   旧明文配置在 `Application.onCreate` 中由 `ensureEncryptedIfNeeded()` 自动迁移。
 - 日志已脱敏：不要打印消息正文、工具参数、Key；错误日志只保留类型/HTTP code。
-- `ChatRepository` 每次读改写整个 sessions JSON（`filter` 掉同 id 再追加），没有增量存储。
-  会话数量增长时注意主线程外 IO 与写放大。
+- `ChatRepository` 已迁移到 Room（`sessions`/`messages` 表），`saveSession` 在事务内整体替换该会话消息；
+  旧版 DataStore JSON 会在首次启动时迁移并清空。分页/搜索尚未接入 UI。
 
 ### 4.4 Chat UI / 状态
 
