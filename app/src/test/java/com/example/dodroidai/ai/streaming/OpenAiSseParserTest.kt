@@ -100,6 +100,59 @@ class OpenAiSseParserTest {
     }
 
     @Test
+    fun `multiple tool calls are merged independently`() {
+        val recorder = Recorder()
+        val parser = OpenAiSseParser(recorder)
+
+        parser.onData(
+            """{"choices":[{"delta":{"tool_calls":[{"index":0,"id":"call_1","function":{"name":"get_current_time","arguments":""}}]}}]}"""
+        )
+        parser.onData(
+            """{"choices":[{"delta":{"tool_calls":[{"index":1,"id":"call_2","function":{"name":"set_alarm","arguments":""}}]}}]}"""
+        )
+        parser.onData(
+            """{"choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"{}"}}]}}]}"""
+        )
+        parser.onData(
+            """{"choices":[{"delta":{"tool_calls":[{"index":1,"function":{"arguments":"{\"hour\":7}"}}]}}]}"""
+        )
+        parser.onData("[DONE]")
+
+        assertEquals(2, recorder.calls.size)
+        assertEquals("call_1", recorder.calls[0].id)
+        assertEquals("get_current_time", recorder.calls[0].name)
+        assertEquals("{}", recorder.calls[0].arguments)
+        assertEquals("call_2", recorder.calls[1].id)
+        assertEquals("set_alarm", recorder.calls[1].name)
+        assertTrue(recorder.calls[1].arguments.contains("hour"))
+    }
+
+    @Test
+    fun `invalid json is ignored`() {
+        val recorder = Recorder()
+        val parser = OpenAiSseParser(recorder)
+
+        parser.onData("not-json")
+        parser.onData("""{"choices":[{"delta":{"content":"ok"}}]}""")
+        parser.onData("[DONE]")
+
+        assertEquals("ok", recorder.content.toString())
+        assertTrue(recorder.completed)
+    }
+
+    @Test
+    fun `data after completion is ignored`() {
+        val recorder = Recorder()
+        val parser = OpenAiSseParser(recorder)
+
+        parser.onData("""{"choices":[{"delta":{"content":"first"},"finish_reason":"stop"}]}""")
+        parser.onData("""{"choices":[{"delta":{"content":"second"}}]}""")
+
+        assertEquals("first", recorder.content.toString())
+        assertTrue(recorder.completed)
+    }
+
+    @Test
     fun `error payload is surfaced`() {
         val recorder = Recorder()
         val parser = OpenAiSseParser(recorder)
