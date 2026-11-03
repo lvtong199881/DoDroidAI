@@ -38,8 +38,18 @@ class ChatRepository(private val context: Context) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val sessionsKey = stringPreferencesKey("sessions")
 
+    /** 会话列表只需标题/时间，不加载消息（消息在打开会话时分页加载） */
     val sessionsFlow: Flow<List<ChatSession>> = dao.observeSessions().map { sessions ->
-        sessions.map { it.toChatSession() }
+        sessions.map {
+            ChatSession(
+                id = it.id,
+                title = it.title,
+                messages = emptyList(),
+                createdAt = it.createdAt,
+                updatedAt = it.updatedAt,
+                pinned = it.pinned
+            )
+        }
     }
 
     init {
@@ -60,6 +70,50 @@ class ChatRepository(private val context: Context) {
             messages = session.messages.mapIndexed { index, message ->
                 message.toEntity(session.id, index)
             }
+        )
+    }
+
+    suspend fun findSessionMeta(sessionId: String): ChatSession? =
+        dao.findSession(sessionId)?.let {
+            ChatSession(
+                id = it.id,
+                title = it.title,
+                messages = emptyList(),
+                createdAt = it.createdAt,
+                updatedAt = it.updatedAt,
+                pinned = it.pinned
+            )
+        }
+
+    suspend fun recentMessages(sessionId: String, limit: Int): List<ChatMessage> =
+        dao.recentMessages(sessionId, limit).reversed().map { it.toChatMessage() }
+
+    suspend fun messagesBefore(sessionId: String, beforeOrderIndex: Int, limit: Int): List<ChatMessage> =
+        dao.messagesBefore(sessionId, beforeOrderIndex, limit).reversed().map { it.toChatMessage() }
+
+    suspend fun messageCount(sessionId: String): Int = dao.messageCount(sessionId)
+
+    /**
+     * 保存时只替换已加载范围，避免覆盖未加载的更早历史
+     */
+    suspend fun replaceSessionFrom(
+        session: ChatSession,
+        messages: List<ChatMessage>,
+        fromOrderIndex: Int
+    ) {
+        val existingPinned = dao.findSession(session.id)?.pinned ?: false
+        dao.replaceSessionFrom(
+            session = SessionEntity(
+                id = session.id,
+                title = session.title,
+                createdAt = session.createdAt,
+                updatedAt = session.updatedAt,
+                pinned = existingPinned
+            ),
+            messages = messages.mapIndexed { index, message ->
+                message.toEntity(session.id, fromOrderIndex + index)
+            },
+            fromOrderIndex = fromOrderIndex
         )
     }
 

@@ -24,6 +24,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.dodroidai.DoDroidAIApplication
 import com.example.dodroidai.MainActivity
 import com.example.dodroidai.R
@@ -197,6 +198,13 @@ class ChatFragment : Fragment() {
             changeDuration = 160
             removeDuration = 120
         }
+        recyclerView?.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
+                if (dy < 0 && !rv.canScrollVertically(-1)) {
+                    viewModel.loadOlderMessages()
+                }
+            }
+        })
         recyclerView?.layoutManager = LinearLayoutManager(context).apply {
             stackFromEnd = true
         }

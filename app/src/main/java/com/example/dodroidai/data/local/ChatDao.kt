@@ -35,6 +35,18 @@ interface ChatDao {
     @Query("SELECT * FROM messages WHERE sessionId = :sessionId ORDER BY orderIndex")
     suspend fun messagesOf(sessionId: String): List<MessageEntity>
 
+    @Query("SELECT * FROM messages WHERE sessionId = :sessionId ORDER BY orderIndex DESC LIMIT :limit")
+    suspend fun recentMessages(sessionId: String, limit: Int): List<MessageEntity>
+
+    @Query("SELECT * FROM messages WHERE sessionId = :sessionId AND orderIndex < :before ORDER BY orderIndex DESC LIMIT :limit")
+    suspend fun messagesBefore(sessionId: String, before: Int, limit: Int): List<MessageEntity>
+
+    @Query("SELECT COUNT(*) FROM messages WHERE sessionId = :sessionId")
+    suspend fun messageCount(sessionId: String): Int
+
+    @Query("DELETE FROM messages WHERE sessionId = :sessionId AND orderIndex >= :fromOrderIndex")
+    suspend fun deleteMessagesFrom(sessionId: String, fromOrderIndex: Int)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertSession(session: SessionEntity)
 
@@ -54,6 +66,20 @@ interface ChatDao {
     suspend fun replaceSession(session: SessionEntity, messages: List<MessageEntity>) {
         upsertSession(session)
         deleteMessages(session.id)
+        insertMessages(messages)
+    }
+
+    /**
+     * 只替换 [fromOrderIndex, ...) 范围的消息，保留更早的历史（分页加载后保存）
+     */
+    @Transaction
+    suspend fun replaceSessionFrom(
+        session: SessionEntity,
+        messages: List<MessageEntity>,
+        fromOrderIndex: Int
+    ) {
+        upsertSession(session)
+        deleteMessagesFrom(session.id, fromOrderIndex)
         insertMessages(messages)
     }
 }

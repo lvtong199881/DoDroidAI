@@ -72,7 +72,10 @@ data class ChatUiState(
     @SerializedName("sessionId")
     val sessionId: String? = null,
     @SerializedName("sessionName")
-    val sessionName: String? = null
+    val sessionName: String? = null,
+    val hasMoreMessages: Boolean = false,
+    val isLoadingMoreMessages: Boolean = false,
+    val loadedFromOrderIndex: Int = 0
 )
 
 /**
@@ -142,6 +145,7 @@ class ChatViewModel(
     companion object {
         private const val TAG = "ChatViewModel"
         private const val MAX_CONTEXT_MESSAGES = 20
+        private const val PAGE_SIZE = 60
         private const val MAX_TOOL_CALL_DEPTH = 5
         private const val PERMISSION_TIMEOUT_MS = 60_000L
     }
@@ -237,15 +241,38 @@ class ChatViewModel(
 
     private fun loadSession(sessionId: String) {
         viewModelScope.launch {
-            val sessions = chatRepository.sessionsFlow.first()
-            val session = sessions.find { it.id == sessionId }
-            session?.let {
-                _uiState.value = _uiState.value.copy(
-                    messages = it.messages,
-                    sessionId = sessionId,
-                    sessionName = it.title
-                )
-            }
+            val meta = chatRepository.findSessionMeta(sessionId)
+            val total = chatRepository.messageCount(sessionId)
+            val from = (total - PAGE_SIZE).coerceAtLeast(0)
+            val recent = chatRepository.recentMessages(sessionId, PAGE_SIZE)
+            _uiState.value = _uiState.value.copy(
+                messages = recent,
+                sessionId = sessionId,
+                sessionName = meta?.title,
+                hasMoreMessages = from > 0,
+                loadedFromOrderIndex = from
+            )
+        }
+    }
+
+    /**
+     * 上滑加载更早的消息
+     */
+    fun loadOlderMessages() {
+        val state = _uiState.value
+        val sid = state.sessionId ?: return
+        if (state.isLoadingMoreMessages || !state.hasMoreMessages) return
+        _uiState.value = state.copy(isLoadingMoreMessages = true)
+        viewModelScope.launch {
+            val before = _uiState.value.loadedFromOrderIndex
+            val older = chatRepository.messagesBefore(sid, before, PAGE_SIZE)
+            val newFrom = (before - older.size).coerceAtLeast(0)
+            _uiState.value = _uiState.value.copy(
+                messages = older + _uiState.value.messages,
+                hasMoreMessages = newFrom > 0 && older.isNotEmpty(),
+                isLoadingMoreMessages = false,
+                loadedFromOrderIndex = newFrom
+            )
         }
     }
 
@@ -966,13 +993,13 @@ class ChatViewModel(
         if (messages.isEmpty()) return
 
         val existingSession = if (currentState.sessionId != null) {
-            chatRepository.sessionsFlow.first().find { it.id == currentState.sessionId }
+            chatRepository.findSessionMeta(currentState.sessionId)
         } else null
 
         val session = if (existingSession != null) {
             existingSession.copy(
                 messages = messages,
-                title = if (existingSession.messages.isEmpty()) sessionTitle(messages) else existingSession.title,
+                title = if (existingSession.title.isBlank()) sessionTitle(messages) else existingSession.title,
                 updatedAt = System.currentTimeMillis()
             )
         } else {
@@ -984,7 +1011,7 @@ class ChatViewModel(
                 updatedAt = System.currentTimeMillis()
             )
         }
-        chatRepository.saveSession(session)
+        chatRepository.replaceSessionFrom(session, messages, currentState.loadedFromOrderIndex)
         _uiState.value = _uiState.value.copy(
             sessionId = session.id,
             sessionName = session.title
