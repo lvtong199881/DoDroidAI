@@ -33,6 +33,7 @@ import com.example.dodroidai.data.local.PermissionPolicyStore
 import com.example.dodroidai.data.model.ChatSession
 import com.example.dodroidai.data.repository.ChatRepository
 import com.example.dodroidai.data.repository.MemoryRepository
+import com.example.dodroidai.data.repository.RequestTraceRepository
 import com.example.dodroidai.data.repository.ToolAuditRepository
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
@@ -298,8 +299,11 @@ class ChatViewModel(
                 }
             }
 
+            val traceStartedAt = System.currentTimeMillis()
+            var traceConfig: AIConfig? = null
             try {
                 val config = getCurrentConfig()
+                traceConfig = config
                 // 获取历史消息（已包含新添加的 userMessage）
                 val allMessages = getRecentMessages()
                 // 根据设置决定是否启用 web_search 工具
@@ -364,6 +368,7 @@ class ChatViewModel(
                 )
 
                 saveCurrentSession()
+                recordTrace(traceConfig, traceStartedAt, true, null, streamingResult.toolCalls.size)
                 _responseComplete.emit(assistantMessage.content)
             } catch (e: CancellationException) {
                 // 用户主动停止或新请求覆盖；stopGeneration 已处理 UI
@@ -371,6 +376,7 @@ class ChatViewModel(
                 return@launch
             } catch (e: Exception) {
                 loadingJob.cancel()
+                recordTrace(traceConfig, traceStartedAt, false, e.javaClass.simpleName, 0)
                 Log.e(TAG, "sendMessage 失败: ${e.javaClass.simpleName}")
 
                 val chatError = ChatErrorParser.parse(e)
@@ -847,6 +853,27 @@ class ChatViewModel(
                 _uiState.value = _uiState.value.copy(messages = messages)
                 break
             }
+        }
+    }
+
+    private suspend fun recordTrace(
+        config: AIConfig?,
+        startedAt: Long,
+        success: Boolean,
+        error: String?,
+        toolCallCount: Int
+    ) {
+        withContext(Dispatchers.IO) {
+            RequestTraceRepository(appContext).record(
+                config = config,
+                sessionId = sessionId,
+                startedAt = startedAt,
+                durationMs = System.currentTimeMillis() - startedAt,
+                success = success,
+                error = error,
+                toolCallCount = toolCallCount,
+                messageCount = _uiState.value.messages.size
+            )
         }
     }
 

@@ -40,6 +40,7 @@ class SettingsFragment : Fragment() {
     private var memoryCard: SettingsItemView? = null
     private var scheduledTasksCard: SettingsItemView? = null
     private var sttCard: SettingsItemView? = null
+    private var diagnosticsCard: SettingsItemView? = null
     private var aboutCard: SettingsItemView? = null
     private var toolbar: Toolbar? = null
     private var scrollView: ScrollView? = null
@@ -68,6 +69,7 @@ class SettingsFragment : Fragment() {
         memoryCard = view.findViewById(R.id.memoryCard)
         scheduledTasksCard = view.findViewById(R.id.scheduledTasksCard)
         sttCard = view.findViewById(R.id.sttCard)
+        diagnosticsCard = view.findViewById(R.id.diagnosticsCard)
         aboutCard = view.findViewById(R.id.aboutCard)
         toolbar = view.findViewById(R.id.toolbar)
         scrollView = view.findViewById(R.id.scrollView)
@@ -81,6 +83,7 @@ class SettingsFragment : Fragment() {
         memoryCard?.setTitle(R.string.memory_title)
         scheduledTasksCard?.setTitle(R.string.scheduled_tasks_title)
         sttCard?.setTitle(R.string.stt_title)
+        diagnosticsCard?.setTitle(R.string.diagnostics_title)
         aboutCard?.setTitle(R.string.about_title)
 
         toolbar?.setTitle(R.string.settings_title)
@@ -137,6 +140,10 @@ class SettingsFragment : Fragment() {
 
         sttCard?.setOnItemClickListener {
             navigateTo(SttSettingsFragment())
+        }
+
+        diagnosticsCard?.setOnItemClickListener {
+            navigateTo(DiagnosticsFragment())
         }
 
         aboutCard?.setOnItemClickListener {

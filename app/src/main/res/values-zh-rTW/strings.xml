@@ -149,4 +149,11 @@
     <string name="web_search_api_key_hint">Brave Search API Key</string>
     <string name="web_search_description">使用網路搜尋取得即時資訊</string>
     <string name="web_search_title">網路搜尋</string>
+    <string name="diagnostics_title">診斷</string>
+    <string name="diagnostics_empty">尚無請求記錄</string>
+    <string name="diagnostics_clear">清除</string>
+    <string name="diagnostics_export">複製記錄</string>
+    <string name="diagnostics_exported">已複製</string>
+    <string name="diagnostics_success">成功</string>
+    <string name="diagnostics_failed">失敗</string>
 </resources>

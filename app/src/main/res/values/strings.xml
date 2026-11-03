@@ -153,4 +153,11 @@
     <string name="stt_model_missing">Need a voice model</string>
     <string name="stt_model_missing_desc">Download a voice model in Settings to use voice input.</string>
     <string name="stt_go_settings">Go to settings</string>
+    <string name="diagnostics_title">Diagnostics</string>
+    <string name="diagnostics_empty">No request traces yet</string>
+    <string name="diagnostics_clear">Clear</string>
+    <string name="diagnostics_export">Copy traces</string>
+    <string name="diagnostics_exported">Traces copied</string>
+    <string name="diagnostics_success">Success</string>
+    <string name="diagnostics_failed">Failed</string>
 </resources>

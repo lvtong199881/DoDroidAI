@@ -153,4 +153,11 @@
     <string name="stt_model_missing">需要语音模型</string>
     <string name="stt_model_missing_desc">请先在设置中下载语音模型，再使用语音输入。</string>
     <string name="stt_go_settings">去设置</string>
+    <string name="diagnostics_title">诊断</string>
+    <string name="diagnostics_empty">暂无请求记录</string>
+    <string name="diagnostics_clear">清空</string>
+    <string name="diagnostics_export">复制记录</string>
+    <string name="diagnostics_exported">已复制</string>
+    <string name="diagnostics_success">成功</string>
+    <string name="diagnostics_failed">失败</string>
 </resources>
