@@ -39,15 +39,7 @@ class ChatRepository(private val context: Context) {
     private val sessionsKey = stringPreferencesKey("sessions")
 
     val sessionsFlow: Flow<List<ChatSession>> = dao.observeSessions().map { sessions ->
-        sessions.map { session ->
-            ChatSession(
-                id = session.id,
-                title = session.title,
-                messages = dao.messagesOf(session.id).map { it.toChatMessage() },
-                createdAt = session.createdAt,
-                updatedAt = session.updatedAt
-            )
-        }
+        sessions.map { it.toChatSession() }
     }
 
     init {
@@ -55,12 +47,15 @@ class ChatRepository(private val context: Context) {
     }
 
     suspend fun saveSession(session: ChatSession) {
+        // pinned 由会话菜单维护，保存消息时保留原值
+        val existingPinned = dao.findSession(session.id)?.pinned ?: false
         dao.replaceSession(
             session = SessionEntity(
                 id = session.id,
                 title = session.title,
                 createdAt = session.createdAt,
-                updatedAt = session.updatedAt
+                updatedAt = session.updatedAt,
+                pinned = existingPinned
             ),
             messages = session.messages.mapIndexed { index, message ->
                 message.toEntity(session.id, index)
@@ -71,6 +66,49 @@ class ChatRepository(private val context: Context) {
     suspend fun deleteSession(sessionId: String) {
         dao.deleteSession(sessionId)
     }
+
+    suspend fun renameSession(sessionId: String, title: String) {
+        dao.renameSession(sessionId, title.trim().ifBlank { "新对话" }, System.currentTimeMillis())
+    }
+
+    suspend fun setPinned(sessionId: String, pinned: Boolean) {
+        dao.setPinned(sessionId, pinned)
+    }
+
+    suspend fun searchSessions(query: String): List<ChatSession> {
+        if (query.isBlank()) return emptyList()
+        return dao.searchSessions(query.trim()).map { it.toChatSession() }
+    }
+
+    /**
+     * 导出会话为 Markdown 文本。
+     */
+    suspend fun exportSession(sessionId: String): String {
+        val entity = dao.findSession(sessionId) ?: return ""
+        val messages = dao.messagesOf(sessionId)
+        return buildString {
+            appendLine("# ${entity.title}")
+            appendLine()
+            messages.forEach { message ->
+                val who = when (message.role) {
+                    ChatMessage.ROLE_USER -> "用户"
+                    ChatMessage.ROLE_ASSISTANT -> "助手"
+                    else -> message.role
+                }
+                appendLine("**$who**：${message.content}")
+                appendLine()
+            }
+        }
+    }
+
+    private suspend fun SessionEntity.toChatSession(): ChatSession = ChatSession(
+        id = id,
+        title = title,
+        messages = dao.messagesOf(id).map { it.toChatMessage() },
+        createdAt = createdAt,
+        updatedAt = updatedAt,
+        pinned = pinned
+    )
 
     private suspend fun migrateLegacyIfNeeded() {
         val legacyJson = try {

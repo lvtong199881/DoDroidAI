@@ -10,8 +10,21 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ChatDao {
 
-    @Query("SELECT * FROM sessions ORDER BY updatedAt DESC")
+    @Query("SELECT * FROM sessions ORDER BY pinned DESC, updatedAt DESC")
     fun observeSessions(): Flow<List<SessionEntity>>
+
+    @Query("UPDATE sessions SET title = :title, updatedAt = :now WHERE id = :id")
+    suspend fun renameSession(id: String, title: String, now: Long)
+
+    @Query("UPDATE sessions SET pinned = :pinned WHERE id = :id")
+    suspend fun setPinned(id: String, pinned: Boolean)
+
+    @Query(
+        "SELECT * FROM sessions WHERE title LIKE '%' || :query || '%' " +
+            "OR id IN (SELECT sessionId FROM messages WHERE content LIKE '%' || :query || '%') " +
+            "ORDER BY pinned DESC, updatedAt DESC"
+    )
+    suspend fun searchSessions(query: String): List<SessionEntity>
 
     @Query("SELECT * FROM sessions WHERE id = :id")
     suspend fun findSession(id: String): SessionEntity?

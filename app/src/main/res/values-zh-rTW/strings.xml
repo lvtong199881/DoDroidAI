@@ -86,4 +86,9 @@
     <string name="permission_reset_done">權限提示已重設</string>
     <string name="memory_title">記憶</string>
     <string name="memory_empty">尚無記憶</string>
+    <string name="pin_session">置頂</string>
+    <string name="unpin_session">取消置頂</string>
+    <string name="export_session">匯出</string>
+    <string name="search_sessions">搜尋對話</string>
+    <string name="exported_to_clipboard">已複製到剪貼簿</string>
 </resources>

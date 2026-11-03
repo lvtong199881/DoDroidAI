@@ -126,4 +126,9 @@
     <string name="permission_reset_done">Permission prompts reset</string>
     <string name="memory_title">Memory</string>
     <string name="memory_empty">No saved memories</string>
+    <string name="pin_session">Pin</string>
+    <string name="unpin_session">Unpin</string>
+    <string name="export_session">Export</string>
+    <string name="search_sessions">Search sessions</string>
+    <string name="exported_to_clipboard">Copied to clipboard</string>
 </resources>

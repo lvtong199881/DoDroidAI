@@ -16,5 +16,7 @@ data class ChatSession(
     @SerializedName("createdAt")
     val createdAt: Long,
     @SerializedName("updatedAt")
-    val updatedAt: Long
+    val updatedAt: Long,
+    @SerializedName("pinned")
+    val pinned: Boolean = false
 )

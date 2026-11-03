@@ -126,4 +126,9 @@
     <string name="permission_reset_done">权限提示已重置</string>
     <string name="memory_title">记忆</string>
     <string name="memory_empty">暂无记忆</string>
+    <string name="pin_session">置顶</string>
+    <string name="unpin_session">取消置顶</string>
+    <string name="export_session">导出</string>
+    <string name="search_sessions">搜索会话</string>
+    <string name="exported_to_clipboard">已复制到剪贴板</string>
 </resources>

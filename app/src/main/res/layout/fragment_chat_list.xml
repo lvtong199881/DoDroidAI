@@ -55,6 +55,16 @@
             android:textAppearance="@style/TextAppearance.DoDroid.TitleLarge" />
 
         <ImageButton
+            android:id="@+id/btnSearch"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_search"
+            android:contentDescription="@string/search_sessions"
+            android:padding="12dp"
+            app:tint="?attr/colorOnSurfaceVariant" />
+
+        <ImageButton
             android:id="@+id/btnSettings"
             android:layout_width="48dp"
             android:layout_height="48dp"

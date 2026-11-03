@@ -1,5 +1,8 @@
 package com.example.dodroidai.ui.chat
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,6 +10,8 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -35,6 +40,7 @@ class ChatListFragment : Fragment() {
     private var recyclerView: RecyclerView? = null
     private var adapter: ChatSessionAdapter? = null
     private var btnSettings: ImageButton? = null
+    private var btnSearch: ImageButton? = null
 
     // Drawer mode
     private var isDrawerMode = false
@@ -155,6 +161,7 @@ class ChatListFragment : Fragment() {
         tvEmpty = view.findViewById(R.id.tvEmpty)
         recyclerView = view.findViewById(R.id.recyclerView)
         btnSettings = view.findViewById(R.id.btnSettings)
+        btnSearch = view.findViewById(R.id.btnSearch)
 
         adapter = ChatSessionAdapter(
             onSessionClick = { sessionId ->
@@ -176,6 +183,10 @@ class ChatListFragment : Fragment() {
             }
             navigateTo(SettingsFragment())
         }
+
+        btnSearch?.setOnClickListener {
+            showSearchDialog()
+        }
     }
 
     private fun navigateTo(fragment: Fragment) {
@@ -192,13 +203,72 @@ class ChatListFragment : Fragment() {
     }
 
     private fun showSessionOptions(session: ChatSession) {
-        OptionDialog.show(
-            context = requireContext(),
-            options = listOf(
-                getString(R.string.rename_session) to { showRenameDialog(session) },
-                getString(R.string.delete_session) to { showDeleteConfirmDialog(session) }
-            )
+        val pinLabel = if (session.pinned) {
+            getString(R.string.unpin_session)
+        } else {
+            getString(R.string.pin_session)
+        }
+        val labels = arrayOf(
+            pinLabel,
+            getString(R.string.rename_session),
+            getString(R.string.export_session),
+            getString(R.string.delete_session)
         )
+        AlertDialog.Builder(requireContext())
+            .setItems(labels) { _, which ->
+                when (which) {
+                    0 -> togglePin(session)
+                    1 -> showRenameDialog(session)
+                    2 -> exportSession(session)
+                    3 -> showDeleteConfirmDialog(session)
+                }
+            }
+            .show()
+    }
+
+    private fun togglePin(session: ChatSession) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            requireContext().chatRepository.setPinned(session.id, !session.pinned)
+        }
+    }
+
+    private fun exportSession(session: ChatSession) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val markdown = requireContext().chatRepository.exportSession(session.id)
+            if (markdown.isBlank()) return@launch
+            val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            clipboard.setPrimaryClip(ClipData.newPlainText("session", markdown))
+            Toast.makeText(requireContext(), R.string.exported_to_clipboard, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun showSearchDialog() {
+        val editText = EditText(requireContext()).apply {
+            hint = getString(R.string.search_sessions)
+            setPadding(48, 32, 48, 32)
+        }
+        CustomDialog.Builder(requireContext())
+            .setTitle(R.string.search_sessions)
+            .setCustomView(editText)
+            .setButtons(
+                CustomDialog.ButtonInfo(text = getString(R.string.cancel)),
+                CustomDialog.ButtonInfo(
+                    text = getString(R.string.confirm),
+                    onClick = {
+                        val query = editText.text.toString().trim()
+                        if (query.isNotEmpty()) {
+                            viewLifecycleOwner.lifecycleScope.launch {
+                                val results = requireContext().chatRepository.searchSessions(query)
+                                val items = groupSessionsByTime(results)
+                                adapter?.submitList(items)
+                                updateEmptyState(items)
+                            }
+                        }
+                    }
+                )
+            )
+            .build()
+            .show()
     }
 
     private fun showRenameDialog(session: ChatSession) {
