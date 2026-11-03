@@ -171,6 +171,9 @@ class ChatListFragment : Fragment() {
         recyclerView?.adapter = adapter
 
         btnSettings?.setOnClickListener {
+            if (isDrawerMode) {
+                (activity as? MainActivity)?.closeDrawer()
+            }
             navigateTo(SettingsFragment())
         }
     }

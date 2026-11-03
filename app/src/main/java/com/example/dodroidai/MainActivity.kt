@@ -5,6 +5,7 @@ import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -100,6 +101,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         drawerLayout = findViewById(R.id.drawerLayout)
+        drawerLayout?.addDrawerListener(object : DrawerLayout.SimpleDrawerListener() {
+            override fun onDrawerOpened(drawerView: View) {
+                hideKeyboard()
+            }
+        })
         applySystemBarInsets()
         applyBarAppearance()
 
@@ -152,7 +158,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun openDrawer() {
+        hideKeyboard()
         drawerLayout?.openDrawer(GravityCompat.START)
+    }
+
+    private fun hideKeyboard() {
+        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(window.decorView.windowToken, 0)
     }
 
     fun closeDrawer() {
