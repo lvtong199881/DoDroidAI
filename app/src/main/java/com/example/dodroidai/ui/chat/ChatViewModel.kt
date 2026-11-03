@@ -428,6 +428,26 @@ class ChatViewModel(
     /**
      * 重试最近一次失败的请求：移除失败消息与原用户消息后重新发送。
      */
+    /**
+     * 删除最后一条 assistant 回复及其对应的 user 消息，然后重新发送。
+     * 仅当最后一条消息是 assistant 且当前不在生成中时有效。
+     */
+    fun retryLastAssistant() {
+        if (_uiState.value.isLoading) return
+        val messages = _uiState.value.messages.toMutableList()
+        val assistantIndex = messages.indexOfLast { it.role == ROLE_ASSISTANT && !it.isLoading }
+        if (assistantIndex < 0) return
+        val userIndex = (assistantIndex - 1 downTo 0).firstOrNull {
+            messages[it].role == ROLE_USER
+        } ?: return
+
+        val user = messages[userIndex]
+        messages.subList(userIndex, messages.size).clear()
+        _uiState.value = _uiState.value.copy(messages = messages, error = null)
+        viewModelScope.launch { saveCurrentSession() }
+        sendMessage(user.content, user.attachments.orEmpty(), webSearchEnabled = false)
+    }
+
     fun retryLastMessage() {
         if (_uiState.value.isLoading) return
         val request = lastFailedRequest ?: return

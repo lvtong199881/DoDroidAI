@@ -188,7 +188,7 @@ class ChatFragment : Fragment() {
                 }
             },
             onRetryClick = {
-                viewModel.retryLastMessage()
+                viewModel.retryLastAssistant()
             }
         )
         recyclerView?.itemAnimator = androidx.recyclerview.widget.DefaultItemAnimator().apply {

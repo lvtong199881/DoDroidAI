@@ -73,10 +73,11 @@ class ChatMessageAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val message = getItem(position)
-        val isLastAssistantMessage = isLastAssistantMessage(position)
+        // 只有「最后一条消息」且是 assistant 时才显示操作区（复制/重试）
+        val showActions = position == itemCount - 1 && message.role == ROLE_ASSISTANT && !message.isLoading
         when (holder) {
             is UserMessageViewHolder -> holder.bind(message)
-            is AssistantMessageViewHolder -> holder.bind(message, isLastAssistantMessage)
+            is AssistantMessageViewHolder -> holder.bind(message, showActions)
         }
     }
 
@@ -262,7 +263,7 @@ class ChatMessageAdapter(
                 }
 
                 if (showActions) {
-                    btnRetry.isVisible = message.isError == true
+                    btnRetry.isVisible = true
                     btnRetry.setOnClickListener {
                         onRetryClick?.invoke(message)
                     }
