@@ -4,6 +4,10 @@ plugins {
   id("com.google.devtools.ksp")
 }
 
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 android {
     namespace = "com.example.dodroidai"
     compileSdk = 36
@@ -94,6 +98,9 @@ dependencies {
 
   // Gson for JSON parsing
   implementation(libs.gson)
+  implementation(libs.room.runtime)
+  implementation(libs.room.ktx)
+  ksp(libs.room.compiler)
   ksp(project(":tool-processor"))
 
   // Markdown

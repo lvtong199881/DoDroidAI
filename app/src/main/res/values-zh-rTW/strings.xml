@@ -74,4 +74,6 @@
     <string name="api_format_openai">OpenAI Chat Completions</string>
     <string name="retry">重試</string>
     <string name="invalid_base_url">Base URL 必須以 https:// 開頭</string>
+    <string name="notes_title">筆記</string>
+    <string name="notes_empty">尚無筆記</string>
 </resources>

@@ -114,4 +114,6 @@
     <string name="image_input_support_desc">Send images as multimodal content to this endpoint</string>
     <string name="retry">Retry</string>
     <string name="invalid_base_url">Base URL must start with https://</string>
+    <string name="notes_title">Notes</string>
+    <string name="notes_empty">No notes yet</string>
 </resources>

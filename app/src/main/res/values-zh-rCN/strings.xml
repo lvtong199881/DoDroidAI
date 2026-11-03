@@ -114,4 +114,6 @@
     <string name="image_input_support_desc">将图片作为多模态内容发送给该端点</string>
     <string name="retry">重试</string>
     <string name="invalid_base_url">Base URL 必须以 https:// 开头</string>
+    <string name="notes_title">笔记</string>
+    <string name="notes_empty">暂无笔记</string>
 </resources>

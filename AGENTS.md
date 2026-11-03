@@ -56,7 +56,7 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
 
 验证约定（重要）：
 
-- 仓库已有 JVM 单元测试（`app/src/test`，50 个），CI 仍没有 PR 自动检查。
+- 仓库已有 JVM 单元测试（`app/src/test`，53 个），CI（`.github/workflows/ci.yml`）在 push/PR 自动跑。
 - 最低验证标准：改动模块 `assembleDebug` 通过 + `lintDebug` 无新增严重问题 + 真机回归相关流程。
 - 改 `:webview-sdk` 时同时构建 `:webview-sdk:assembleDebug` 和 `:app:assembleDebug`（app 依赖该模块）。
 - 改 AI / 工具逻辑时重点回归：流式输出、thinking 展示、工具确认弹窗、权限拒绝分支、会话保存与恢复。
@@ -78,9 +78,10 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
 | 工具契约、注册、执行 | `ai/tools/ToolSpec.kt`、`ai/tools/ToolArgs.kt`、`ai/tools/ToolRegistry.kt`、`ai/tools/*Tool.kt`、`tool-processor/` |
 | 语音识别（whisper）与 TTS | `ai/voice/` |
 | 会话模型与存储 | `data/model/ChatSession.kt`、`data/repository/ChatRepository.kt` |
+| 笔记（Room） | `data/local/NoteEntity.kt`、`NoteDao.kt`、`AppDatabase.kt`、`data/repository/NoteRepository.kt` |
 | 闹钟触发接收器 | `alarm/AlarmReceiver.kt` |
 | 桌面小组件（1x2 / 1x4 / 2x2） | `widget/` |
-| 设置页、AI 配置列表、关于页 | `ui/setting/` |
+| 设置页、AI 配置列表、笔记列表、关于页 | `ui/setting/` |
 | 通用弹窗、Toolbar、设置项 | `ui/common/` |
 | WebView 组件库 | `webview-sdk/src/main/java/com/example/dodroidai/webviewsdk/` |
 | whisper.cpp 源码 | 仓库根 `src/`、`include/` |
@@ -239,9 +240,9 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
 2. **附件链路有边界**：图片作为 `image` block 发送，PDF/TXT 抽取文本；扫描件 PDF 不做 OCR，
    Word 不支持；只有最近 3 条 user 消息的附件会参与编码，更早的会降级为占位文本。
    请求构建在 `ChatRequestBuilder`，编码在 `AttachmentEncoder`。
-3. **`add_note` 是占位实现**：`AddNoteTool` 只返回“笔记已添加”的字符串，没有真正写入任何笔记应用。
-4. **没有测试与自动 CI 校验**：`.github/workflows/appbuildfjhfjh.yml` 仅手动触发，执行 `assembleRelease`
-   并发布 GitHub Release。新增的单测在 `app/src/test`（50 个），尚未接入 CI。
+3. **`add_note` 已落库**：写入 Room（`dodroid.db` 的 `notes` 表），入口在设置 → 笔记；长按笔记可删除。
+4. **CI 与测试**：`.github/workflows/ci.yml` 在 push/PR 跑单测 + lint；`appbuildfjhfjh.yml` 仍手动触发
+   执行 `assembleRelease` 并发布 GitHub Release。单测在 `app/src/test`（53 个）。
 5. **Release 签名**：优先读取 `RELEASE_STORE_FILE` / `RELEASE_STORE_PASSWORD` / `RELEASE_KEY_ALIAS` /
    `RELEASE_KEY_PASSWORD` 环境变量（CI secret）；缺失时回退仓库测试 keystore，正式发布必须配置 secret。
 6. **Release 已开启 R8 混淆与资源压缩**：keep 规则在 `app/proguard-rules.pro`（Gson 模型、JNI、
