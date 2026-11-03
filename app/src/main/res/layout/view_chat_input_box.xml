@@ -88,6 +88,8 @@
                 android:layout_height="wrap_content"
                 android:checkable="true"
                 android:text="@string/deep_think"
+                app:chipStartPadding="4dp"
+                app:chipEndPadding="4dp"
                 app:chipIcon="@drawable/ic_think"
                 app:chipIconSize="16dp" />
 
@@ -99,6 +101,8 @@
                 android:layout_marginStart="4dp"
                 android:checkable="true"
                 android:text="@string/web_search"
+                app:chipStartPadding="4dp"
+                app:chipEndPadding="4dp"
                 app:chipIcon="@drawable/ic_web_search"
                 app:chipIconSize="16dp" />
 
