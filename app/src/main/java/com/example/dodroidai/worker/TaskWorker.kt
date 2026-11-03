@@ -16,11 +16,14 @@ import com.example.dodroidai.ai.model.ChatMessage
 import com.example.dodroidai.ai.model.StreamingCallback
 import com.example.dodroidai.ai.streaming.StreamingChatClient
 import com.example.dodroidai.ai.tools.ToolCall
+import com.example.dodroidai.data.model.ChatSession
+import com.example.dodroidai.data.repository.ChatRepository
 import com.example.dodroidai.data.repository.ScheduledTaskRepository
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeout
 import okhttp3.OkHttpClient
+import java.util.UUID
 
 /**
  * 执行定时任务：读取 prompt，调用一次 AI 请求，结果写库并发通知。
@@ -47,12 +50,37 @@ class TaskWorker(
             val config = AppConfigManager.configFlow.first()
             val result = withTimeout(TIMEOUT_MS) { runRequest(config, task.prompt, taskId) }
             repository.complete(taskId, "done", result)
+            saveTaskSession(task.prompt, result)
             notifyResult(taskId, result)
             Result.success()
         } catch (e: Exception) {
+            val errorText = "执行失败: ${e.javaClass.simpleName}"
             repository.complete(taskId, "failed", e.message)
-            notifyResult(taskId, "执行失败: ${e.javaClass.simpleName}")
+            saveTaskSession(task.prompt, errorText)
+            notifyResult(taskId, errorText)
             Result.failure()
+        }
+    }
+
+    /**
+     * 把任务执行结果写成一条会话，让用户能在会话列表里回看。
+     */
+    private suspend fun saveTaskSession(prompt: String, result: String) {
+        try {
+            val now = System.currentTimeMillis()
+            val session = ChatSession(
+                id = UUID.randomUUID().toString(),
+                title = prompt.take(30),
+                messages = listOf(
+                    ChatMessage(role = ChatMessage.ROLE_USER, content = prompt),
+                    ChatMessage(role = ChatMessage.ROLE_ASSISTANT, content = result)
+                ),
+                createdAt = now,
+                updatedAt = now
+            )
+            ChatRepository.getInstance(applicationContext).saveSession(session)
+        } catch (e: Exception) {
+            // 会话保存失败不影响任务结果
         }
     }
 
