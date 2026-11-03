@@ -188,6 +188,7 @@ class ChatInputBox @JvmOverloads constructor(
      * 根据生成状态切换发送/停止按钮。
      */
     fun setLoading(loading: Boolean) {
+        if (isLoading == loading) return
         isLoading = loading
         btnSend?.animate()?.cancel()
         btnSend?.animate()

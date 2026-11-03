@@ -9,15 +9,6 @@
     android:paddingEnd="16dp"
     android:paddingBottom="6dp">
 
-    <ImageView
-        android:id="@+id/avatar"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:src="@drawable/ic_avatar_user"
-        android:contentDescription="@string/user_avatar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <LinearLayout
         android:id="@+id/attachmentContainer"
         android:layout_width="wrap_content"
@@ -26,7 +17,7 @@
         android:orientation="vertical"
         android:visibility="gone"
         app:layout_constrainedWidth="true"
-        app:layout_constraintEnd_toStartOf="@id/avatar"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -46,7 +37,7 @@
         android:textAppearance="@style/TextAppearance.DoDroid.BodyLarge"
         tools:text="消息内容"
         app:layout_constrainedWidth="true"
-        app:layout_constraintEnd_toStartOf="@id/avatar"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/attachmentContainer"

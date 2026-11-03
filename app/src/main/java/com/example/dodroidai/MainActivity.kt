@@ -53,7 +53,10 @@ class MainActivity : AppCompatActivity() {
         // DrawerLayout 会消费 systemBars insets，这里在根上统一分配并返回 CONSUMED
         ViewCompat.setOnApplyWindowInsetsListener(root) { _, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            fragmentContainer.setPadding(0, bars.top, 0, bars.bottom)
+            // 键盘弹出时用 IME 的 bottom 撑开，保证输入框跟手上移
+            val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
+            val bottom = maxOf(bars.bottom, ime.bottom)
+            fragmentContainer.setPadding(0, bars.top, 0, bottom)
             drawerContainer.setPadding(0, bars.top, 0, bars.bottom)
             WindowInsetsCompat.CONSUMED
         }
