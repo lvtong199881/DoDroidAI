@@ -131,4 +131,11 @@
     <string name="export_session">Export</string>
     <string name="search_sessions">Search sessions</string>
     <string name="exported_to_clipboard">Copied to clipboard</string>
+    <string name="scheduled_tasks_title">Scheduled tasks</string>
+    <string name="scheduled_tasks_empty">No scheduled tasks</string>
+    <string name="scheduled_task_pending">Pending</string>
+    <string name="scheduled_task_done">Done</string>
+    <string name="scheduled_task_failed">Failed</string>
+    <string name="scheduled_task_notification_title">Scheduled task</string>
+    <string name="scheduled_task_channel">Scheduled tasks</string>
 </resources>

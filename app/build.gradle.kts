@@ -100,6 +100,7 @@ dependencies {
   implementation(libs.gson)
   implementation(libs.room.runtime)
   implementation(libs.room.ktx)
+  implementation(libs.work.runtime.ktx)
   ksp(libs.room.compiler)
   ksp(project(":tool-processor"))
 

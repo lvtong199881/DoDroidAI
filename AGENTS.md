@@ -80,9 +80,11 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
 | 会话模型与存储 | `data/model/ChatSession.kt`、`data/local/SessionEntity.kt`、`MessageEntity.kt`、`ChatDao.kt`、`data/repository/ChatRepository.kt` |
 | 笔记（Room） | `data/local/NoteEntity.kt`、`NoteDao.kt`、`AppDatabase.kt`、`data/repository/NoteRepository.kt` |
 | 权限策略 / 工具审计 | `data/local/PermissionPolicyStore.kt`、`ToolAuditEntity.kt`、`ToolAuditDao.kt`、`ui/setting/ToolAuditFragment.kt` |
+| 长期记忆 | `data/local/MemoryFactEntity.kt`、`MemoryFactDao.kt`、`data/repository/MemoryRepository.kt`、`ai/tools/RememberFactTool.kt`、`ui/setting/MemoryFragment.kt` |
+| 定时任务 | `data/local/ScheduledTaskEntity.kt`、`ScheduledTaskDao.kt`、`data/repository/ScheduledTaskRepository.kt`、`ai/tools/ScheduleTaskTool.kt`、`worker/TaskWorker.kt`、`ui/setting/ScheduledTaskFragment.kt` |
 | 闹钟触发接收器 | `alarm/AlarmReceiver.kt` |
 | 桌面小组件（1x2 / 1x4 / 2x2） | `widget/` |
-| 设置页、AI 配置列表、笔记列表、关于页 | `ui/setting/` |
+| 设置页、AI 配置、笔记、记忆、工具审计、定时任务、关于 | `ui/setting/` |
 | 通用弹窗、Toolbar、设置项 | `ui/common/` |
 | WebView 组件库 | `webview-sdk/src/main/java/com/example/dodroidai/webviewsdk/` |
 | whisper.cpp 源码 | 仓库根 `src/`、`include/` |
