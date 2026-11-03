@@ -107,9 +107,14 @@ class VoiceInputManager(private val context: Context) {
 
         currentCallback?.onReadyForSpeech()
 
-        recorder?.startRecording { rmsdB ->
-            currentCallback?.onRmsChanged(rmsdB)
-        }
+        recorder?.startRecording(
+            onRmsChanged = { rmsdB ->
+                currentCallback?.onRmsChanged(rmsdB)
+            },
+            onSilence = {
+                scope.launch { stopListening() }
+            }
+        )
 
         Log.i(TAG, "开始录音")
     }

@@ -9,6 +9,9 @@ import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.util.Log
 import androidx.core.content.ContextCompat
+import com.k2fsa.sherpa.onnx.SileroVadModelConfig
+import com.k2fsa.sherpa.onnx.Vad
+import com.k2fsa.sherpa.onnx.VadModelConfig
 import kotlinx.coroutines.*
 import kotlin.math.log10
 import kotlin.math.sqrt
@@ -20,6 +23,9 @@ import kotlin.math.sqrt
 class VoiceRecorder(private val context: Context) {
 
     private var audioRecord: AudioRecord? = null
+    private var vad: Vad? = null
+    private var hasSpeech = false
+    private var silenceSamples = 0
     private var isRecording = false
     private val audioData = mutableListOf<Short>()
     private var recordingJob: Job? = null
@@ -30,6 +36,8 @@ class VoiceRecorder(private val context: Context) {
         const val SAMPLE_RATE = 16000
         const val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO
         const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT
+        private const val VAD_WINDOW = 512
+        private const val AUTO_STOP_SILENCE_SECONDS = 0.8f
     }
 
     /**
@@ -47,7 +55,7 @@ class VoiceRecorder(private val context: Context) {
      * @param onRmsChanged 音量变化回调
      */
     @SuppressLint("MissingPermission")
-    fun startRecording(onRmsChanged: (Float) -> Unit) {
+    fun startRecording(onRmsChanged: (Float) -> Unit, onSilence: () -> Unit = {}) {
         if (isRecording) {
             stopRecording()
         }
@@ -74,6 +82,9 @@ class VoiceRecorder(private val context: Context) {
         }
 
         audioData.clear()
+        hasSpeech = false
+        silenceSamples = 0
+        vad = createVad()
         isRecording = true
         audioRecord?.startRecording()
 
@@ -95,6 +106,27 @@ class VoiceRecorder(private val context: Context) {
                         }
                     }
                     onRmsChanged(calculateRms(buffer, read))
+
+                    // VAD 自动断句：检测到语音后持续静音 0.8s 自动结束
+                    val currentVad = vad
+                    if (currentVad != null) {
+                        var offset = 0
+                        while (offset + VAD_WINDOW <= read) {
+                            val window = FloatArray(VAD_WINDOW) { buffer[offset + it] / 32768f }
+                            currentVad.acceptWaveform(window)
+                            if (currentVad.isSpeechDetected()) {
+                                hasSpeech = true
+                                silenceSamples = 0
+                            } else if (hasSpeech) {
+                                silenceSamples += VAD_WINDOW
+                            }
+                            offset += VAD_WINDOW
+                        }
+                        if (hasSpeech && silenceSamples >= SAMPLE_RATE * AUTO_STOP_SILENCE_SECONDS) {
+                            isRecording = false
+                            onSilence()
+                        }
+                    }
                 }
             }
         }
@@ -114,6 +146,9 @@ class VoiceRecorder(private val context: Context) {
         audioRecord?.release()
         audioRecord = null
 
+        vad?.release()
+        vad = null
+
         val shortArray = synchronized(audioData) {
             audioData.toShortArray()
         }
@@ -127,6 +162,26 @@ class VoiceRecorder(private val context: Context) {
      * 是否正在录音
      */
     fun isRecording(): Boolean = isRecording
+
+    private fun createVad(): Vad? = try {
+        Vad(
+            assetManager = context.assets,
+            config = VadModelConfig(
+                sileroVadModelConfig = SileroVadModelConfig(
+                    model = "models/silero_vad.onnx",
+                    threshold = 0.5f,
+                    minSilenceDuration = 0.25f,
+                    minSpeechDuration = 0.25f,
+                    windowSize = VAD_WINDOW
+                ),
+                sampleRate = SAMPLE_RATE,
+                numThreads = 1
+            )
+        )
+    } catch (e: Throwable) {
+        Log.w(TAG, "VAD 初始化失败，退化为手动停止: ${e.javaClass.simpleName}")
+        null
+    }
 
     /**
      * 计算 RMS 分贝值

@@ -276,6 +276,7 @@ class ChatFragment : Fragment() {
         }
 
         chatInputBox?.onSendClick = { message, attachments ->
+            ttsManager.stop()
             val chatAttachments = attachments.map { item ->
                 AttachmentLimits.toChatAttachment(
                     uri = item.uri.toString(),
@@ -607,6 +608,7 @@ class ChatFragment : Fragment() {
     }
 
     private fun startVoiceInput() {
+        ttsManager.stop()
         voiceInputDialog = VoiceInputDialog(requireContext()).apply {
             show()
         }
