@@ -2,7 +2,7 @@
 
 DoDroidAI 是一个运行在手机本地的 Android Agent 应用。用自然语言和它对话，它会通过 LLM 的
 tool calling 真正操作手机：闹钟、日历、短信、笔记（占位实现）和联网搜索。
-语音输入基于 `whisper.cpp`，完全离线。
+语音输入基于 `sherpa-onnx` + SenseVoice，完全离线。
 
 > English documentation: [README.md](README.md)
 
@@ -15,7 +15,7 @@ tool calling 真正操作手机：闹钟、日历、短信、笔记（占位实�
 - **流式输出**：基于 SSE，正文和扩展思考过程边生成边展示，思考内容可折叠查看。
 - **带防护的工具调用**：模型可调用 6 个手机工具。高风险工具执行前会弹应用内确认框；
   缺少运行时权限时先请求权限再执行。
-- **离线语音识别**：内置 `whisper.cpp` + tiny q8_0 模型（约 43 MB），不依赖网络。
+- **离线语音识别**：`sherpa-onnx` + SenseVoice，模型（约 226 MB）在设置中下载一次后可完全离线使用。
 - **TTS 语音播报**：用系统 TTS 朗读 AI 回复。
 - **联网搜索**：`web_search` 工具接入 Brave Search API，内存缓存 10 分钟。
 - **Markdown 渲染**：AI 回复通过 Markwon 渲染。
@@ -34,7 +34,7 @@ tool calling 真正操作手机：闹钟、日历、短信、笔记（占位实�
 - Android 7.0（API 24）及以上的 **ARM 设备**（`arm64-v8a` 或 `armeabi-v7a`）。
   没有打包 x86_64 ABI，多数 x86 模拟器无法直接安装。
 - 能访问 AI 接口与联网搜索服务的网络。
-- 构建需要：JDK 17、Android SDK 36、NDK + CMake（编译 whisper 原生库）。Gradle 由 wrapper 提供。
+- 构建需要：JDK 17、Android SDK 36。Gradle 由 wrapper 提供。
 
 ---
 
@@ -66,7 +66,7 @@ cd DoDroidAI
 
 - Gradle wrapper 的发行版从腾讯云镜像下载；如果网络不通，请修改
   `gradle/wrapper/gradle-wrapper.properties`。
-- 首次构建会通过 CMake 编译 `whisper.cpp` 与 `ggml`，耗时明显更长。
+- 语音原生库使用预编译 `.so`（`jniLibs`），无需 NDK/CMake 构建。
 - `local.properties` 是本机配置，不要提交到仓库。
 
 ## 安装
@@ -145,16 +145,14 @@ DoDroidAI/
 │       │   │   ├── model/                请求/响应模型、SSE 请求构造
 │       │   │   ├── streaming/            SSE 客户端与 Anthropic 事件解析
 │       │   │   ├── tools/                工具抽象、6 个工具、执行器、Schema
-│       │   │   └── voice/                whisper JNI 封装、录音、TTS
+│       │   │   └── voice/                sherpa-onnx 引擎、录音、TTS
 │       │   ├── data/                     会话模型与 DataStore 仓库
 │       │   ├── ui/                       聊天、设置、通用控件
 │       │   ├── alarm/                    AlarmReceiver
 │       │   └── widget/                   桌面小组件（1x2 / 1x4 / 2x2）
-│       ├── jni/                          CMake 工程、whisper JNI、内置 ggml
-│       ├── assets/models/                内置 whisper tiny q8_0 模型
+│       ├── jni/                          预编译 sherpa-onnx 库
 │       └── res/                          布局、图标、三语字符串、主题
 ├── webview-sdk/                          独立 WebView 组件库（Fragment + Toolbar + JS Bridge）
-├── src/ + include/                       whisper.cpp 源码
 ├── gradle/libs.versions.toml             app 模块的版本目录
 ├── docs/ROADMAP.md                       迭代路线图
 ├── plan/                                 设计文档与历史方案
@@ -180,13 +178,13 @@ DoDroidAI/
 
 | 层次 | 技术 |
 | --- | --- |
-| 语言 | Kotlin 2.0.21、C/C++（whisper.cpp 1.6.0 + ggml） |
+| 语言 | Kotlin 2.0.21、sherpa-onnx（预编译 JNI） |
 | UI | XML Views、Material 3、Markwon（Markdown）、Fragment |
 | 架构 | 单 Activity + MVVM（ViewModel + Repository），无 DI 框架 |
 | 网络 | OkHttp + `okhttp-sse`（依赖里有 Retrofit，但聊天请求由 OkHttp 直接构造） |
 | 附件 | PDFBox-Android（PDF 文本抽取）、Coil（缩略图）、Android Bitmap/EXIF 处理 |
 | 存储 | DataStore Preferences + Gson |
-| 语音 | whisper.cpp（JNI/CMake）、Android `TextToSpeech` |
+| 语音 | sherpa-onnx + SenseVoice（离线）、Android `TextToSpeech` |
 | 构建 | Gradle 9.1.0、AGP 9.0.1、JDK 17、`compileSdk` 36、`minSdk` 24 |
 
 ## 权限

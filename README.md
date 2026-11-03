@@ -2,7 +2,7 @@
 
 DoDroidAI is an on-device Android agent. Talk to it in natural language and it operates your phone
 through LLM tool calling: alarms, calendar events, SMS, notes (placeholder) and web search. Voice
-input runs fully offline on top of `whisper.cpp`.
+speech input runs fully offline on top of `sherpa-onnx` + SenseVoice.
 
 > 中文说明见 [README_zh.md](README_zh.md)。
 
@@ -17,7 +17,7 @@ input runs fully offline on top of `whisper.cpp`.
   arrive, with a collapsible thinking block.
 - **Tool calling with guardrails** — the model can call six phone tools. High-risk tools require an
   in-app confirmation, and missing runtime permissions are requested before execution.
-- **Offline speech-to-text** — bundled `whisper.cpp` + tiny q8_0 model (~43 MB), no network needed.
+- **Offline speech-to-text** — `sherpa-onnx` + SenseVoice; the model (~226 MB) is downloaded once in Settings, then works fully offline.
 - **Text-to-speech** — read assistant replies aloud with the system TTS engine.
 - **Web search** — a `web_search` tool backed by the Brave Search API (10-minute in-memory cache).
 - **Markdown rendering** — assistant messages are rendered with Markwon.
@@ -37,7 +37,7 @@ input runs fully offline on top of `whisper.cpp`.
 - Android 7.0 (API 24) or newer on an **ARM device** (`arm64-v8a` or `armeabi-v7a`). No x86_64 ABI is
   packaged, so most x86 emulators cannot install the APK directly.
 - Network access for the AI endpoint and web search.
-- For building: JDK 17, Android SDK 36, NDK + CMake (for the whisper native library). Gradle is
+- For building: JDK 17, Android SDK 36. Gradle is
   provided by the wrapper.
 
 ---
@@ -70,7 +70,7 @@ Notes:
 
 - The Gradle wrapper downloads its distribution from a Tencent Cloud mirror. If that mirror is not
   reachable, edit `gradle/wrapper/gradle-wrapper.properties`.
-- The first build compiles `whisper.cpp` and `ggml` through CMake and takes noticeably longer.
+- Native speech libraries are prebuilt (`jniLibs`), so no NDK/CMake step is required.
 - `local.properties` is machine-specific and must not be committed.
 
 ## Install
@@ -152,16 +152,14 @@ DoDroidAI/
 │       │   │   ├── model/                Request/response models, SSE request factory
 │       │   │   ├── streaming/            SSE client and Anthropic event listener
 │       │   │   ├── tools/                Tool abstraction, 6 tools, executor, schemas
-│       │   │   └── voice/                whisper.cpp JNI wrapper, recorder, TTS
+│       │   │   └── voice/                sherpa-onnx engine, recorder, TTS
 │       │   ├── data/                     ChatSession model and DataStore repository
 │       │   ├── ui/                       chat, settings, common widgets
 │       │   ├── alarm/                    AlarmReceiver
 │       │   └── widget/                   Home-screen widgets (1x2, 1x4, 2x2)
-│       ├── jni/                          CMake project, whisper JNI, bundled ggml
-│       ├── assets/models/                Bundled whisper tiny q8_0 model
+│       ├── jni/                          prebuilt sherpa-onnx libraries
 │       └── res/                          Layouts, drawables, strings (en / zh-rCN / zh-rTW), themes
 ├── webview-sdk/                          Standalone WebView library (Fragment + toolbar + JS bridge)
-├── src/ + include/                       whisper.cpp sources
 ├── gradle/libs.versions.toml             Version catalog for the app module
 ├── docs/ROADMAP.md                       Forward-looking roadmap and priorities
 ├── plan/                                 Design notes and historical plans
@@ -189,13 +187,13 @@ Risk levels are defined in `ToolDefinition`; `HIGH` triggers the confirmation di
 
 | Layer | Technology |
 | --- | --- |
-| Language | Kotlin 2.0.21, C/C++ (whisper.cpp 1.6.0 + ggml) |
+| Language | Kotlin 2.0.21, sherpa-onnx (prebuilt JNI) |
 | UI | XML Views, Material 3, Markwon (Markdown), fragments |
 | Architecture | Single Activity + MVVM (ViewModel + Repository), no DI framework |
 | Networking | OkHttp + `okhttp-sse` (Retrofit is on the classpath but the chat request is built with OkHttp directly) |
 | Attachments | PDFBox-Android (PDF text extraction), Coil (thumbnails), Android `Bitmap`/EXIF processing |
 | Storage | DataStore Preferences + Gson |
-| Speech | whisper.cpp via JNI/CMake, Android `TextToSpeech` |
+| Speech | sherpa-onnx + SenseVoice (offline), Android `TextToSpeech` |
 | Build | Gradle 9.1.0, AGP 9.0.1, JDK 17, `compileSdk` 36, `minSdk` 24 |
 
 ## Permissions
