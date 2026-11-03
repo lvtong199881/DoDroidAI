@@ -61,11 +61,6 @@ android {
       }
     }
 
-    externalNativeBuild {
-        cmake {
-            path = file("src/main/jni/whisper/CMakeLists.txt")
-        }
-    }
 }
 
 kotlin {

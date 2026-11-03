@@ -138,4 +138,19 @@
     <string name="scheduled_task_failed">Failed</string>
     <string name="scheduled_task_notification_title">Scheduled task</string>
     <string name="scheduled_task_channel">Scheduled tasks</string>
+    <string name="stt_title">Voice input</string>
+    <string name="stt_source_title">Download source</string>
+    <string name="stt_source_mirror">China mirror (hf-mirror)</string>
+    <string name="stt_source_hf">HuggingFace</string>
+    <string name="stt_download">Download</string>
+    <string name="stt_delete">Delete</string>
+    <string name="stt_use">Use</string>
+    <string name="stt_active">In use</string>
+    <string name="stt_downloaded">Downloaded</string>
+    <string name="stt_downloading">Downloading</string>
+    <string name="stt_not_downloaded">Not downloaded</string>
+    <string name="stt_download_failed">Download failed, please retry</string>
+    <string name="stt_model_missing">Need a voice model</string>
+    <string name="stt_model_missing_desc">Download a voice model in Settings to use voice input.</string>
+    <string name="stt_go_settings">Go to settings</string>
 </resources>

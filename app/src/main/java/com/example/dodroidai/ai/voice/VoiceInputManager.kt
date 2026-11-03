@@ -5,11 +5,13 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
 import androidx.core.content.ContextCompat
+import com.example.dodroidai.ai.voice.model.SttModelRepository
 import kotlinx.coroutines.*
+import java.io.File
 
 /**
  * 语音输入管理器
- * 使用 Whisper.cpp 实现离线语音识别
+ * 使用 sherpa-onnx + SenseVoice 实现离线语音识别
  */
 class VoiceInputManager(private val context: Context) {
 
@@ -26,8 +28,9 @@ class VoiceInputManager(private val context: Context) {
         fun onRmsChanged(rmsdB: Float)
     }
 
-    private var whisperContext: WhisperContext? = null
-    private var recorder: WhisperRecorder? = null
+    private var engine: SenseVoiceEngine? = null
+    private var engineModelDir: File? = null
+    private var recorder: VoiceRecorder? = null
     private var isListening = false
     private var currentCallback: VoiceRecognitionCallback? = null
     private var initJob: Job? = null
@@ -35,30 +38,36 @@ class VoiceInputManager(private val context: Context) {
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     /**
-     * 初始化 Whisper 模型
+     * 初始化识别引擎；模型未下载时通过回调提示
      */
     fun initializeIfNeeded(onReady: () -> Unit) {
-        if (whisperContext != null) {
+        val modelDir = SttModelRepository(context).activeModelDir()
+        if (modelDir == null) {
+            currentCallback?.onError("请先在设置中下载语音模型")
+            return
+        }
+        if (engine != null && engineModelDir == modelDir) {
             onReady()
             return
         }
 
         initJob?.cancel()
-        initJob = scope.launch(Dispatchers.IO) {
-            val newContext = WhisperContext.createContextFromAsset(
-                this@VoiceInputManager.context.assets,
-                "models/ggml-tiny-q8_0.bin"
-            )
-            if (newContext == null) {
-                withContext(Dispatchers.Main) {
-                    currentCallback?.onError("模型加载失败")
-                }
+        initJob = scope.launch {
+            val newEngine = withContext(Dispatchers.IO) {
+                engine?.release()
+                engine = null
+                engineModelDir = null
+                val candidate = SenseVoiceEngine(modelDir)
+                val ok = runCatching { candidate.initialize() }.getOrDefault(false)
+                if (ok) candidate else null
+            }
+            if (newEngine == null) {
+                currentCallback?.onError("模型加载失败，请尝试重新下载")
                 return@launch
             }
-            withContext(Dispatchers.Main) {
-                whisperContext = newContext
-                onReady()
-            }
+            engine = newEngine
+            engineModelDir = modelDir
+            onReady()
         }
     }
 
@@ -94,7 +103,7 @@ class VoiceInputManager(private val context: Context) {
     }
 
     private fun startRecordingInternal() {
-        recorder = WhisperRecorder(context)
+        recorder = VoiceRecorder(context)
 
         currentCallback?.onReadyForSpeech()
 
@@ -117,6 +126,7 @@ class VoiceInputManager(private val context: Context) {
         currentCallback?.onEndOfSpeech()
 
         val audioData = recorder?.stopRecording() ?: FloatArray(0)
+        recorder = null
 
         if (audioData.isNotEmpty()) {
             performTranscription(audioData)
@@ -126,11 +136,11 @@ class VoiceInputManager(private val context: Context) {
     }
 
     private fun performTranscription(audioData: FloatArray) {
-        val context = whisperContext ?: return
+        val currentEngine = engine ?: return
 
         scope.launch(Dispatchers.IO) {
             try {
-                val text = context.transcribeData(audioData)
+                val text = currentEngine.transcribe(audioData)
                 withContext(Dispatchers.Main) {
                     if (text.isNotBlank()) {
                         currentCallback?.onResult(text)
@@ -148,12 +158,22 @@ class VoiceInputManager(private val context: Context) {
     }
 
     /**
+     * 模型切换/删除后释放旧引擎
+     */
+    fun resetModel() {
+        engine?.release()
+        engine = null
+        engineModelDir = null
+    }
+
+    /**
      * 释放资源
      */
     fun destroy() {
         stopListening()
         initJob?.cancel()
         scope.cancel()
+        resetModel()
         currentCallback = null
     }
 

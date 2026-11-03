@@ -30,7 +30,7 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
 - 模块：`:app`（应用）、`:webview-sdk`（可独立复用的 WebView 组件库）
 - 架构：单 Activity + Fragment + MVVM；存储用 Room（会话/消息/笔记）+ DataStore（配置）；没有 DI 框架
 - UI：XML Views + Material 3，ViewBinding 未启用（使用 `findViewById`）
-- 语言：Kotlin 2.0.21；C/C++（whisper.cpp + ggml，JNI）
+- 语言：Kotlin 2.0.21；sherpa-onnx（预编译 .so，JNI）
 - 构建：Gradle 9.1.0（wrapper）/ AGP 9.0.1 / JDK 17 / compileSdk 36 / minSdk 24
 - 原生 ABI：仅 `arm64-v8a`、`armeabi-v7a`
 
@@ -50,7 +50,7 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
 
 - `local.properties` 中的 `sdk.dir` 指向本机 Android SDK。该文件已被 git 忽略，不要提交。
 - JDK 17。
-- NDK + CMake：whisper/ggml 通过 `externalNativeBuild` 编译，首次构建或清理后构建明显变慢。
+- 语音识别用 sherpa-onnx 预编译 `.so`（`app/src/main/jniLibs/`），不再需要 NDK/CMake 构建 native 代码。
 - Gradle wrapper 的发行版地址是腾讯云镜像（`gradle/wrapper/gradle-wrapper.properties`）；换网络环境时按需修改。
 - 只打包 `arm64-v8a` / `armeabi-v7a`。x86_64 模拟器通常无法直接安装，调试请用 ARM 设备或支持 ARM 转译的镜像。
 
@@ -76,7 +76,7 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
 | 聊天状态机、流式更新、工具循环 | `ui/chat/ChatViewModel.kt` |
 | 聊天页面与列表 | `ui/chat/ChatFragment.kt`、`ui/chat/ChatListFragment.kt`、`ui/chat/adapter/`、`ui/chat/input/` |
 | 工具契约、注册、执行 | `ai/tools/ToolSpec.kt`、`ai/tools/ToolArgs.kt`、`ai/tools/ToolRegistry.kt`、`ai/tools/*Tool.kt`、`tool-processor/` |
-| 语音识别（whisper）与 TTS | `ai/voice/` |
+| 语音识别（sherpa-onnx + SenseVoice）与 TTS | `ai/voice/` |
 | 会话模型与存储 | `data/model/ChatSession.kt`、`data/local/SessionEntity.kt`、`MessageEntity.kt`、`ChatDao.kt`、`data/repository/ChatRepository.kt` |
 | 笔记（Room） | `data/local/NoteEntity.kt`、`NoteDao.kt`、`AppDatabase.kt`、`data/repository/NoteRepository.kt` |
 | 权限策略 / 工具审计 | `data/local/PermissionPolicyStore.kt`、`ToolAuditEntity.kt`、`ToolAuditDao.kt`、`ui/setting/ToolAuditFragment.kt` |
@@ -87,9 +87,9 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
 | 设置页、AI 配置、笔记、记忆、工具审计、定时任务、关于 | `ui/setting/` |
 | 通用弹窗、Toolbar、设置项 | `ui/common/` |
 | WebView 组件库 | `webview-sdk/src/main/java/com/example/dodroidai/webviewsdk/` |
-| whisper.cpp 源码 | 仓库根 `src/`、`include/` |
-| whisper JNI / CMake / ggml | `app/src/main/jni/whisper/`、`app/src/main/jni/ggml/` |
-| 内置 Whisper 模型（约 43 MB） | `app/src/main/assets/models/ggml-tiny-q8_0.bin` |
+| sherpa-onnx 预编译库（v2.0.1） | `app/src/main/jniLibs/{arm64-v8a,armeabi-v7a}/` |
+| sherpa-onnx Kotlin API | `app/src/main/java/com/k2fsa/sherpa/onnx/` |
+| 语音模型下载 | `ai/voice/model/`、`ui/setting/SttSettingsFragment.kt` |
 | 版本目录 | `gradle/libs.versions.toml` |
 | 历史设计文档 | `plan/` |
 | 手动发布流水线 | `.github/workflows/appbuildfjhfjh.yml` |
@@ -193,12 +193,14 @@ tool calling 调用手机系统能力（闹钟、日历、短信、笔记、联�
 
 ### 4.5 语音
 
-- `VoiceInputManager` 从 assets 加载 `models/ggml-tiny-q8_0.bin`；替换模型要同步文件名、CMake 与 assets。
-- whisper.cpp 源码在仓库根 `src/`、`include/`；JNI 入口是 `app/src/main/jni/whisper/jni.c`；
-  CMake 通过 `FetchContent(SOURCE_DIR ...)` 引用 `app/src/main/jni/ggml`。
-- 只编译 `arm64-v8a` / `armeabi-v7a`；CMake 对两个 ABI 分别设置 `-march=armv8.2-a+fp16` 与
-  `-mfpu=neon-vfpv4`。新增 ABI 需要同时改 `app/build.gradle.kts` 和 `CMakeLists.txt`。
+- 语音识别使用 **sherpa-onnx + SenseVoice**（非流式，按住说话）。
+- 预编译 `.so` 在 `app/src/main/jniLibs/{arm64-v8a,armeabi-v7a}/`（`libsherpa-onnx-jni.so` + `libonnxruntime.so`），
+  来自 sherpa-onnx v2.0.1 Android release；Kotlin API 源码在 `app/src/main/java/com/k2fsa/sherpa/onnx/`（从 v2.0.1 复制）。
+- 模型不随包：`SenseVoice Small int8`（约 226 MB）由用户在设置 → 语音输入下载，存
+  `filesDir/stt_models/<id>/`（`model.int8.onnx` + `tokens.txt`），源支持 hf-mirror 与 HuggingFace。
+- 识别链路：`VoiceInputManager` → `SenseVoiceEngine` → `VoiceRecorder` 录 16 kHz 单声道 → sherpa `OfflineRecognizer`。
 - 语音识别全程离线；不要引入需要联网的识别依赖，除非需求明确。
+- 仓库不再包含 whisper.cpp/ggml 源码与内置模型，新增模型请走下载页。
 
 ### 4.6 webview-sdk
 
@@ -280,7 +282,7 @@ Don't：
 
 - CI：`.github/workflows/appbuildfjhfjh.yml`（`workflow_dispatch` 手动触发）→ JDK 17 + Android SDK →
   `./gradlew assembleRelease` → 重命名 APK → 发布 GitHub Release，tag 为 `release-<run_number>`。
-- 发布前手工核对：`versionCode` / `versionName`、签名配置、ABI、权限、内置 Whisper 模型是否随包、
+- 发布前手工核对：`versionCode` / `versionName`、签名配置、ABI、权限、语音模型下载源是否可用、
   应用图标与快捷方式资源是否完整。
 
 ## 8. 文档维护

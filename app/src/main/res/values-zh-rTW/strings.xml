@@ -98,4 +98,19 @@
     <string name="scheduled_task_failed">失敗</string>
     <string name="scheduled_task_notification_title">定時任務</string>
     <string name="scheduled_task_channel">定時任務</string>
+    <string name="stt_title">語音輸入</string>
+    <string name="stt_source_title">下載來源</string>
+    <string name="stt_source_mirror">中國鏡像（hf-mirror）</string>
+    <string name="stt_source_hf">HuggingFace</string>
+    <string name="stt_download">下載</string>
+    <string name="stt_delete">刪除</string>
+    <string name="stt_use">使用</string>
+    <string name="stt_active">使用中</string>
+    <string name="stt_downloaded">已下載</string>
+    <string name="stt_downloading">下載中</string>
+    <string name="stt_not_downloaded">未下載</string>
+    <string name="stt_download_failed">下載失敗，請重試</string>
+    <string name="stt_model_missing">需要語音模型</string>
+    <string name="stt_model_missing_desc">請先在設定中下載語音模型，再使用語音輸入。</string>
+    <string name="stt_go_settings">去設定</string>
 </resources>

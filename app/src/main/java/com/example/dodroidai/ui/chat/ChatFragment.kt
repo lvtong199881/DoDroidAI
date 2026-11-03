@@ -38,6 +38,7 @@ import com.example.dodroidai.ui.chat.input.AttachmentItem
 import com.example.dodroidai.ui.chat.input.VoiceInputDialog
 import com.example.dodroidai.ui.common.CustomDialog
 import com.example.dodroidai.ui.common.Toolbar
+import com.example.dodroidai.ui.setting.SttSettingsFragment
 import com.example.dodroidai.ai.tools.ToolCall
 import com.example.dodroidai.ai.config.AppConfigManager
 import com.example.dodroidai.ai.voice.TtsManager
@@ -633,7 +634,11 @@ class ChatFragment : Fragment() {
                 activity?.runOnUiThread {
                     voiceInputDialog?.dismiss()
                     voiceInputDialog = null
-                    Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                    if (error.contains("语音模型") || error.contains("模型加载失败")) {
+                        showVoiceModelDialog()
+                    } else {
+                        Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         })
@@ -643,6 +648,34 @@ class ChatFragment : Fragment() {
         voiceInputManager.stopListening()
         voiceInputDialog?.dismiss()
         voiceInputDialog = null
+    }
+
+    private fun showVoiceModelDialog() {
+        CustomDialog.Builder(requireContext())
+            .setTitle(R.string.stt_model_missing)
+            .setDescription(R.string.stt_model_missing_desc)
+            .setButtons(
+                CustomDialog.ButtonInfo(text = getString(R.string.cancel)),
+                CustomDialog.ButtonInfo(
+                    text = getString(R.string.stt_go_settings),
+                    onClick = { openSttSettings() }
+                )
+            )
+            .build()
+            .show()
+    }
+
+    private fun openSttSettings() {
+        parentFragmentManager.beginTransaction()
+            .setCustomAnimations(
+                R.anim.slide_in_right,
+                R.anim.slide_out_left,
+                R.anim.slide_in_left,
+                R.anim.slide_out_right
+            )
+            .add(R.id.fragment_container, SttSettingsFragment())
+            .addToBackStack(null)
+            .commit()
     }
 
     private fun speakTts(text: String) {
