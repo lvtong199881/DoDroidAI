@@ -99,8 +99,7 @@
                 android:id="@+id/textLoading"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textColor="?attr/colorOnSurfaceVariant"
                 android:textAppearance="@style/TextAppearance.DoDroid.BodyMedium"
                 android:visibility="gone" />
 
@@ -134,7 +133,6 @@
             android:id="@+id/btnRetry"
             android:layout_width="36dp"
             android:layout_height="36dp"
-            android:layout_marginStart="8dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/retry"
             android:src="@drawable/ic_refresh"
