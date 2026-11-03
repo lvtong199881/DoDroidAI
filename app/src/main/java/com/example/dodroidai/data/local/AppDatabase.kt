@@ -7,12 +7,13 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [NoteEntity::class, SessionEntity::class, MessageEntity::class, ToolAuditEntity::class],
-    version = 3,
+    entities = [NoteEntity::class, SessionEntity::class, MessageEntity::class, ToolAuditEntity::class, MemoryFactEntity::class],
+    version = 4,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
-        AutoMigration(from = 2, to = 3)
+        AutoMigration(from = 2, to = 3),
+        AutoMigration(from = 3, to = 4)
     ]
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -22,6 +23,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun chatDao(): ChatDao
 
     abstract fun toolAuditDao(): ToolAuditDao
+
+    abstract fun memoryFactDao(): MemoryFactDao
 
     companion object {
         @Volatile

@@ -124,4 +124,6 @@
     <string name="tool_audit_failed">Failed</string>
     <string name="reset_permission_prompts">Reset permission prompts</string>
     <string name="permission_reset_done">Permission prompts reset</string>
+    <string name="memory_title">Memory</string>
+    <string name="memory_empty">No saved memories</string>
 </resources>

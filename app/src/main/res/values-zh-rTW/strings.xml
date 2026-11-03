@@ -84,4 +84,6 @@
     <string name="tool_audit_failed">失敗</string>
     <string name="reset_permission_prompts">重設權限提示</string>
     <string name="permission_reset_done">權限提示已重設</string>
+    <string name="memory_title">記憶</string>
+    <string name="memory_empty">尚無記憶</string>
 </resources>

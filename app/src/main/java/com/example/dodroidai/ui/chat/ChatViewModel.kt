@@ -32,6 +32,7 @@ import com.example.dodroidai.ui.common.CustomDialog
 import com.example.dodroidai.data.local.PermissionPolicyStore
 import com.example.dodroidai.data.model.ChatSession
 import com.example.dodroidai.data.repository.ChatRepository
+import com.example.dodroidai.data.repository.MemoryRepository
 import com.example.dodroidai.data.repository.ToolAuditRepository
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
@@ -225,6 +226,7 @@ class ChatViewModel(
     private val openCodeSessionId = "ses_" + UUID.randomUUID().toString().replace("-", "")
 
     private val attachmentEncoder = AttachmentEncoder(appContext)
+    private val memoryRepository = MemoryRepository(appContext)
 
     init {
         if (sessionId != null) {
@@ -335,8 +337,9 @@ class ChatViewModel(
                     throw IllegalStateException("没有可发送的内容")
                 }
 
-                Log.i(TAG, "sendMessageStreaming messages count: ${allMessages.size}")
-                val streamingResult = runToolLoop(config, allMessages, encoded, tools)
+                val requestMessages = withMemoryContext(allMessages, content)
+                Log.i(TAG, "sendMessageStreaming messages count: ${requestMessages.size}")
+                val streamingResult = runToolLoop(config, requestMessages, encoded, tools)
 
                 loadingJob.cancel()
 
@@ -845,6 +848,27 @@ class ChatViewModel(
                 break
             }
         }
+    }
+
+    /**
+     * 把长期记忆作为 system 消息注入请求（只影响请求，不写入 UI 消息列表）。
+     */
+    private suspend fun withMemoryContext(
+        messages: List<ChatMessage>,
+        query: String
+    ): List<ChatMessage> {
+        val facts = try {
+            memoryRepository.findRelevant(query)
+        } catch (e: Exception) {
+            emptyList()
+        }
+        if (facts.isEmpty()) return messages
+        val text = facts.joinToString("\n") { "- ${it.key}: ${it.value}" }.take(1500)
+        val memoryMessage = ChatMessage(
+            role = ChatMessage.ROLE_SYSTEM,
+            content = "已知用户信息（长期记忆）：\n$text"
+        )
+        return listOf(memoryMessage) + messages
     }
 
     private fun getPermissionRationale(toolName: String): String {

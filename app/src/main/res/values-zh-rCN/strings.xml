@@ -124,4 +124,6 @@
     <string name="tool_audit_failed">失败</string>
     <string name="reset_permission_prompts">重置权限提示</string>
     <string name="permission_reset_done">权限提示已重置</string>
+    <string name="memory_title">记忆</string>
+    <string name="memory_empty">暂无记忆</string>
 </resources>
