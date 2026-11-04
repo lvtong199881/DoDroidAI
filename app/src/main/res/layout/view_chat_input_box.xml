@@ -114,8 +114,8 @@
 
             <ImageButton
                 android:id="@+id/btnAdd"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_add"
                 android:contentDescription="@string/add"
@@ -123,8 +123,8 @@
 
             <ImageButton
                 android:id="@+id/btnModeSwitch"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_mic"
                 android:contentDescription="@string/switch_mode"
@@ -132,11 +132,11 @@
 
             <ImageButton
                 android:id="@+id/btnSend"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:layout_marginStart="8dp"
                 android:background="@drawable/bg_send_button"
-                android:padding="10dp"
+                android:padding="8dp"
                 android:src="@drawable/ic_send"
                 android:contentDescription="@string/send"
                 android:scaleType="fitCenter"
