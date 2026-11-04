@@ -119,6 +119,20 @@ class Toolbar @JvmOverloads constructor(
         onAutoReadClickListener = listener
     }
 
+    /** 自动朗读开启时用主题色，关闭时用默认色 */
+    fun setAutoReadActive(active: Boolean) {
+        val button = btnAutoRead ?: return
+        val color = com.google.android.material.color.MaterialColors.getColor(
+            button,
+            if (active) {
+                com.google.android.material.R.attr.colorPrimary
+            } else {
+                com.google.android.material.R.attr.colorOnSurface
+            }
+        )
+        button.imageTintList = android.content.res.ColorStateList.valueOf(color)
+    }
+
     fun setNewChatVisible(visible: Boolean) {
         btnNewChat?.visibility = if (visible) VISIBLE else GONE
     }

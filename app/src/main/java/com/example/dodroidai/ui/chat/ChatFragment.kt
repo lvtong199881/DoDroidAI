@@ -707,6 +707,7 @@ class ChatFragment : Fragment() {
     private fun toggleAutoRead() {
         autoReadEnabled = !autoReadEnabled
         toolbar?.setAutoReadIcon(if (autoReadEnabled) R.drawable.ic_volume else R.drawable.ic_volume_off)
+        toolbar?.setAutoReadActive(autoReadEnabled)
         Toast.makeText(
             requireContext(),
             if (autoReadEnabled) R.string.auto_read_on else R.string.auto_read_off,
