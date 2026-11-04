@@ -741,7 +741,7 @@ class ChatFragment : Fragment() {
         if (!autoReadEnabled) return
         val last = messages.lastOrNull { it.role == ChatMessage.ROLE_ASSISTANT && !it.isLoading } ?: return
         if (last.content.isBlank()) return
-        val key = "${last.timestamp}_${last.content.hashCode()}"
+        val key = "${last.timestamp}"
         if (key == lastAutoReadKey) return
         lastAutoReadKey = key
         speakTts(last.content)

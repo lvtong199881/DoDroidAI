@@ -77,7 +77,8 @@ class ChatMessageAdapter(
                 AssistantMessageViewHolder(
                     view = view,
                     onReasoningToggle = { pos, expanded -> onReasoningToggle(pos, expanded) },
-                    onRetryClick = onRetryClick
+                    onRetryClick = onRetryClick,
+                    onSpeakClick = onSpeakClick
                 )
             }
         }

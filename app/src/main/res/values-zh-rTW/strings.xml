@@ -173,4 +173,7 @@
     <string name="auto_read_on">已開啟自動朗讀</string>
     <string name="auto_read_off">已關閉自動朗讀</string>
     <string name="already_new_chat">已經在新對話中</string>
+    <string name="tts_title">語音輸出</string>
+    <string name="tts_model_desc">%1$s · %2$d MB</string>
+    <string name="tts_hint">離線合成，不依賴系統語音引擎；下載後自動啟用。</string>
 </resources>

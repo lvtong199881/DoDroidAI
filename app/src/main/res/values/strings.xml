@@ -177,4 +177,7 @@
     <string name="auto_read_on">Auto read enabled</string>
     <string name="auto_read_off">Auto read disabled</string>
     <string name="already_new_chat">Already in a new chat</string>
+    <string name="tts_title">Speech output</string>
+    <string name="tts_model_desc">%1$s · %2$d MB</string>
+    <string name="tts_hint">Offline synthesis, no system TTS engine required. Enabled automatically after download.</string>
 </resources>
