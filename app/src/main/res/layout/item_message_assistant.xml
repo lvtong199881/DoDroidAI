@@ -58,6 +58,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
+                android:paddingStart="24dp"
                 android:textAppearance="@style/TextAppearance.DoDroid.BodyMedium"
                 android:lineSpacingMultiplier="1.5"
                 android:textColor="?attr/colorOnSurfaceVariant"
