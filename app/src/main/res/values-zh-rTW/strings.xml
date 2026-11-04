@@ -160,4 +160,10 @@
     <string name="reasoning_done">已深度思考（用時 %1$d 秒）</string>
     <string name="reasoning_done_short">已深度思考</string>
     <string name="read_aloud">朗讀</string>
+    <string name="tool_args">參數</string>
+    <string name="tool_result">結果</string>
+    <string name="tool_running">執行中…</string>
+    <string name="tool_success">成功</string>
+    <string name="tool_failed">失敗</string>
+    <string name="tool_no_result">無結果</string>
 </resources>

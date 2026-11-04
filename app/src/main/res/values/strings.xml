@@ -164,4 +164,10 @@
     <string name="reasoning_done">Thought for %1$d s</string>
     <string name="reasoning_done_short">Thought process</string>
     <string name="read_aloud">Read aloud</string>
+    <string name="tool_args">Parameters</string>
+    <string name="tool_result">Result</string>
+    <string name="tool_running">Running…</string>
+    <string name="tool_success">Success</string>
+    <string name="tool_failed">Failed</string>
+    <string name="tool_no_result">No result</string>
 </resources>

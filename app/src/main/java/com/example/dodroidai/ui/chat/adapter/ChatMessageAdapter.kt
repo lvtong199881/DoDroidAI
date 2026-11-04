@@ -45,6 +45,9 @@ class ChatMessageAdapter(
 
     private val expandedStates = mutableMapOf<Long, Boolean>()
 
+    /** 展开的工具调用详情（key = messageTimestamp_index） */
+    private val expandedToolCalls = mutableSetOf<String>()
+
     /**
      * RecyclerView 引用，用于直接更新 ViewHolder
      */
@@ -160,7 +163,8 @@ class ChatMessageAdapter(
         view: View,
         private val onReasoningToggle: (Int, Boolean) -> Unit,
         private val onRetryClick: ((ChatMessage) -> Unit)? = null,
-        private val onSpeakClick: ((String) -> Unit)? = null
+        private val onSpeakClick: ((String) -> Unit)? = null,
+        private val expandedToolCalls: MutableSet<String> = mutableSetOf()
     ) : RecyclerView.ViewHolder(view) {
         private val contentContainer: LinearLayout = view.findViewById(R.id.contentContainer)
         private val progressBar: ProgressBar = view.findViewById(R.id.progressBar)
@@ -259,28 +263,48 @@ class ChatMessageAdapter(
                     reasoningCard.visibility = View.GONE
                 }
 
-                // 显示工具调用结果
+                // 显示工具调用（可展开详情）
                 if (!message.toolCalls.isNullOrEmpty()) {
                     toolCallContainer.visibility = View.VISIBLE
                     toolCallContainer.removeAllViews()
 
                     val inflater = LayoutInflater.from(itemView.context)
-                    for (toolCall in message.toolCalls) {
+                    message.toolCalls.forEachIndexed { index, toolCall ->
                         val toolView = inflater.inflate(R.layout.item_tool_call, toolCallContainer, false)
+                        val header = toolView.findViewById<LinearLayout>(R.id.toolHeader)
+                        val detail = toolView.findViewById<LinearLayout>(R.id.toolDetail)
+                        val arrow = toolView.findViewById<ImageView>(R.id.toolArrow)
                         val textToolName = toolView.findViewById<TextView>(R.id.textToolName)
-                        val textToolArgs = toolView.findViewById<TextView>(R.id.textToolArgs)
                         val textToolStatus = toolView.findViewById<TextView>(R.id.textToolStatus)
+                        val textToolArgsFull = toolView.findViewById<TextView>(R.id.textToolArgsFull)
+                        val textToolResultFull = toolView.findViewById<TextView>(R.id.textToolResultFull)
 
                         textToolName.text = toolCall.name
-                        textToolArgs.text = toolCall.argsSummary
-
-                        val statusText = when {
-                            toolCall.isRunning -> "🔄"
-                            toolCall.isSuccess == true -> "✅"
-                            toolCall.isSuccess == false -> "❌"
+                        textToolStatus.text = when {
+                            toolCall.isRunning -> itemView.context.getString(R.string.tool_running)
+                            toolCall.isSuccess == true -> itemView.context.getString(R.string.tool_success)
+                            toolCall.isSuccess == false -> itemView.context.getString(R.string.tool_failed)
                             else -> ""
                         }
-                        textToolStatus.text = statusText
+                        textToolArgsFull.text =
+                            (toolCall.argsFull ?: toolCall.argsSummary).ifBlank { "-" }
+                        textToolResultFull.text = (toolCall.resultSummary ?: "").ifBlank {
+                            itemView.context.getString(R.string.tool_no_result)
+                        }
+
+                        val key = "${message.timestamp}_$index"
+                        var expanded = toolCall.isRunning || expandedToolCalls.contains(key)
+                        detail.visibility = if (expanded) View.VISIBLE else View.GONE
+                        arrow.rotation = if (expanded) 90f else 0f
+                        header.setOnClickListener {
+                            expanded = !expanded
+                            detail.visibility = if (expanded) View.VISIBLE else View.GONE
+                            arrow.animate()
+                                .rotation(if (expanded) 90f else 0f)
+                                .setDuration(160)
+                                .start()
+                            if (expanded) expandedToolCalls.add(key) else expandedToolCalls.remove(key)
+                        }
 
                         toolCallContainer.addView(toolView)
                     }

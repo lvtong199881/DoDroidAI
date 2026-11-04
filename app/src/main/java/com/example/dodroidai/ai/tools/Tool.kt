@@ -92,5 +92,7 @@ data class ToolCallDisplay(
     @SerializedName("isSuccess")
     val isSuccess: Boolean? = null,
     @SerializedName("resultSummary")
-    val resultSummary: String? = null
+    val resultSummary: String? = null,
+    @SerializedName("argsFull")
+    val argsFull: String? = null
 )

@@ -68,19 +68,20 @@
                 android:visibility="gone" />
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/contentContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" />
-
-        <!-- 工具调用显示区 -->
+        <!-- 工具调用显示区（思考后、内容前） -->
         <LinearLayout
             android:id="@+id/toolCallContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
+            android:paddingBottom="8dp"
             android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/contentContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
 
         <LinearLayout
             android:layout_width="wrap_content"

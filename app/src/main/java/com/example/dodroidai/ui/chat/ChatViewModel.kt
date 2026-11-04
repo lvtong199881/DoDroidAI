@@ -85,7 +85,8 @@ private data class StreamingResult(
     val content: String,
     val reasoningContent: String?,
     val toolCalls: List<ToolCall>,
-    val reasoningElapsedSeconds: Int = 0
+    val reasoningElapsedSeconds: Int = 0,
+    val toolDisplays: List<ToolCallDisplay> = emptyList()
 )
 
 /**
@@ -380,7 +381,7 @@ class ChatViewModel(
                 loadingJob.cancel()
 
                 Log.d(TAG, "Final response: length=${streamingResult.content.length}, toolCalls=${streamingResult.toolCalls.size}")
-                val toolDisplays = buildToolDisplays(streamingResult.toolCalls, emptyList())
+                val toolDisplays = streamingResult.toolDisplays
                 val assistantMessage = ChatMessage(
                     role = ROLE_ASSISTANT,
                     content = streamingResult.content,
@@ -521,6 +522,7 @@ class ChatViewModel(
         var streamingResult = sendMessageStreaming(config, currentMessages, encoded, tools)
         var toolCallDepth = 0
         var currentToolCalls = streamingResult.toolCalls
+        val allDisplays = mutableListOf<ToolCallDisplay>()
 
         while (currentToolCalls.isNotEmpty() && toolCallDepth < MAX_TOOL_CALL_DEPTH) {
             currentCoroutineContext().ensureActive()
@@ -531,6 +533,7 @@ class ChatViewModel(
                 break
             }
             val toolResults = executeToolCalls(currentToolCalls, currentFragment)
+            allDisplays.addAll(buildToolDisplays(currentToolCalls, toolResults))
             val toolMessages = buildToolMessages(currentToolCalls, toolResults)
 
             // OpenAI 要求 tool 消息之前有对应的 assistant tool_calls 消息；
@@ -551,7 +554,7 @@ class ChatViewModel(
             currentToolCalls = nextResult.toolCalls
             streamingResult = nextResult
         }
-        return streamingResult
+        return streamingResult.copy(toolDisplays = allDisplays)
     }
 
     /**
@@ -960,7 +963,8 @@ class ChatViewModel(
                 argsSummary = summarizeArgs(call.arguments),
                 isRunning = result == null,
                 isSuccess = result?.success,
-                resultSummary = result?.result
+                resultSummary = result?.result,
+                argsFull = call.arguments.take(2000)
             )
         }
     }
