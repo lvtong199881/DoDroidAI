@@ -40,16 +40,18 @@
                     android:id="@+id/reasoningArrow"
                     android:layout_width="18dp"
                     android:layout_height="18dp"
+                    android:alpha="0.78"
                     android:src="@drawable/ic_arrow_right"
-                    app:tint="?attr/colorOutline" />
+                    app:tint="?attr/colorOnSurfaceVariant" />
 
                 <TextView
                     android:id="@+id/tvReasoningTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="6dp"
+                    android:alpha="0.78"
                     android:textAppearance="@style/TextAppearance.DoDroid.LabelLarge"
-                    android:textColor="?attr/colorOutline"
+                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:textStyle="bold" />
             </LinearLayout>
 
@@ -58,10 +60,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
+                android:alpha="0.78"
                 android:paddingStart="24dp"
                 android:textAppearance="@style/TextAppearance.DoDroid.BodyMedium"
                 android:lineSpacingMultiplier="1.5"
-                android:textColor="?attr/colorOutline"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:visibility="gone" />
         </LinearLayout>
 
