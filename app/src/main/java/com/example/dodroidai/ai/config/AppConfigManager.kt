@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.dodroidai.ai.model.AIProvider
@@ -77,6 +78,7 @@ object AppConfigManager {
     private val languageKey = stringPreferencesKey("language")
     private val themeKey = stringPreferencesKey("theme")
     private val braveSearchApiKeyKey = stringPreferencesKey("brave_search_api_key")
+    private val reasoningAutoCollapseKey = booleanPreferencesKey("reasoning_auto_collapse")
 
     val languageFlow: Flow<String> = context.appDataStore.data.map { preferences ->
         preferences[languageKey] ?: "en"
@@ -88,6 +90,11 @@ object AppConfigManager {
 
     val braveSearchApiKeyFlow: Flow<String> = context.appDataStore.data.map { preferences ->
         preferences[braveSearchApiKeyKey] ?: ""
+    }
+
+    /** 思考内容结束后是否自动折叠（默认开启） */
+    val reasoningAutoCollapseFlow: Flow<Boolean> = context.appDataStore.data.map { preferences ->
+        preferences[reasoningAutoCollapseKey] ?: true
     }
 
     suspend fun updateLanguage(language: String) {
@@ -109,6 +116,12 @@ object AppConfigManager {
     suspend fun updateBraveSearchApiKey(apiKey: String) {
         context.appDataStore.edit { preferences ->
             preferences[braveSearchApiKeyKey] = apiKey
+        }
+    }
+
+    suspend fun updateReasoningAutoCollapse(enabled: Boolean) {
+        context.appDataStore.edit { preferences ->
+            preferences[reasoningAutoCollapseKey] = enabled
         }
     }
 

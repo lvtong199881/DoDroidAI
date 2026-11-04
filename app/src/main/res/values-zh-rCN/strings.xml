@@ -170,4 +170,7 @@
     <string name="tool_success">成功</string>
     <string name="tool_failed">失败</string>
     <string name="tool_no_result">无结果</string>
+    <string name="chat_settings_title">对话</string>
+    <string name="reasoning_auto_collapse">思考内容自动折叠</string>
+    <string name="reasoning_auto_collapse_desc">思考结束后自动收起思考内容</string>
 </resources>

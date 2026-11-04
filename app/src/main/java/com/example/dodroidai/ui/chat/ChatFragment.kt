@@ -194,6 +194,13 @@ class ChatFragment : Fragment() {
                 viewModel.retryLastAssistant()
             }
         )
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                AppConfigManager.reasoningAutoCollapseFlow.collect { enabled ->
+                    ChatMessageAdapter.autoCollapseReasoning = enabled
+                }
+            }
+        }
         recyclerView?.itemAnimator = androidx.recyclerview.widget.DefaultItemAnimator().apply {
             addDuration = 160
             changeDuration = 160

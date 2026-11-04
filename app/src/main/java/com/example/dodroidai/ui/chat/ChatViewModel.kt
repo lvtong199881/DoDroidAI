@@ -382,12 +382,16 @@ class ChatViewModel(
 
                 Log.d(TAG, "Final response: length=${streamingResult.content.length}, toolCalls=${streamingResult.toolCalls.size}")
                 val toolDisplays = streamingResult.toolDisplays
+                val autoCollapseReasoning = runCatching {
+                    AppConfigManager.reasoningAutoCollapseFlow.first()
+                }.getOrDefault(true)
                 val assistantMessage = ChatMessage(
                     role = ROLE_ASSISTANT,
                     content = streamingResult.content,
                     toolCalls = toolDisplays,
                     reasoningContent = streamingResult.reasoningContent,
-                    reasoningElapsedSeconds = streamingResult.reasoningElapsedSeconds
+                    reasoningElapsedSeconds = streamingResult.reasoningElapsedSeconds,
+                    isReasoningExpanded = !autoCollapseReasoning
                 )
 
                 val currentMessages = _uiState.value.messages.toMutableList()

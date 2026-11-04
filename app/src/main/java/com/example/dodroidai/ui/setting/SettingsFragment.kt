@@ -41,6 +41,7 @@ class SettingsFragment : Fragment() {
     private var scheduledTasksCard: SettingsItemView? = null
     private var sttCard: SettingsItemView? = null
     private var diagnosticsCard: SettingsItemView? = null
+    private var chatSettingsCard: SettingsItemView? = null
     private var aboutCard: SettingsItemView? = null
     private var toolbar: Toolbar? = null
     private var scrollView: ScrollView? = null
@@ -70,6 +71,7 @@ class SettingsFragment : Fragment() {
         scheduledTasksCard = view.findViewById(R.id.scheduledTasksCard)
         sttCard = view.findViewById(R.id.sttCard)
         diagnosticsCard = view.findViewById(R.id.diagnosticsCard)
+        chatSettingsCard = view.findViewById(R.id.chatSettingsCard)
         aboutCard = view.findViewById(R.id.aboutCard)
         toolbar = view.findViewById(R.id.toolbar)
         scrollView = view.findViewById(R.id.scrollView)
@@ -84,6 +86,7 @@ class SettingsFragment : Fragment() {
         scheduledTasksCard?.setTitle(R.string.scheduled_tasks_title)
         sttCard?.setTitle(R.string.stt_title)
         diagnosticsCard?.setTitle(R.string.diagnostics_title)
+        chatSettingsCard?.setTitle(R.string.chat_settings_title)
         aboutCard?.setTitle(R.string.about_title)
 
         toolbar?.setTitle(R.string.settings_title)
@@ -144,6 +147,10 @@ class SettingsFragment : Fragment() {
 
         diagnosticsCard?.setOnItemClickListener {
             navigateTo(DiagnosticsFragment())
+        }
+
+        chatSettingsCard?.setOnItemClickListener {
+            navigateTo(ChatSettingsFragment())
         }
 
         aboutCard?.setOnItemClickListener {

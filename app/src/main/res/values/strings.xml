@@ -170,4 +170,7 @@
     <string name="tool_success">Success</string>
     <string name="tool_failed">Failed</string>
     <string name="tool_no_result">No result</string>
+    <string name="chat_settings_title">Chat</string>
+    <string name="reasoning_auto_collapse">Auto-collapse thinking</string>
+    <string name="reasoning_auto_collapse_desc">Collapse thinking content when it finishes</string>
 </resources>

@@ -48,6 +48,7 @@ class ChatMessageAdapter(
     /** 展开的工具调用详情（key = messageTimestamp_index） */
     private val expandedToolCalls = mutableSetOf<String>()
 
+
     /**
      * RecyclerView 引用，用于直接更新 ViewHolder
      */
@@ -216,13 +217,13 @@ class ChatMessageAdapter(
                     textLoading.text = "AI思考中..."
                 }
 
-                // 显示思考过程（流式，默认收起）；思考卡片出现时不再显示「AI思考中」文案
+                // 显示思考过程（流式时展开）；思考卡片出现时不再显示「AI思考中」文案
                 if (!message.reasoningContent.isNullOrEmpty()) {
                     reasoningCard.visibility = View.VISIBLE
                     tvReasoningTitle.text = itemView.context.getString(R.string.reasoning_thinking)
                     textReasoning.text = message.reasoningContent
-                    textReasoning.visibility = View.GONE
-                    reasoningArrow.rotation = 0f
+                    textReasoning.visibility = View.VISIBLE
+                    reasoningArrow.rotation = 90f
                     textLoading.visibility = View.GONE
                     progressBar.visibility = View.GONE
                 } else {
@@ -485,6 +486,10 @@ class ChatMessageAdapter(
     }
 
     companion object {
+        /** 思考结束后是否自动折叠（来自设置，全局静态便于 ViewHolder 读取） */
+        @Volatile
+        var autoCollapseReasoning: Boolean = true
+
         private const val VIEW_TYPE_USER = 0
         private const val VIEW_TYPE_ASSISTANT = 1
         const val PAYLOAD_STREAMING = "streaming"
