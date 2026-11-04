@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:textSize="16sp"
+        android:textSize="16dp"
         android:background="?attr/selectableItemBackground"
         android:clickable="false"
         android:focusable="false" />

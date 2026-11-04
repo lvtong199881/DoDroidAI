@@ -31,7 +31,7 @@
             android:maxLines="1"
             android:maxWidth="160dp"
             android:textColor="?attr/colorOnPrimaryContainer"
-            android:textSize="13sp"
+            android:textSize="13dp"
             tools:text="report.pdf" />
 
         <TextView
@@ -40,7 +40,7 @@
             android:layout_height="wrap_content"
             android:alpha="0.6"
             android:textColor="?attr/colorOnPrimaryContainer"
-            android:textSize="10sp"
+            android:textSize="10dp"
             tools:text="1.2MB" />
 
     </LinearLayout>

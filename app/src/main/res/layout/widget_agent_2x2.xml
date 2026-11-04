@@ -21,6 +21,6 @@
         android:layout_marginTop="4dp"
         android:text="@string/widget_hint"
         android:textColor="@color/m3_on_surface_variant"
-        android:textSize="12sp" />
+        android:textSize="12dp" />
 
 </LinearLayout>

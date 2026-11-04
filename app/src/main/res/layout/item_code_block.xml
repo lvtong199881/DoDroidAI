@@ -56,7 +56,7 @@
             android:paddingEnd="12dp"
             android:paddingBottom="12dp"
             android:textColor="?attr/colorOnSurface"
-            android:textSize="13sp" />
+            android:textSize="13dp" />
 
     </HorizontalScrollView>
 

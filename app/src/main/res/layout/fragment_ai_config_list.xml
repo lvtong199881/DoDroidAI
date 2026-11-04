@@ -23,7 +23,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/ai_config_empty"
-        android:textSize="16sp"
+        android:textSize="16dp"
         android:alpha="0.6"
         android:visibility="gone"
         app:layout_constraintTop_toTopOf="@id/configRecyclerView"

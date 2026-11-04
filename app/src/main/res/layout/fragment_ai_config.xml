@@ -52,7 +52,7 @@
                         android:gravity="center"
                         android:padding="16dp"
                         android:text="@string/provider_openai"
-                        android:textSize="14sp"
+                        android:textSize="14dp"
                         android:textStyle="bold" />
                 </com.google.android.material.card.MaterialCardView>
 
@@ -74,7 +74,7 @@
                         android:gravity="center"
                         android:padding="16dp"
                         android:text="@string/provider_deepseek"
-                        android:textSize="14sp"
+                        android:textSize="14dp"
                         android:textStyle="bold" />
                 </com.google.android.material.card.MaterialCardView>
 
@@ -95,7 +95,7 @@
                         android:gravity="center"
                         android:padding="16dp"
                         android:text="@string/provider_minimax"
-                        android:textSize="14sp"
+                        android:textSize="14dp"
                         android:textStyle="bold" />
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
@@ -108,7 +108,7 @@
                 android:layout_marginTop="24dp"
                 android:layout_marginEnd="16dp"
                 android:text="@string/group_basic_info"
-                android:textSize="14sp"
+                android:textSize="14dp"
                 android:textColor="?attr/colorOnSurface"
                 android:alpha="0.6" />
 
@@ -175,7 +175,7 @@
                 android:layout_marginTop="24dp"
                 android:layout_marginEnd="16dp"
                 android:text="@string/group_api_config"
-                android:textSize="14sp"
+                android:textSize="14dp"
                 android:textColor="?attr/colorOnSurface"
                 android:alpha="0.6" />
 
@@ -242,7 +242,7 @@
                 android:layout_marginTop="24dp"
                 android:layout_marginEnd="16dp"
                 android:text="@string/group_model_config"
-                android:textSize="14sp"
+                android:textSize="14dp"
                 android:textColor="?attr/colorOnSurface"
                 android:alpha="0.6" />
 
