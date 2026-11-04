@@ -3,6 +3,8 @@ package com.example.dodroidai.ui.chat.input
 import android.content.Context
 import android.text.Editable
 import android.text.TextWatcher
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -10,7 +12,9 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
+import com.google.android.material.color.MaterialColors
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dodroidai.R
@@ -80,6 +84,14 @@ class ChatInputBox @JvmOverloads constructor(
         voiceHint = findViewById(R.id.voiceHint)
         btnThink = findViewById(R.id.btnThink)
         btnWebSearch = findViewById(R.id.btnWebSearch)
+        btnThink?.let { chip ->
+            updateChipStyle(chip)
+            chip.setOnCheckedChangeListener { _, _ -> updateChipStyle(chip) }
+        }
+        btnWebSearch?.let { chip ->
+            updateChipStyle(chip)
+            chip.setOnCheckedChangeListener { _, _ -> updateChipStyle(chip) }
+        }
         btnAdd = findViewById(R.id.btnAdd)
         btnModeSwitch = findViewById(R.id.btnModeSwitch)
         btnSend = findViewById(R.id.btnSend)
@@ -250,4 +262,29 @@ class ChatInputBox @JvmOverloads constructor(
         btnModeSwitch?.isVisible = !hasText && !hasAttachments
         btnSend?.isVisible = hasText || hasAttachments
     }
+
+    /**
+     * 选中态：蓝色边框 + 淡蓝背景 + 蓝字，隐藏左侧图标；未选中恢复默认
+     */
+    private fun updateChipStyle(chip: com.google.android.material.chip.Chip) {
+        val checked = chip.isChecked
+        val blue = ContextCompat.getColor(chip.context, R.color.deepseek_blue)
+        val blueBg = ContextCompat.getColor(chip.context, R.color.deepseek_blue_10)
+        val normalText = MaterialColors.getColor(
+            chip,
+            com.google.android.material.R.attr.colorOnSurface
+        )
+        val outline = MaterialColors.getColor(
+            chip,
+            com.google.android.material.R.attr.colorOutlineVariant
+        )
+        chip.chipBackgroundColor = ColorStateList.valueOf(if (checked) blueBg else Color.TRANSPARENT)
+        chip.chipStrokeColor = ColorStateList.valueOf(if (checked) blue else outline)
+        chip.chipStrokeWidth = chip.resources.displayMetrics.density
+        chip.setTextColor(if (checked) blue else normalText)
+        chip.isChipIconVisible = !checked
+        chip.isCheckedIconVisible = false
+        chip.setChipIconTint(ColorStateList.valueOf(if (checked) blue else normalText))
+    }
+
 }

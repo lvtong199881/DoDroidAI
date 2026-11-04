@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- M3 语义色板：Dark -->
-    <color name="m3_primary">#B7C4FF</color>
-    <color name="m3_on_primary">#0A1A4A</color>
-    <color name="m3_primary_container">#33406E</color>
+    <color name="m3_primary">#8FA6FF</color>
+    <color name="m3_on_primary">#0A1F5C</color>
+    <color name="m3_primary_container">#1F2B66</color>
     <color name="m3_on_primary_container">#DDE2FF</color>
     <color name="m3_secondary">#BEC4D0</color>
     <color name="m3_on_secondary">#1A1F2B</color>
@@ -19,4 +19,7 @@
     <color name="m3_error">#FFB4AB</color>
     <color name="m3_success">#6FDC9E</color>
     <color name="m3_warning">#FFB95C</color>
+    <!-- DeepSeek 品牌蓝 -->
+    <color name="deepseek_blue">#8FA6FF</color>
+    <color name="deepseek_blue_10">#338FA6FF</color>
 </resources>
