@@ -212,13 +212,15 @@ class ChatMessageAdapter(
                     textLoading.text = "AI思考中..."
                 }
 
-                // 显示思考过程（流式，默认收起）
+                // 显示思考过程（流式，默认收起）；思考卡片出现时不再显示「AI思考中」文案
                 if (!message.reasoningContent.isNullOrEmpty()) {
                     reasoningCard.visibility = View.VISIBLE
                     tvReasoningTitle.text = itemView.context.getString(R.string.reasoning_thinking)
                     textReasoning.text = message.reasoningContent
                     textReasoning.visibility = View.GONE
                     reasoningArrow.rotation = 0f
+                    textLoading.visibility = View.GONE
+                    progressBar.visibility = View.GONE
                 } else {
                     reasoningCard.visibility = View.GONE
                 }
