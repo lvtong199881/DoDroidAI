@@ -173,7 +173,20 @@ class ChatFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         initViews(view)
         setupListeners()
+        initTts()
         observeState()
+    }
+
+    private fun initTts() {
+        ttsManager.initialize(object : TtsManager.InitListener {
+            override fun onInitSuccess() {
+                android.util.Log.d("ChatFragment", "TTS initialized")
+            }
+
+            override fun onInitError(error: String) {
+                android.util.Log.w("ChatFragment", "TTS init failed: $error")
+            }
+        })
     }
 
     private fun initViews(view: View) {
