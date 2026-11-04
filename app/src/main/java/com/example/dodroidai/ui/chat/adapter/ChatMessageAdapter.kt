@@ -5,6 +5,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.SystemClock
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,7 +26,12 @@ import com.example.dodroidai.ai.model.ChatAttachment
 import com.example.dodroidai.ai.model.ChatMessage
 import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_ASSISTANT
 import com.example.dodroidai.ai.model.ChatMessage.Companion.ROLE_USER
+import com.google.android.material.color.MaterialColors
 import io.noties.markwon.Markwon
+import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
+import io.noties.markwon.ext.tables.TablePlugin
+
+private const val RENDER_THROTTLE_MS = 200L
 
 /**
  * 聊天消息适配器
@@ -153,7 +159,7 @@ class ChatMessageAdapter(
         private val onReasoningToggle: (Int, Boolean) -> Unit,
         private val onRetryClick: ((ChatMessage) -> Unit)? = null
     ) : RecyclerView.ViewHolder(view) {
-        private val textMessage: TextView = view.findViewById(R.id.textMessage)
+        private val contentContainer: LinearLayout = view.findViewById(R.id.contentContainer)
         private val progressBar: ProgressBar = view.findViewById(R.id.progressBar)
         private val textLoading: TextView = view.findViewById(R.id.textLoading)
         private val actionBar: LinearLayout = view.findViewById(R.id.actionBar)
@@ -165,7 +171,10 @@ class ChatMessageAdapter(
         private val reasoningArrow: ImageView = view.findViewById(R.id.reasoningArrow)
         private val tvReasoningTitle: TextView = view.findViewById(R.id.tvReasoningTitle)
         private val textReasoning: TextView = view.findViewById(R.id.textReasoning)
-        private val markwon = Markwon.create(view.context)
+        private val markwon = Markwon.builder(view.context)
+            .usePlugin(StrikethroughPlugin.create())
+            .usePlugin(TablePlugin.create(view.context))
+            .build()
 
         /**
          * 当前内容，用于比较是否变化
@@ -180,12 +189,12 @@ class ChatMessageAdapter(
             if (message.isLoading) {
                 // 流式输出时显示内容
                 if (message.content.isNotEmpty()) {
-                    textMessage.visibility = View.VISIBLE
-                    markwon.setMarkdown(textMessage, message.content)
+                    contentContainer.visibility = View.VISIBLE
+                    renderContent(message.content)
                     progressBar.visibility = View.GONE
                     textLoading.visibility = View.GONE
                 } else {
-                    textMessage.visibility = View.GONE
+                    contentContainer.visibility = View.GONE
                     progressBar.visibility = View.VISIBLE
                     textLoading.visibility = View.VISIBLE
                 }
@@ -210,13 +219,13 @@ class ChatMessageAdapter(
                     reasoningCard.visibility = View.GONE
                 }
             } else {
-                textMessage.visibility = View.VISIBLE
+                contentContainer.visibility = View.VISIBLE
                 progressBar.visibility = View.GONE
                 textLoading.visibility = View.GONE
                 actionBar.visibility = if (showActions) View.VISIBLE else View.GONE
 
-                markwon.setMarkdown(textMessage, message.content)
-                textMessage.visibility = if (message.content.isBlank()) View.GONE else View.VISIBLE
+                renderContent(message.content)
+                contentContainer.visibility = if (message.content.isBlank()) View.GONE else View.VISIBLE
 
                 // 显示思考过程
                 if (!message.reasoningContent.isNullOrEmpty()) {
@@ -299,13 +308,63 @@ class ChatMessageAdapter(
             textReasoning.visibility = if (expanded) View.VISIBLE else View.GONE
         }
 
+        private var lastRenderAt = 0L
+
+        private fun renderThrottled(content: String) {
+            val now = SystemClock.uptimeMillis()
+            if (now - lastRenderAt < RENDER_THROTTLE_MS) return
+            lastRenderAt = now
+            renderContent(content)
+        }
+
+        /**
+         * 按 Markdown 切分渲染：正文用 Markwon，代码块用独立组件（横向滚动 + 复制）
+         */
+        private fun renderContent(content: String) {
+            contentContainer.removeAllViews()
+            if (content.isBlank()) return
+            val context = itemView.context
+            MarkdownSegmenter.segment(content).forEach { segment ->
+                when (segment.type) {
+                    MarkdownSegment.Type.TEXT -> {
+                        val tv = TextView(context).apply {
+                            setTextAppearance(R.style.TextAppearance_DoDroid_BodyLarge)
+                            setTextColor(
+                                MaterialColors.getColor(
+                                    this,
+                                    com.google.android.material.R.attr.colorOnSurface
+                                )
+                            )
+                            setLineSpacing(0f, 1.7f)
+                        }
+                        markwon.setMarkdown(tv, segment.content)
+                        contentContainer.addView(tv)
+                    }
+
+                    MarkdownSegment.Type.CODE -> {
+                        val codeView = LayoutInflater.from(context)
+                            .inflate(R.layout.item_code_block, contentContainer, false)
+                        codeView.findViewById<TextView>(R.id.tvCode).text = segment.content
+                        codeView.findViewById<TextView>(R.id.tvLanguage).text =
+                            segment.language.ifBlank { "text" }
+                        codeView.findViewById<ImageButton>(R.id.btnCopyCode).setOnClickListener {
+                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                            clipboard.setPrimaryClip(ClipData.newPlainText("code", segment.content))
+                            Toast.makeText(context, R.string.copy_success, Toast.LENGTH_SHORT).show()
+                        }
+                        contentContainer.addView(codeView)
+                    }
+                }
+            }
+        }
+
         /**
          * 直接更新流式内容，不触发 bind
          */
         fun updateStreamingContent(content: String, reasoning: String?) {
             if (content != currentContent) {
                 currentContent = content
-                markwon.setMarkdown(textMessage, content)
+                renderThrottled(content)
             }
             if (reasoning != currentReasoning) {
                 currentReasoning = reasoning

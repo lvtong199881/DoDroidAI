@@ -68,12 +68,11 @@
                 android:visibility="gone" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/textMessage"
+        <LinearLayout
+            android:id="@+id/contentContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/TextAppearance.DoDroid.BodyLarge"
-            android:textColor="?attr/colorOnSurface" />
+            android:orientation="vertical" />
 
         <!-- 工具调用显示区 -->
         <LinearLayout
