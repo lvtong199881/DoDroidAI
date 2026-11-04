@@ -18,6 +18,7 @@
 
     <style name="Widget.DoDroid.Chip.Filter" parent="Widget.Material3.Chip.Filter">
         <item name="chipCornerRadius">999dp</item>
+        <item name="chipMinHeight">32dp</item>
         <item name="android:textAppearance">@style/TextAppearance.DoDroid.LabelLarge</item>
     </style>
 
