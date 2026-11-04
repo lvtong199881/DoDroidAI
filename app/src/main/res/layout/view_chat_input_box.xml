@@ -28,8 +28,7 @@
         <FrameLayout
             android:id="@+id/firstRowContainer"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp">
+            android:layout_height="wrap_content">
 
             <!-- 打字模式：输入框（无边框，仅 hint） -->
             <com.google.android.material.textfield.TextInputLayout
@@ -46,11 +45,11 @@
                     android:id="@+id/inputText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:minHeight="40dp"
+                    android:minHeight="24dp"
                     android:paddingStart="0dp"
                     android:paddingEnd="0dp"
-                    android:paddingTop="8dp"
-                    android:paddingBottom="8dp"
+                    android:paddingTop="0dp"
+                    android:paddingBottom="0dp"
                     android:hint="@string/chat_input_hint"
                     android:inputType="text"
                     android:maxLines="1"
