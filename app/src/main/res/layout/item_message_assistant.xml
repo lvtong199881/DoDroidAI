@@ -48,11 +48,13 @@
                     app:tint="?attr/colorOnSurfaceVariant" />
 
                 <TextView
+                    android:id="@+id/tvReasoningTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="6dp"
-                    android:text="@string/thinking_process"
-                    android:textAppearance="@style/TextAppearance.DoDroid.LabelMedium" />
+                    android:textAppearance="@style/TextAppearance.DoDroid.LabelLarge"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <TextView
@@ -60,10 +62,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:textSize="13sp"
-                android:lineSpacingExtra="2dp"
+                android:textAppearance="@style/TextAppearance.DoDroid.BodyMedium"
+                android:lineSpacingMultiplier="1.5"
                 android:textColor="?attr/colorOnSurfaceVariant"
-                android:fontFamily="monospace"
                 android:visibility="gone" />
         </LinearLayout>
 

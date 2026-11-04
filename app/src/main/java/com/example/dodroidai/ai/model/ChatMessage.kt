@@ -44,6 +44,8 @@ data class ChatMessage(
     val toolCallId: String? = null,
     @SerializedName("reasoningContent")
     val reasoningContent: String? = null,
+    @SerializedName("reasoningElapsedSeconds")
+    val reasoningElapsedSeconds: Int = 0,
     @SerializedName("isError")
     val isError: Boolean? = null,
     @SerializedName("isReasoningExpanded")

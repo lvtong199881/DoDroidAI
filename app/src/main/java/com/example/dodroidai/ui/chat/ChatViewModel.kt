@@ -84,7 +84,8 @@ data class ChatUiState(
 private data class StreamingResult(
     val content: String,
     val reasoningContent: String?,
-    val toolCalls: List<ToolCall>
+    val toolCalls: List<ToolCall>,
+    val reasoningElapsedSeconds: Int = 0
 )
 
 /**
@@ -215,6 +216,9 @@ class ChatViewModel(
 
     private val streamingClient = StreamingChatClient(httpClient)
 
+    /** 思考过程开始时间（用于显示“已深度思考（用时 X 秒）”） */
+    private var reasoningStartedAt = 0L
+
     /** 当前发送协程，用于停止生成 */
     private var sendJob: Job? = null
 
@@ -286,6 +290,7 @@ class ChatViewModel(
         sendJob?.cancel()
         sendJob = viewModelScope.launch {
             lastFailedRequest = null
+            reasoningStartedAt = 0L
 
             val userMessage = ChatMessage(
                 role = ROLE_USER,
@@ -380,7 +385,8 @@ class ChatViewModel(
                     role = ROLE_ASSISTANT,
                     content = streamingResult.content,
                     toolCalls = toolDisplays,
-                    reasoningContent = streamingResult.reasoningContent
+                    reasoningContent = streamingResult.reasoningContent,
+                    reasoningElapsedSeconds = streamingResult.reasoningElapsedSeconds
                 )
 
                 val currentMessages = _uiState.value.messages.toMutableList()
@@ -676,6 +682,9 @@ class ChatViewModel(
             }
 
             override fun onReasoningDelta(content: String) {
+                if (reasoningStartedAt == 0L) {
+                    reasoningStartedAt = System.currentTimeMillis()
+                }
                 // 更新思考内容（不更新 messages）
                 updateLoadingMessageReasoning(content)
             }
@@ -689,10 +698,16 @@ class ChatViewModel(
             }
 
             override fun onComplete(fullContent: String, reasoningContent: String?, toolCalls: List<ToolCall>) {
+                val elapsed = if (reasoningStartedAt > 0) {
+                    ((System.currentTimeMillis() - reasoningStartedAt) / 1000).toInt()
+                } else {
+                    0
+                }
                 result.complete(StreamingResult(
                     content = fullContent,
                     reasoningContent = reasoningContent,
-                    toolCalls = toolCalls
+                    toolCalls = toolCalls,
+                    reasoningElapsedSeconds = elapsed
                 ))
             }
 

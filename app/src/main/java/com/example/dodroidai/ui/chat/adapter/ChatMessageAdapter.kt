@@ -163,6 +163,7 @@ class ChatMessageAdapter(
         private val reasoningCard: LinearLayout = view.findViewById(R.id.reasoningCard)
         private val reasoningHeader: LinearLayout = view.findViewById(R.id.reasoningHeader)
         private val reasoningArrow: ImageView = view.findViewById(R.id.reasoningArrow)
+        private val tvReasoningTitle: TextView = view.findViewById(R.id.tvReasoningTitle)
         private val textReasoning: TextView = view.findViewById(R.id.textReasoning)
         private val markwon = Markwon.create(view.context)
 
@@ -198,10 +199,13 @@ class ChatMessageAdapter(
                     textLoading.text = "AI思考中..."
                 }
 
-                // 显示思考过程（流式）
+                // 显示思考过程（流式，默认收起）
                 if (!message.reasoningContent.isNullOrEmpty()) {
                     reasoningCard.visibility = View.VISIBLE
+                    tvReasoningTitle.text = itemView.context.getString(R.string.reasoning_thinking)
                     textReasoning.text = message.reasoningContent
+                    textReasoning.visibility = View.GONE
+                    reasoningArrow.rotation = 0f
                 } else {
                     reasoningCard.visibility = View.GONE
                 }
@@ -217,6 +221,11 @@ class ChatMessageAdapter(
                 // 显示思考过程
                 if (!message.reasoningContent.isNullOrEmpty()) {
                     reasoningCard.visibility = View.VISIBLE
+                    tvReasoningTitle.text = if (message.reasoningElapsedSeconds > 0) {
+                        itemView.context.getString(R.string.reasoning_done, message.reasoningElapsedSeconds)
+                    } else {
+                        itemView.context.getString(R.string.reasoning_done_short)
+                    }
                     textReasoning.text = message.reasoningContent
                     val isExpanded = message.isReasoningExpanded
                     updateReasoningUI(isExpanded)
@@ -302,6 +311,7 @@ class ChatMessageAdapter(
                 currentReasoning = reasoning
                 if (!reasoning.isNullOrEmpty()) {
                     reasoningCard.visibility = View.VISIBLE
+                    tvReasoningTitle.text = itemView.context.getString(R.string.reasoning_thinking)
                     textReasoning.text = reasoning
                 }
             }

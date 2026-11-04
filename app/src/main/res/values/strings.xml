@@ -160,4 +160,7 @@
     <string name="diagnostics_exported">Traces copied</string>
     <string name="diagnostics_success">Success</string>
     <string name="diagnostics_failed">Failed</string>
+    <string name="reasoning_thinking">Thinking…</string>
+    <string name="reasoning_done">Thought for %1$d s</string>
+    <string name="reasoning_done_short">Thought process</string>
 </resources>

@@ -160,4 +160,7 @@
     <string name="diagnostics_exported">已复制</string>
     <string name="diagnostics_success">成功</string>
     <string name="diagnostics_failed">失败</string>
+    <string name="reasoning_thinking">思考中…</string>
+    <string name="reasoning_done">已深度思考（用时 %1$d 秒）</string>
+    <string name="reasoning_done_short">已深度思考</string>
 </resources>
