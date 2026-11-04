@@ -120,6 +120,16 @@
         app:layout_constraintTop_toBottomOf="@id/messageContent">
 
         <ImageButton
+            android:id="@+id/btnSpeak"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/read_aloud"
+            android:padding="10dp"
+            android:src="@drawable/ic_volume"
+            app:tint="?attr/colorOnSurfaceVariant" />
+
+        <ImageButton
             android:id="@+id/btnCopy"
             android:layout_width="36dp"
             android:layout_height="36dp"

@@ -5,6 +5,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.animation.ValueAnimator
 import android.os.SystemClock
 import android.view.LayoutInflater
 import android.view.View
@@ -38,7 +39,8 @@ private const val RENDER_THROTTLE_MS = 200L
  */
 class ChatMessageAdapter(
     private val onReasoningToggle: (Int, Boolean) -> Unit,
-    private val onRetryClick: ((ChatMessage) -> Unit)? = null
+    private val onRetryClick: ((ChatMessage) -> Unit)? = null,
+    private val onSpeakClick: ((String) -> Unit)? = null
 ) : ListAdapter<ChatMessage, RecyclerView.ViewHolder>(DiffCallback()) {
 
     private val expandedStates = mutableMapOf<Long, Boolean>()
@@ -157,7 +159,8 @@ class ChatMessageAdapter(
     class AssistantMessageViewHolder(
         view: View,
         private val onReasoningToggle: (Int, Boolean) -> Unit,
-        private val onRetryClick: ((ChatMessage) -> Unit)? = null
+        private val onRetryClick: ((ChatMessage) -> Unit)? = null,
+        private val onSpeakClick: ((String) -> Unit)? = null
     ) : RecyclerView.ViewHolder(view) {
         private val contentContainer: LinearLayout = view.findViewById(R.id.contentContainer)
         private val progressBar: ProgressBar = view.findViewById(R.id.progressBar)
@@ -165,6 +168,7 @@ class ChatMessageAdapter(
         private val actionBar: LinearLayout = view.findViewById(R.id.actionBar)
         private val btnCopy: ImageButton = view.findViewById(R.id.btnCopy)
         private val btnRetry: ImageButton = view.findViewById(R.id.btnRetry)
+        private val btnSpeak: ImageButton = view.findViewById(R.id.btnSpeak)
         private val toolCallContainer: LinearLayout = view.findViewById(R.id.toolCallContainer)
         private val reasoningCard: LinearLayout = view.findViewById(R.id.reasoningCard)
         private val reasoningHeader: LinearLayout = view.findViewById(R.id.reasoningHeader)
@@ -190,7 +194,7 @@ class ChatMessageAdapter(
                 // 流式输出时显示内容
                 if (message.content.isNotEmpty()) {
                     contentContainer.visibility = View.VISIBLE
-                    renderContent(message.content)
+                    renderContent(message.content, showCursor = true)
                     progressBar.visibility = View.GONE
                     textLoading.visibility = View.GONE
                 } else {
@@ -223,6 +227,8 @@ class ChatMessageAdapter(
                 progressBar.visibility = View.GONE
                 textLoading.visibility = View.GONE
                 actionBar.visibility = if (showActions) View.VISIBLE else View.GONE
+                btnSpeak.visibility = if (showActions && message.content.isNotBlank()) View.VISIBLE else View.GONE
+                btnSpeak.setOnClickListener { onSpeakClick?.invoke(message.content) }
 
                 renderContent(message.content)
                 contentContainer.visibility = if (message.content.isBlank()) View.GONE else View.VISIBLE
@@ -310,21 +316,23 @@ class ChatMessageAdapter(
 
         private var lastRenderAt = 0L
 
-        private fun renderThrottled(content: String) {
+        private fun renderThrottled(content: String, showCursor: Boolean = false) {
             val now = SystemClock.uptimeMillis()
             if (now - lastRenderAt < RENDER_THROTTLE_MS) return
             lastRenderAt = now
-            renderContent(content)
+            renderContent(content, showCursor)
         }
 
         /**
          * 按 Markdown 切分渲染：正文用 Markwon，代码块用独立组件（横向滚动 + 复制）
          */
-        private fun renderContent(content: String) {
+        private fun renderContent(content: String, showCursor: Boolean = false) {
+            cursorAnimator?.cancel()
             contentContainer.removeAllViews()
             if (content.isBlank()) return
             val context = itemView.context
             MarkdownSegmenter.segment(content).forEach { segment ->
+                // 逐段渲染
                 when (segment.type) {
                     MarkdownSegment.Type.TEXT -> {
                         val tv = TextView(context).apply {
@@ -356,6 +364,38 @@ class ChatMessageAdapter(
                     }
                 }
             }
+            if (showCursor) {
+                appendCursor()
+            }
+        }
+
+        private var cursorAnimator: ValueAnimator? = null
+        private var cursorView: TextView? = null
+
+        private fun appendCursor() {
+            cursorAnimator?.cancel()
+            val context = itemView.context
+            val cursor = TextView(context).apply {
+                text = "▍"
+                setTextColor(
+                    MaterialColors.getColor(
+                        this,
+                        com.google.android.material.R.attr.colorPrimary
+                    )
+                )
+                textSize = 16f
+            }
+            contentContainer.addView(cursor)
+            cursorView = cursor
+            cursorAnimator = ValueAnimator.ofFloat(1f, 0.15f).apply {
+                duration = 500
+                repeatMode = ValueAnimator.REVERSE
+                repeatCount = ValueAnimator.INFINITE
+                addUpdateListener { animation ->
+                    cursor.alpha = animation.animatedValue as Float
+                }
+                start()
+            }
         }
 
         /**
@@ -364,7 +404,7 @@ class ChatMessageAdapter(
         fun updateStreamingContent(content: String, reasoning: String?) {
             if (content != currentContent) {
                 currentContent = content
-                renderThrottled(content)
+                renderThrottled(content, true)
             }
             if (reasoning != currentReasoning) {
                 currentReasoning = reasoning

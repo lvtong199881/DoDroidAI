@@ -181,6 +181,7 @@ class ChatFragment : Fragment() {
         tvEmptyHint = view.findViewById(R.id.tvEmptyHint)
 
         adapter = ChatMessageAdapter(
+            onSpeakClick = { text -> speakTts(text) },
             onReasoningToggle = { position, expanded ->
                 val messages = adapter?.currentList?.toMutableList() ?: return@ChatMessageAdapter
                 if (position in messages.indices) {
@@ -689,6 +690,7 @@ class ChatFragment : Fragment() {
     }
 
     private fun speakTts(text: String) {
+        ttsManager.stop()
         ttsManager.speak(text)
     }
 
