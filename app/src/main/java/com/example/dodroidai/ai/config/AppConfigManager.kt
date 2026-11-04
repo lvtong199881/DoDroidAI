@@ -79,6 +79,7 @@ object AppConfigManager {
     private val themeKey = stringPreferencesKey("theme")
     private val braveSearchApiKeyKey = stringPreferencesKey("brave_search_api_key")
     private val reasoningAutoCollapseKey = booleanPreferencesKey("reasoning_auto_collapse")
+    private val autoReadKey = booleanPreferencesKey("auto_read")
 
     val languageFlow: Flow<String> = context.appDataStore.data.map { preferences ->
         preferences[languageKey] ?: "en"
@@ -95,6 +96,11 @@ object AppConfigManager {
     /** 思考内容结束后是否自动折叠（默认开启） */
     val reasoningAutoCollapseFlow: Flow<Boolean> = context.appDataStore.data.map { preferences ->
         preferences[reasoningAutoCollapseKey] ?: true
+    }
+
+    /** 是否自动朗读回复 */
+    val autoReadFlow: Flow<Boolean> = context.appDataStore.data.map { preferences ->
+        preferences[autoReadKey] ?: false
     }
 
     suspend fun updateLanguage(language: String) {
@@ -122,6 +128,12 @@ object AppConfigManager {
     suspend fun updateReasoningAutoCollapse(enabled: Boolean) {
         context.appDataStore.edit { preferences ->
             preferences[reasoningAutoCollapseKey] = enabled
+        }
+    }
+
+    suspend fun updateAutoRead(enabled: Boolean) {
+        context.appDataStore.edit { preferences ->
+            preferences[autoReadKey] = enabled
         }
     }
 

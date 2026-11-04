@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="56dp"
     android:background="?attr/colorSurface">
@@ -19,26 +20,59 @@
         android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:gravity="center"
+        android:layout_gravity="start|center_vertical"
+        android:layout_marginStart="52dp"
+        android:layout_marginEnd="8dp"
+        android:gravity="start"
         android:textAppearance="@style/TextAppearance.DoDroid.TitleLarge"
         android:maxLines="1"
         android:ellipsize="end" />
 
-    <TextView
-        android:id="@+id/tvRight"
+    <LinearLayout
+        android:id="@+id/rightContainer"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
         android:layout_gravity="end|center_vertical"
         android:layout_marginEnd="4dp"
-        android:gravity="center"
-        android:minWidth="48dp"
-        android:textAppearance="@style/TextAppearance.DoDroid.LabelLarge"
-        android:textColor="?attr/colorPrimary"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:visibility="gone" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/btnAutoRead"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/auto_read"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_volume"
+            android:visibility="gone"
+            app:tint="?attr/colorOnSurface" />
+
+        <ImageButton
+            android:id="@+id/btnNewChat"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/new_chat"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_add"
+            android:visibility="gone"
+            app:tint="?attr/colorOnSurface" />
+
+        <TextView
+            android:id="@+id/tvRight"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:minWidth="48dp"
+            android:textAppearance="@style/TextAppearance.DoDroid.LabelLarge"
+            android:textColor="?attr/colorPrimary"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:visibility="gone" />
+
+    </LinearLayout>
 
     <View
         android:id="@+id/divider"

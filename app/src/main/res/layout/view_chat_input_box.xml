@@ -92,9 +92,7 @@
                 android:textSize="12dp"
                 android:text="@string/deep_think"
                 app:chipStartPadding="4dp"
-                app:chipEndPadding="4dp"
-                app:chipIcon="@drawable/ic_think"
-                app:chipIconSize="16dp" />
+                app:chipEndPadding="4dp" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/btnWebSearch"
@@ -106,9 +104,7 @@
                 android:textSize="12dp"
                 android:text="@string/web_search"
                 app:chipStartPadding="4dp"
-                app:chipEndPadding="4dp"
-                app:chipIcon="@drawable/ic_web_search"
-                app:chipIconSize="16dp" />
+                app:chipEndPadding="4dp" />
 
             <View
                 android:layout_width="0dp"

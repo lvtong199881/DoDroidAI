@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.dodroidai.DoDroidAIApplication
 import com.example.dodroidai.MainActivity
 import com.example.dodroidai.R
+import com.example.dodroidai.ai.model.ChatMessage
 import com.example.dodroidai.ai.attachments.AttachmentLimits
 import com.example.dodroidai.ai.attachments.AttachmentRejection
 import com.example.dodroidai.chatRepository
@@ -60,6 +61,8 @@ class ChatFragment : Fragment() {
     private var adapter: ChatMessageAdapter? = null
     private var tvEmptyHint: android.widget.TextView? = null
     private var isWebSearchEnabled = false
+    private var autoReadEnabled = false
+    private var lastAutoReadKey: String? = null
 
     private val sessionId: String? by lazy { arguments?.getString(ARG_SESSION_ID) }
 
@@ -233,6 +236,11 @@ class ChatFragment : Fragment() {
             (activity as? MainActivity)?.toggleDrawer()
         }
         toolbar?.setRightVisible(false)
+        toolbar?.setTitleSize(20f)
+        toolbar?.setAutoReadVisible(true)
+        toolbar?.setNewChatVisible(true)
+        toolbar?.setOnAutoReadClickListener { toggleAutoRead() }
+        toolbar?.setOnNewChatClickListener { startNewChat() }
     }
 
     private fun setupListeners() {
@@ -333,9 +341,9 @@ class ChatFragment : Fragment() {
                     // 控制空状态显示
                     val isEmpty = state.messages.isEmpty() && !state.isLoading
                     tvEmptyHint?.visibility = if (isEmpty) View.VISIBLE else View.GONE
-                    if (state.sessionName != null) {
-                        toolbar?.setTitle(state.sessionName)
-                    }
+                    val isNewChat = state.sessionId == null && state.messages.isEmpty()
+                    toolbar?.setTitle(if (isNewChat) "" else (state.sessionName ?: ""))
+                    maybeAutoRead(state.messages)
                     state.error?.let { error ->
                         Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
                         viewModel.clearError()
@@ -694,6 +702,35 @@ class ChatFragment : Fragment() {
             .add(R.id.fragment_container, SttSettingsFragment())
             .addToBackStack(null)
             .commit()
+    }
+
+    private fun toggleAutoRead() {
+        autoReadEnabled = !autoReadEnabled
+        toolbar?.setAutoReadIcon(if (autoReadEnabled) R.drawable.ic_volume else R.drawable.ic_volume_off)
+        Toast.makeText(
+            requireContext(),
+            if (autoReadEnabled) R.string.auto_read_on else R.string.auto_read_off,
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
+    private fun startNewChat() {
+        val state = viewModel.uiState.value
+        if (state.sessionId == null && state.messages.isEmpty()) {
+            Toast.makeText(requireContext(), R.string.already_new_chat, Toast.LENGTH_SHORT).show()
+            return
+        }
+        viewModel.startNewChat()
+    }
+
+    private fun maybeAutoRead(messages: List<ChatMessage>) {
+        if (!autoReadEnabled) return
+        val last = messages.lastOrNull { it.role == ChatMessage.ROLE_ASSISTANT && !it.isLoading } ?: return
+        if (last.content.isBlank()) return
+        val key = "${last.timestamp}_${last.content.hashCode()}"
+        if (key == lastAutoReadKey) return
+        lastAutoReadKey = key
+        speakTts(last.content)
     }
 
     private fun speakTts(text: String) {

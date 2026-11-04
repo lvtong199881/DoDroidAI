@@ -173,4 +173,8 @@
     <string name="chat_settings_title">Chat</string>
     <string name="reasoning_auto_collapse">Auto-collapse thinking</string>
     <string name="reasoning_auto_collapse_desc">Collapse thinking content when it finishes</string>
+    <string name="auto_read">Auto read</string>
+    <string name="auto_read_on">Auto read enabled</string>
+    <string name="auto_read_off">Auto read disabled</string>
+    <string name="already_new_chat">Already in a new chat</string>
 </resources>

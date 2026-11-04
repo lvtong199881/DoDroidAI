@@ -169,4 +169,8 @@
     <string name="chat_settings_title">對話</string>
     <string name="reasoning_auto_collapse">思考內容自動摺疊</string>
     <string name="reasoning_auto_collapse_desc">思考結束後自動收起思考內容</string>
+    <string name="auto_read">自動朗讀</string>
+    <string name="auto_read_on">已開啟自動朗讀</string>
+    <string name="auto_read_off">已關閉自動朗讀</string>
+    <string name="already_new_chat">已經在新對話中</string>
 </resources>

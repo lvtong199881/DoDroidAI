@@ -6,12 +6,13 @@ import android.util.AttributeSet
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.StringRes
 import com.example.dodroidai.R
 
 /**
- * 通用 Toolbar，左侧返回按钮，右侧可选操作按钮，中间标题
+ * 通用 Toolbar，左侧返回按钮，右侧可选操作按钮，标题左对齐
  */
 class Toolbar @JvmOverloads constructor(
     context: Context,
@@ -22,16 +23,24 @@ class Toolbar @JvmOverloads constructor(
     private var btnBack: ImageButton? = null
     private var tvTitle: TextView? = null
     private var tvRight: TextView? = null
+    private var rightContainer: LinearLayout? = null
+    private var btnAutoRead: ImageButton? = null
+    private var btnNewChat: ImageButton? = null
     private var divider: View? = null
 
     private var onBackClickListener: (() -> Unit)? = null
     private var onRightClickListener: (() -> Unit)? = null
+    private var onAutoReadClickListener: (() -> Unit)? = null
+    private var onNewChatClickListener: (() -> Unit)? = null
 
     init {
         LayoutInflater.from(context).inflate(R.layout.layout_toolbar, this, true)
         btnBack = findViewById(R.id.btnBack)
         tvTitle = findViewById(R.id.tvTitle)
         tvRight = findViewById(R.id.tvRight)
+        rightContainer = findViewById(R.id.rightContainer)
+        btnAutoRead = findViewById(R.id.btnAutoRead)
+        btnNewChat = findViewById(R.id.btnNewChat)
         divider = findViewById(R.id.divider)
 
         btnBack?.setOnClickListener {
@@ -41,42 +50,13 @@ class Toolbar @JvmOverloads constructor(
         tvRight?.setOnClickListener {
             onRightClickListener?.invoke()
         }
-    }
 
-    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        super.onLayout(changed, left, top, right, bottom)
-        updateTitleMargins()
-    }
-
-    private fun updateTitleMargins() {
-        val title = tvTitle ?: return
-        val back = btnBack ?: return
-        val right = tvRight ?: return
-
-        val toolbarWidth = width
-        if (toolbarWidth == 0) return
-
-        val backWidth = back.width + (back.layoutParams as FrameLayout.LayoutParams).leftMargin
-        val rightWidth = if (right.visibility == View.GONE) {
-            0
-        } else {
-            right.width + right.paddingEnd
+        btnAutoRead?.setOnClickListener {
+            onAutoReadClickListener?.invoke()
         }
 
-        val availableWidth = toolbarWidth - backWidth - rightWidth
-        val centerX = toolbarWidth / 2
-
-        val titleWidth = title.paint.measureText(title.text.toString()).toInt()
-        val titleLeft = centerX - titleWidth / 2
-
-        val marginStart = titleLeft
-        val marginEnd = toolbarWidth - titleLeft - titleWidth
-
-        val params = title.layoutParams as? FrameLayout.LayoutParams
-        if (params != null) {
-            params.marginStart = marginStart
-            params.marginEnd = marginEnd
-            title.layoutParams = params
+        btnNewChat?.setOnClickListener {
+            onNewChatClickListener?.invoke()
         }
     }
 
@@ -86,6 +66,11 @@ class Toolbar @JvmOverloads constructor(
 
     fun setTitle(@StringRes titleRes: Int) {
         tvTitle?.setText(titleRes)
+    }
+
+    /** 标题字号（dp） */
+    fun setTitleSize(sizeDp: Float) {
+        tvTitle?.textSize = sizeDp
     }
 
     fun setRightText(text: String) {
@@ -118,6 +103,32 @@ class Toolbar @JvmOverloads constructor(
 
     fun setOnRightClickListener(listener: () -> Unit) {
         onRightClickListener = listener
+    }
+
+    // ===== 自动朗读 / 新对话 =====
+
+    fun setAutoReadVisible(visible: Boolean) {
+        btnAutoRead?.visibility = if (visible) VISIBLE else GONE
+    }
+
+    fun setAutoReadIcon(@androidx.annotation.DrawableRes resId: Int) {
+        btnAutoRead?.setImageResource(resId)
+    }
+
+    fun setOnAutoReadClickListener(listener: () -> Unit) {
+        onAutoReadClickListener = listener
+    }
+
+    fun setNewChatVisible(visible: Boolean) {
+        btnNewChat?.visibility = if (visible) VISIBLE else GONE
+    }
+
+    fun setNewChatIcon(@androidx.annotation.DrawableRes resId: Int) {
+        btnNewChat?.setImageResource(resId)
+    }
+
+    fun setOnNewChatClickListener(listener: () -> Unit) {
+        onNewChatClickListener = listener
     }
 
     fun setDividerVisible(visible: Boolean) {

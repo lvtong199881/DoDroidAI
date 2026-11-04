@@ -1049,6 +1049,13 @@ class ChatViewModel(
         _uiState.value = _uiState.value.copy(error = null)
     }
 
+    /** 开始新对话：清空当前消息与会话上下文 */
+    fun startNewChat() {
+        sendJob?.cancel()
+        streamingClient.cancel()
+        _uiState.value = ChatUiState()
+    }
+
     private fun sessionTitle(messages: List<ChatMessage>): String {
         val first = messages.firstOrNull() ?: return "新对话"
         val text = first.content.trim()

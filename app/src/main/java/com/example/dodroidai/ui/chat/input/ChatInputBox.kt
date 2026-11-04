@@ -282,9 +282,7 @@ class ChatInputBox @JvmOverloads constructor(
         chip.chipStrokeColor = ColorStateList.valueOf(if (checked) blue else outline)
         chip.chipStrokeWidth = chip.resources.displayMetrics.density
         chip.setTextColor(if (checked) blue else normalText)
-        chip.isChipIconVisible = !checked
         chip.isCheckedIconVisible = false
-        chip.setChipIconTint(ColorStateList.valueOf(if (checked) blue else normalText))
     }
 
 }

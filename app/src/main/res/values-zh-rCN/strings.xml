@@ -173,4 +173,8 @@
     <string name="chat_settings_title">对话</string>
     <string name="reasoning_auto_collapse">思考内容自动折叠</string>
     <string name="reasoning_auto_collapse_desc">思考结束后自动收起思考内容</string>
+    <string name="auto_read">自动朗读</string>
+    <string name="auto_read_on">已开启自动朗读</string>
+    <string name="auto_read_off">已关闭自动朗读</string>
+    <string name="already_new_chat">已经在新对话中</string>
 </resources>
