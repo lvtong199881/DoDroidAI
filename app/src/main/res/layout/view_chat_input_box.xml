@@ -82,10 +82,11 @@
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/btnThink"
-                style="@style/Widget.Material3.Chip.Filter"
+                style="@style/Widget.DoDroid.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checkable="true"
+                android:textSize="12sp"
                 android:text="@string/deep_think"
                 app:chipStartPadding="4dp"
                 app:chipEndPadding="4dp"
@@ -94,11 +95,12 @@
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/btnWebSearch"
-                style="@style/Widget.Material3.Chip.Filter"
+                style="@style/Widget.DoDroid.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:checkable="true"
+                android:textSize="12sp"
                 android:text="@string/web_search"
                 app:chipStartPadding="4dp"
                 app:chipEndPadding="4dp"
