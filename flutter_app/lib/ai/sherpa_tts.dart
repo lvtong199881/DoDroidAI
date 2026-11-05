@@ -58,22 +58,55 @@ class SherpaTts {
     }
   }
 
-  /// 朗读：按句切分，边合成边播
+  /// 朗读：逐句流式合成，边生成边播（首声最快）
   static Future<void> speak(String text) async {
-    final chunks = splitForSpeech(text);
-    if (chunks.isEmpty) return;
+    if (text.trim().isEmpty) return;
+    final dir = await modelDir();
+    if (!File('$dir/model.int8.onnx').existsSync()) {
+      debugPrint('SherpaTts: 模型未下载');
+      return;
+    }
+    final temp = await getTemporaryDirectory();
 
-    Future<String?>? pending = synthesizeToWav(chunks.first);
-    for (var i = 0; i < chunks.length; i++) {
-      final path = await pending;
-      if (path == null) break;
-      // 提前合成下一句，减少句间空档
-      if (i + 1 < chunks.length) {
-        pending = synthesizeToWav(chunks[i + 1]);
-      } else {
-        pending = null;
+    final queue = <String>[];
+    var playing = false;
+    var finished = false;
+    var firstChunkAt = -1;
+    final sw = Stopwatch()..start();
+    final done = Completer<void>();
+
+    Future<void> pump() async {
+      if (playing) return;
+      while (queue.isNotEmpty) {
+        playing = true;
+        await _playAndWait(queue.removeAt(0));
+        playing = false;
       }
-      await _playAndWait(path);
+      if (finished && queue.isEmpty && !done.isCompleted) done.complete();
+    }
+
+    try {
+      for (final piece in splitForSpeech(text)) {
+        await SpeechWorker.synthesizeStream(
+          modelDir: dir,
+          text: piece,
+          tempDir: temp.path,
+          onChunk: (path) {
+            if (firstChunkAt < 0) {
+              firstChunkAt = sw.elapsedMilliseconds;
+              debugPrint('TTS_STREAM first_chunk_ms=$firstChunkAt');
+            }
+            queue.add(path);
+            pump();
+          },
+        );
+      }
+    } catch (e) {
+      debugPrint('SherpaTts: 流式合成失败 $e');
+    } finally {
+      finished = true;
+      if (!playing && queue.isEmpty && !done.isCompleted) done.complete();
+      await done.future.timeout(const Duration(seconds: 90), onTimeout: () {});
     }
   }
 

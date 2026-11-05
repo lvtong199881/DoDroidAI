@@ -12,6 +12,7 @@ class SpeechWorker {
   static SendPort? _commandPort;
   static ReceivePort? _replyPort;
   static final Map<int, Completer<Object?>> _pending = {};
+  static final Map<int, void Function(String path)> _chunkHandlers = {};
   static Completer<void>? _starting;
   static int _seq = 0;
 
@@ -27,6 +28,11 @@ class SpeechWorker {
         _commandPort = message;
         if (!completer.isCompleted) completer.complete();
         _starting = null;
+        return;
+      }
+      if (message is Map && message['chunk'] != null) {
+        final handler = _chunkHandlers[message['id'] as int];
+        handler?.call(message['chunk'] as String);
         return;
       }
       if (message is Map && message['id'] is int) {
@@ -70,6 +76,36 @@ class SpeechWorker {
       'outPath': outPath,
     });
     return result as String;
+  }
+
+  /// 流式合成：边生成边回调 wav 分片路径
+  static Future<void> synthesizeStream({
+    required String modelDir,
+    required String text,
+    required String tempDir,
+    required void Function(String path) onChunk,
+  }) async {
+    await _ensureStarted();
+    final id = _seq++;
+    final completer = Completer<void>();
+    _pending[id] = completer;
+    final progress = StreamController<String>();
+    _chunkHandlers[id] = (path) {
+      progress.add(path);
+      onChunk(path);
+    };
+    _commandPort!.send({
+      'id': id,
+      'type': 'tts-stream',
+      'args': {'modelDir': modelDir, 'text': text, 'tempDir': tempDir},
+    });
+    try {
+      await completer.future.timeout(const Duration(seconds: 120));
+    } finally {
+      _chunkHandlers.remove(id);
+      _pending.remove(id);
+      await progress.close();
+    }
   }
 
   /// 预加载 TTS 模型，避免首次朗读等待
@@ -172,6 +208,57 @@ void _workerEntry(SendPort mainPort) async {
             );
             ttsDir = modelDir;
           }
+          mainPort.send({'id': id, 'result': true});
+          break;
+
+        case 'tts-stream':
+          final modelDir = args['modelDir'] as String;
+          final text = args['text'] as String;
+          final tempDir = args['tempDir'] as String;
+          if (tts == null || ttsDir != modelDir) {
+            tts = sherpa.OfflineTts(
+              sherpa.OfflineTtsConfig(
+                model: sherpa.OfflineTtsModelConfig(
+                  vits: sherpa.OfflineTtsVitsModelConfig(
+                    model: '$modelDir/model.int8.onnx',
+                    tokens: '$modelDir/tokens.txt',
+                    lexicon: '$modelDir/lexicon.txt',
+                    dictDir: '$modelDir/dict',
+                  ),
+                  numThreads: 2,
+                ),
+                ruleFsts:
+                    ['date.fst', 'new_heteronym.fst', 'number.fst', 'phone.fst']
+                        .map((f) => '$modelDir/$f')
+                        .join(','),
+              ),
+            );
+            ttsDir = modelDir;
+          }
+          final engine = tts;
+          final sr = engine.sampleRate;
+          final minSamples = (sr * 0.35).round();
+          final buffer = <double>[];
+          var chunkIndex = 0;
+          void flush({bool force = false}) {
+            if (buffer.isEmpty) return;
+            if (!force && buffer.length < minSamples) return;
+            final path = '$tempDir/tts_chunk_${id}_$chunkIndex.wav';
+            chunkIndex++;
+            _writeWav(path, Float32List.fromList(buffer), sr);
+            buffer.clear();
+            mainPort.send({'id': id, 'chunk': path});
+          }
+
+          engine.generateWithCallback(
+            text: text,
+            callback: (samples) {
+              buffer.addAll(samples);
+              flush();
+              return 1;
+            },
+          );
+          flush(force: true);
           mainPort.send({'id': id, 'result': true});
           break;
 
