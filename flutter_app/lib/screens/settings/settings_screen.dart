@@ -7,6 +7,9 @@ import '../../theme/app_theme.dart';
 import '../memory/memory_screen.dart';
 import '../notes/note_list_screen.dart';
 import '../tasks/scheduled_task_screen.dart';
+import 'chat_settings_screen.dart';
+import 'diagnostics_screen.dart';
+import 'web_search_settings.dart';
 import 'api_config_screen.dart';
 import 'tool_audit_screen.dart';
 
@@ -70,7 +73,9 @@ class SettingsScreen extends ConsumerWidget {
             ),
             _SettingsItem(
               title: '联网搜索',
-              onTap: () => _showWebSearch(context),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const WebSearchSettingsScreen()),
+              ),
             ),
             _SettingsItem(
               title: strings.notes,
@@ -106,11 +111,15 @@ class SettingsScreen extends ConsumerWidget {
             ),
             _SettingsItem(
               title: '诊断',
-              onTap: () => _showPlaceholder(context, '诊断'),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const DiagnosticsScreen()),
+              ),
             ),
             _SettingsItem(
               title: '对话',
-              onTap: () => _showPlaceholder(context, '对话'),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ChatSettingsScreen()),
+              ),
             ),
           ]),
         ],
