@@ -32,6 +32,10 @@ void main() {
 
     final api = ChatApi();
     final config = AiConfig(
+      id: 'test',
+      provider: AiProvider.custom,
+      apiFormat: ApiFormat.openAiChatCompletions,
+      providerName: 'test',
       baseUrl: 'http://127.0.0.1:${server.port}',
       apiKey: 'test-key',
       model: 'mock',
@@ -77,6 +81,10 @@ void main() {
 
     final api = ChatApi();
     final config = AiConfig(
+      id: 'test',
+      provider: AiProvider.custom,
+      apiFormat: ApiFormat.openAiChatCompletions,
+      providerName: 'test',
       baseUrl: 'http://127.0.0.1:${server.port}',
       apiKey: 'test-key',
       model: 'mock',
@@ -146,6 +154,10 @@ void main() {
 
     final api = ChatApi();
     final config = AiConfig(
+      id: 'test',
+      provider: AiProvider.custom,
+      apiFormat: ApiFormat.openAiChatCompletions,
+      providerName: 'test',
       baseUrl: 'http://127.0.0.1:${server.port}',
       apiKey: 'k',
       model: 'm',

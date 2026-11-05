@@ -45,6 +45,10 @@ class ChatApi {
     List<ChatMessage> messages, {
     List<Map<String, dynamic>>? tools,
   }) async* {
+    if (config.apiFormat == ApiFormat.anthropicMessages) {
+      yield* _streamAnthropic(config, messages);
+      return;
+    }
     final body = {
       'model': config.model,
       'stream': true,
@@ -89,6 +93,100 @@ class ChatApi {
       buffer
         ..clear()
         ..write(text);
+    }
+  }
+
+  /// Anthropic Messages 协议（/v1/messages + x-api-key）
+  Stream<ChatEvent> _streamAnthropic(
+    AiConfig config,
+    List<ChatMessage> messages,
+  ) async* {
+    final body = {
+      'model': config.model,
+      'max_tokens': 4096,
+      'stream': true,
+      'messages': [
+        for (final m in messages)
+          {
+            'role': m.role == ChatRole.assistant ? 'assistant' : 'user',
+            'content': m.content,
+          }
+      ],
+    };
+
+    final response = await _dio.post<ResponseBody>(
+      '${_normalizeBaseUrl(config.baseUrl)}/v1/messages',
+      data: body,
+      options: Options(
+        responseType: ResponseType.stream,
+        headers: {
+          'x-api-key': config.apiKey,
+          'anthropic-version': '2023-06-01',
+          'Content-Type': 'application/json',
+          'Accept': 'text/event-stream',
+        },
+        validateStatus: (code) => code != null && code >= 200 && code < 300,
+      ),
+    );
+
+    final respBody = response.data;
+    if (respBody == null) return;
+
+    final buffer = StringBuffer();
+    await for (final chunk in respBody.stream) {
+      buffer.write(utf8.decode(chunk, allowMalformed: true));
+      var text = buffer.toString();
+      var newline = text.indexOf('\n');
+      while (newline >= 0) {
+        final line = text.substring(0, newline).trim();
+        text = text.substring(newline + 1);
+        newline = text.indexOf('\n');
+        if (line.isEmpty || !line.startsWith('data:')) continue;
+        final data = line.substring(5).trim();
+        if (data == '[DONE]') return;
+        final event = _parseAnthropicEvent(data);
+        if (event != null) yield event;
+      }
+      buffer
+        ..clear()
+        ..write(text);
+    }
+  }
+
+  ChatEvent? _parseAnthropicEvent(String data) {
+    try {
+      final json = jsonDecode(data) as Map<String, dynamic>;
+      final type = json['type'] as String?;
+      if (type == 'content_block_delta') {
+        final delta = json['delta'];
+        if (delta is Map) {
+          final deltaType = delta['type'] as String?;
+          if (deltaType == 'text_delta') {
+            final t = delta['text'] as String?;
+            if (t != null && t.isNotEmpty) return ChatEvent(content: t);
+          } else if (deltaType == 'thinking_delta') {
+            final t = delta['thinking'] as String?;
+            if (t != null && t.isNotEmpty) return ChatEvent(reasoning: t);
+          }
+        }
+      } else if (type == 'content_block_start') {
+        final block = json['content_block'];
+        if (block is Map && block['type'] == 'tool_use') {
+          return ChatEvent(
+            toolCall: ToolCallDelta(
+              index: json['index'] as int? ?? 0,
+              id: block['id'] as String?,
+              name: block['name'] as String?,
+              arguments: '',
+            ),
+          );
+        }
+      } else if (type == 'content_block_delta') {
+        // handled above
+      }
+      return null;
+    } catch (_) {
+      return null;
     }
   }
 

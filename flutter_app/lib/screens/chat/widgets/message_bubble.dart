@@ -127,7 +127,7 @@ class _AssistantMessageViewState
                   try {
                     await SherpaTts.speak(message.content);
                   } catch (_) {
-                    if (mounted) showToast(context, '朗读失败，请检查语音模型');
+                    if (context.mounted) showToast(context, '朗读失败，请检查语音模型');
                   }
                 },
                 icon: Icon(Icons.volume_up_outlined, size: 20, color: scheme.outline),
@@ -139,7 +139,7 @@ class _AssistantMessageViewState
               IconButton(
                 onPressed: () async {
                   await Clipboard.setData(ClipboardData(text: message.content));
-                  if (mounted) showToast(context, '已复制');
+                  if (context.mounted) showToast(context, '已复制');
                 },
                 icon: Icon(Icons.copy_outlined, size: 20, color: scheme.outline),
                 visualDensity: VisualDensity.compact,

@@ -81,7 +81,7 @@ class ChatController extends StateNotifier<ChatState> {
   Future<void> ensureReady() async {
     if (_ready) return;
     _ready = true;
-    _config = await _configStore.load();
+    _config = await _configStore.loadActive();
     _sessionId = 'session_${DateTime.now().millisecondsSinceEpoch}';
     await _database.ensureSession(_sessionId!, 'hello');
     final sessions = await _database.sessions();
@@ -120,7 +120,7 @@ class ChatController extends StateNotifier<ChatState> {
   }
 
   Future<void> reloadConfig() async {
-    _config = await _configStore.load();
+    _config = await _configStore.loadActive();
   }
 
   Future<void> send(String text, {List<String> images = const []}) async {
