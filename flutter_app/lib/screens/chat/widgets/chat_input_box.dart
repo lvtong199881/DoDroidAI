@@ -114,6 +114,7 @@ class _ChatInputBoxState extends State<ChatInputBox> {
   }
 
   Future<void> _toggleMic() async {
+    debugPrint('MIC toggle start recording=$_recording');
     if (_recording) {
       setState(() => _recording = false);
       await _micSub?.cancel();
@@ -148,6 +149,7 @@ class _ChatInputBoxState extends State<ChatInputBox> {
 
     final policy = PermissionPolicyRepository.instance;
     final denied = await policy.isDenied('microphone');
+    debugPrint('MIC denied=$denied');
     if (!mounted) return;
     if (denied) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -159,6 +161,7 @@ class _ChatInputBoxState extends State<ChatInputBox> {
       return;
     }
     final hasPerm = await _recorder.hasPermission();
+    debugPrint('MIC hasPerm=$hasPerm');
     if (!mounted) return;
     if (!hasPerm) {
       await policy.setDenied('microphone');
@@ -178,6 +181,7 @@ class _ChatInputBoxState extends State<ChatInputBox> {
       numChannels: 1,
     ));
     _micSub = stream.listen((data) => _pcmBuffer.addAll(data));
+    debugPrint('MIC recording started');
     setState(() => _recording = true);
   }
 
