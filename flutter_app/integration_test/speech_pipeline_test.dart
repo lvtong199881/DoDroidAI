@@ -19,7 +19,7 @@ void main() {
       markTestSkipped('未找到 tts_models，请先把模型放入应用 files/tts_models/vits_melo_tts_zh_en');
       return;
     }
-    final file = File(path!);
+    final file = File(path);
     expect(file.existsSync(), isTrue);
     expect(file.lengthSync(), greaterThan(10000), reason: '生成的音频太小');
   });
@@ -31,7 +31,7 @@ void main() {
       return;
     }
 
-    final samples = _readWav(File(path!));
+    final samples = _readWav(File(path));
     expect(samples.length, greaterThan(8000), reason: '音频样本太少');
 
     final text = await SherpaAsr.transcribe(samples);

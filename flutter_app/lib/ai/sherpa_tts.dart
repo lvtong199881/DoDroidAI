@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:just_audio/just_audio.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -13,7 +13,6 @@ import 'speech_worker.dart';
 /// 合成在常驻 isolate 执行；长文本按句切分、边合成边播放，首句很快出声。
 class SherpaTts {
   static final AudioPlayer _player = AudioPlayer();
-  static ConcatenatingAudioSource? _playlist;
   static Future<void>? _warming;
 
   /// 当前激活的 TTS 模型（默认 Matcha）
@@ -75,7 +74,7 @@ class SherpaTts {
     }
   }
 
-  /// 朗读：逐句流式合成，边生成边播，播放队列无缝衔接
+  /// 朗读：逐句合成 + 预取下一句 + 顺序播放
   static Future<void> speak(String text) async {
     if (text.trim().isEmpty) return;
     if (!await isReady()) {
@@ -85,52 +84,89 @@ class SherpaTts {
     final model = await activeModel();
     final dir = await ModelManager('tts').modelDir(model);
     final temp = await getTemporaryDirectory();
+    final pieces = splitForSpeech(text);
+    if (pieces.isEmpty) return;
 
-    final playlist = ConcatenatingAudioSource(children: []);
-    _playlist = playlist;
-    var added = 0;
-    var started = false;
-    var firstChunkAt = -1;
     final sw = Stopwatch()..start();
+    var index = 0;
+    Future<String?>? pending = _synthPiece(model, dir, temp.path, pieces[index]);
 
+    while (true) {
+      final path = await pending;
+      if (path == null) break;
+      if (index == 0) debugPrint('TTS_FIRST_READY ms=${sw.elapsedMilliseconds}');
+      // 先启动下一句合成，再播放当前句
+      index++;
+      if (index < pieces.length) {
+        pending = _synthPiece(model, dir, temp.path, pieces[index]);
+      } else {
+        pending = null;
+      }
+      await _playAndWait(path);
+      if (pending == null) break;
+    }
+    debugPrint('SherpaTts: 播放结束 total_ms=${sw.elapsedMilliseconds}');
+  }
+
+  static Future<String?> _synthPiece(
+    VoiceModel model,
+    String dir,
+    String tempDir,
+    String piece,
+  ) {
+    final path =
+        '$tempDir/tts_${DateTime.now().microsecondsSinceEpoch}.wav';
+    return SpeechWorker.synthesize(
+      modelDir: dir,
+      text: piece,
+      outPath: path,
+      kind: model.kind,
+    ).catchError((Object e) {
+      debugPrint('SherpaTts: 合成失败 $e');
+      return null;
+    });
+  }
+
+  static Future<void> _playAndWait(String path) async {
     try {
-      await _player.setAudioSource(playlist);
-      for (final piece in splitForSpeech(text)) {
-        await SpeechWorker.synthesizeStream(
-          modelDir: dir,
-          text: piece,
-          tempDir: temp.path,
-          kind: model.kind,
-          onChunk: (path) {
-            if (firstChunkAt < 0) {
-              firstChunkAt = sw.elapsedMilliseconds;
-              debugPrint('TTS_STREAM first_chunk_ms=$firstChunkAt');
-            }
-            added++;
-            // 播放中追加，实现无缝续播
-            unawaited(playlist.add(AudioSource.file(path)));
-            if (!started) {
-              started = true;
-              unawaited(_player.play());
-            }
-          },
-        );
-      }
-      // 等待队列播完
-      if (added > 0) {
-        await _player.processingStateStream
-            .firstWhere((state) => state == ProcessingState.completed)
-            .timeout(const Duration(seconds: 120), onTimeout: () {
-          return ProcessingState.completed;
-        });
-      }
+      await _player.play(DeviceFileSource(path));
+      // audioplayers 的 onPlayerComplete 在部分版本不稳定，这里按音频实际时长等待
+      final ms = _wavDurationMs(path);
+      await Future<void>.delayed(Duration(milliseconds: ms + 80));
     } catch (e) {
-      debugPrint('SherpaTts: 流式合成失败 $e');
-    } finally {
-      _playlist = null;
-      try {
-        await _player.stop();
-      } catch (_) {}
+      debugPrint('SherpaTts: 播放失败 $e');
+    }
+  }
+
+  /// 读取 16-bit 单声道 wav 的时长
+  static int _wavDurationMs(String path) {
+    try {
+      final bytes = File(path).readAsBytesSync();
+      if (bytes.length < 44) return 500;
+      final data = ByteData.sublistView(bytes);
+      var offset = 12;
+      var sampleRate = 44100;
+      var channels = 1;
+      var bits = 16;
+      var dataBytes = bytes.length - 44;
+      while (offset + 8 <= bytes.length) {
+        final id = String.fromCharCodes(bytes.sublist(offset, offset + 4));
+        final size = data.getUint32(offset + 4, Endian.little);
+        if (id == 'fmt ') {
+          channels = data.getUint16(offset + 10, Endian.little);
+          sampleRate = data.getUint32(offset + 12, Endian.little);
+          bits = data.getUint16(offset + 22, Endian.little);
+        } else if (id == 'data') {
+          dataBytes = size;
+          break;
+        }
+        offset += 8 + size + (size.isOdd ? 1 : 0);
+      }
+      final bytesPerSample = (bits ~/ 8) * channels;
+      if (sampleRate <= 0 || bytesPerSample <= 0) return 500;
+      return (dataBytes / (sampleRate * bytesPerSample) * 1000).round();
+    } catch (_) {
+      return 500;
     }
   }
 

@@ -240,7 +240,7 @@ void _workerEntry(SendPort mainPort) async {
           }
           final engine = tts;
           final sr = engine.sampleRate;
-          final minSamples = (sr * 0.35).round();
+          final minSamples = (sr * 0.9).round();
           final buffer = <double>[];
           var chunkIndex = 0;
           void flush({bool force = false}) {
