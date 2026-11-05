@@ -16,8 +16,10 @@
 ## 迁移策略
 
 **并列新建 `flutter_app/`**，原 `app/` 保留作为参照与回归基线；功能对等后再切换发布。
-原生能力（语音 sherpa-onnx、小组件、AlarmManager、WebView）通过 **MethodChannel + 原生模块** 复用，
-避免在 Flutter 侧重写 JNI/系统集成。
+**纯 Flutter 优先**：能纯 Flutter 实现的不做 MethodChannel 桥接——语音用 `sherpa_onnx` Dart FFI、
+电池用 `battery_plus`、闹钟用 `android_intent_plus`、短信用 `url_launcher`、定时任务用 `workmanager`、
+小组件用 `home_widget`、快捷方式用 `quick_actions`。仅 Android 标准声明（AppWidget receiver）保留原生类。
+WebView 经决策不迁移。需要桥接的能力必须先确认。
 
 ## 技术选型
 
@@ -30,8 +32,11 @@
 | Material 3 (XML) | Material 3 ThemeData（含 Dynamic Color） |
 | Fragment + Navigation | go_router |
 | ViewModel + StateFlow | Riverpod（Notifier/AsyncNotifier） |
-| sherpa-onnx | MethodChannel → 原生 `libsherpa-onnx-jni.so` |
-| AppWidget / Alarm / WorkManager | MethodChannel + 原生模块 |
+| sherpa-onnx | `sherpa_onnx` Dart FFI（纯 Flutter，ASR + TTS + VAD） |
+| AppWidget | `home_widget` + 标准 `AppWidgetProvider`（1x2 / 1x4 / 2x2） |
+| AlarmManager | `android_intent_plus`（`AlarmClock.ACTION_SET_ALARM`） |
+| WorkManager | `workmanager` + `flutter_local_notifications` 提醒 |
+| WebView SDK | 不迁移（用户决策） |
 
 ## 阶段计划
 
@@ -83,3 +88,25 @@
 - 完整迁移工作量以月计，按阶段交付，每阶段可独立运行
 - 原生能力（语音/小组件）依赖 MethodChannel，需保持原生模块可编译（现有 `jniLibs` 保留）
 - Room → drift 数据迁移需要一次性脚本与回滚方案
+
+## 迁移完成度（2026-11）
+
+| 模块 | 状态 | 说明 |
+| --- | --- | --- |
+| 聊天页 | ✅ | SSE 流式、思考折叠、Markdown、工具调用卡片、操作栏 |
+| 会话 | ✅ | sqflite 持久化、切换/删除、首条消息自动命名 |
+| 语音输出 | ✅ | 纯 Flutter `sherpa_onnx` + MeloTTS，`audioplayers` 播放 |
+| 语音输入 | ✅ | 纯 Flutter `sherpa_onnx` SenseVoice + `record` 录音 |
+| 工具调用 | ✅ | 工具循环（上限 5 轮）、工具卡片、确认弹窗 |
+| 工具实现 | ✅ | `get_battery_level` / `set_alarm` / `send_sms` / `get_current_time`（纯 Flutter） |
+| 附件 | ✅ | 图片（选图/多模态/持久化）、文本文件（拼接内容） |
+| 设置 | ✅ | API 配置、外观、语言、笔记、记忆、工具审计、定时任务 |
+| 定时任务 | ✅ | CRUD + `workmanager` 15 分钟检查 + 本地通知 |
+| 工具审计 | ✅ | sqflite 记录 + 列表 + 清空 + 权限策略重置 |
+| 权限策略 | ✅ | 录音权限拒绝记忆 |
+| 桌面小组件 | ✅ | 1x2 / 1x4 / 2x2，会话标题 + 最新回复 |
+| 快捷方式 | ✅ | 新对话 / 设置 |
+| i18n | ✅ | 中/英，主要页面全覆盖 |
+| 单元测试 | ✅ | 14 个（SSE 解析、工具执行、文案、仓储层） |
+| 数据迁移 | ⏳ | 决策：不迁移（跨包沙箱无法读取原生 Room） |
+| WebView | ⏳ | 决策：不迁移 |
