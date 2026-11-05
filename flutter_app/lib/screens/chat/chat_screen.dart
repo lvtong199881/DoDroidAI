@@ -117,9 +117,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     return Scaffold(
       key: _scaffoldKey,
       drawer: AppDrawer(
-        onNewChat: () {
-          ref.read(chatProvider.notifier).startNewChat();
-        },
         onOpenSettings: () {
           Future.delayed(const Duration(milliseconds: 250), () {
             if (!context.mounted) return;
