@@ -1,9 +1,11 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:record/record.dart';
 
@@ -35,6 +37,50 @@ class _ChatInputBoxState extends State<ChatInputBox> {
   StreamSubscription<Uint8List>? _micSub;
   final List<int> _pcmBuffer = [];
   final List<String> _images = [];
+  String _fileText = '';
+
+  Future<void> _showAttachMenu() async {
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.image_outlined),
+              title: const Text('图片'),
+              onTap: () => Navigator.of(ctx).pop('image'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.insert_drive_file_outlined),
+              title: const Text('文本文件'),
+              onTap: () => Navigator.of(ctx).pop('file'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (choice == 'image') {
+      await _pickImage();
+    } else if (choice == 'file') {
+      await _pickFile();
+    }
+  }
+
+  Future<void> _pickFile() async {
+    final files = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['txt', 'md', 'json', 'csv', 'log'],
+    );
+    final file = files.isEmpty ? null : files.first;
+    if (file == null) return;
+    final path = file.path;
+    if (path == null) return;
+    final bytes = await File(path).readAsBytes();
+    final text = utf8.decode(bytes, allowMalformed: true);
+    if (!mounted) return;
+    setState(() => _fileText = text.length > 20000 ? text.substring(0, 20000) : text);
+  }
 
   Future<void> _pickImage() async {
     final picked = await ImagePicker().pickImage(
@@ -53,10 +99,16 @@ class _ChatInputBoxState extends State<ChatInputBox> {
 
   void _send() {
     final text = widget.controller.text.trim();
-    if (text.isEmpty && _images.isEmpty) return;
-    widget.onSend(text, List.of(_images));
+    final withFile = _fileText.isEmpty
+        ? text
+        : '$text\n\n附件内容：\n$_fileText';
+    if (withFile.isEmpty && _images.isEmpty) return;
+    widget.onSend(withFile.trim(), List.of(_images));
     widget.controller.clear();
-    setState(() => _images.clear());
+    setState(() {
+      _images.clear();
+      _fileText = '';
+    });
   }
 
   Future<void> _toggleMic() async {
@@ -146,7 +198,7 @@ class _ChatInputBoxState extends State<ChatInputBox> {
               _toggleChip('智能搜索', _webSearch, (v) => setState(() => _webSearch = v)),
               const Spacer(),
               IconButton(
-                onPressed: _pickImage,
+                onPressed: _showAttachMenu,
                 icon: Icon(Icons.add, color: scheme.onSurfaceVariant),
                 visualDensity: VisualDensity.compact,
               ),

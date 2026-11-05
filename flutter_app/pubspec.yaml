@@ -28,6 +28,7 @@ dependencies:
     sdk: flutter
   intl: ^0.20.3
   image_picker: ^1.2.4
+  file_picker: ^13.3.2
 dependency_overrides:
   record_linux:
     path: third_party/record_linux_stub
