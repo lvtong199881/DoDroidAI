@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../ai/ai_config.dart';
 import '../../ai/chat_api.dart';
+import '../../ai/tools.dart';
 import '../../data/chat_database.dart';
 import '../../models/chat_message.dart';
 
@@ -140,13 +141,74 @@ class ChatController extends StateNotifier<ChatState> {
       state = state.copyWith(sessions: await _database.sessions());
     }
 
-    final history = state.messages.where((m) => m.content.isNotEmpty).toList();
+    final history = <ChatMessage>[
+      ...state.messages.where((m) => !m.isLoading),
+    ];
+
+    var iteration = 0;
     try {
-      await for (final delta in _api.stream(config, history)) {
-        assistant.content += delta;
+      while (iteration < 5) {
+        iteration++;
+        final builders = <int, _ToolCallBuilder>{};
+        await for (final event in _api.stream(
+          config,
+          history,
+          tools: ToolRegistry.definitions,
+        )) {
+          final tc = event.toolCall;
+          if (tc != null) {
+            final builder = builders.putIfAbsent(tc.index, () => _ToolCallBuilder());
+            if (tc.id != null) builder.id = tc.id!;
+            if (tc.name != null) builder.name = tc.name!;
+            if (tc.arguments != null) builder.arguments += tc.arguments!;
+            continue;
+          }
+          final content = event.content;
+          if (content != null) {
+            assistant.content += content;
+            state = state.copyWith();
+          }
+          final reasoning = event.reasoning;
+          if (reasoning != null) {
+            assistant.reasoning = (assistant.reasoning ?? '') + reasoning;
+            state = state.copyWith();
+          }
+        }
+
+        if (builders.isEmpty) break;
+
+        final calls = builders.values
+            .map((b) => ToolCallInfo(
+                  id: b.id,
+                  name: b.name,
+                  arguments: b.arguments,
+                  argsSummary: b.arguments,
+                  isRunning: true,
+                ))
+            .toList();
+        assistant.toolCalls = [...assistant.toolCalls, ...calls];
+        state = state.copyWith();
+
+        history.add(ChatMessage(
+          role: ChatRole.assistant,
+          content: assistant.content,
+          toolCalls: calls,
+        ));
+        for (final call in calls) {
+          final output = await ToolRegistry.execute(call.name, call.arguments);
+          call.isRunning = false;
+          call.isSuccess = true;
+          call.resultSummary = output;
+          history.add(ChatMessage(
+            role: ChatRole.tool,
+            content: output,
+            toolCallId: call.id,
+          ));
+        }
+        assistant.content = '';
         state = state.copyWith();
       }
-      if (assistant.content.isEmpty) {
+      if (assistant.content.isEmpty && assistant.toolCalls.isEmpty) {
         assistant.content = '（空回复）';
       }
     } catch (e) {
@@ -178,6 +240,12 @@ class ChatController extends StateNotifier<ChatState> {
   void clearError() {
     state = state.copyWith(error: null);
   }
+}
+
+class _ToolCallBuilder {
+  String id = '';
+  String name = '';
+  String arguments = '';
 }
 
 final chatProvider = StateNotifierProvider<ChatController, ChatState>(

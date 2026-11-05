@@ -1,19 +1,23 @@
-enum ChatRole { user, assistant }
+enum ChatRole { user, assistant, tool }
 
 class ToolCallInfo {
   ToolCallInfo({
+    required this.id,
     required this.name,
+    required this.arguments,
     required this.argsSummary,
     this.isRunning = false,
     this.isSuccess,
     this.resultSummary,
   });
 
+  final String id;
   final String name;
+  final String arguments;
   final String argsSummary;
-  final bool isRunning;
-  final bool? isSuccess;
-  final String? resultSummary;
+  bool isRunning;
+  bool? isSuccess;
+  String? resultSummary;
 }
 
 class ChatMessage {
@@ -23,6 +27,7 @@ class ChatMessage {
     this.reasoning,
     this.reasoningSeconds = 0,
     this.toolCalls = const [],
+    this.toolCallId,
     this.isLoading = false,
     this.isError = false,
   });
@@ -32,6 +37,7 @@ class ChatMessage {
   String? reasoning;
   int reasoningSeconds;
   List<ToolCallInfo> toolCalls;
+  String? toolCallId;
   bool isLoading;
   bool isError;
 }
