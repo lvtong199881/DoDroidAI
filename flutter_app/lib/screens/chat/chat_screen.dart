@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/chat_message.dart';
+import '../settings/settings_screen.dart';
 import 'chat_provider.dart';
 import 'widgets/app_drawer.dart';
 import 'widgets/chat_input_box.dart';
@@ -18,6 +19,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => ref.read(chatProvider.notifier).ensureReady());
+  }
 
   @override
   void dispose() {
@@ -49,12 +56,26 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(chatProvider);
     final scheme = Theme.of(context).colorScheme;
-    ref.listen<ChatState>(chatProvider, (_, __) => _scrollToBottom());
+    ref.listen<ChatState>(chatProvider, (_, next) {
+      _scrollToBottom();
+      final error = next.error;
+      if (error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error), duration: const Duration(seconds: 2)),
+        );
+        ref.read(chatProvider.notifier).clearError();
+      }
+    });
 
     return Scaffold(
       key: _scaffoldKey,
       drawer: AppDrawer(
         onNewChat: () => ref.read(chatProvider.notifier).startNewChat(),
+        onOpenSettings: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const SettingsScreen()),
+          ).then((_) => ref.read(chatProvider.notifier).reloadConfig());
+        },
       ),
       appBar: AppBar(
         leading: IconButton(

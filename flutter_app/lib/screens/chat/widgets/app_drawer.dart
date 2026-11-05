@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
 class AppDrawer extends StatelessWidget {
-  const AppDrawer({super.key, required this.onNewChat});
+  const AppDrawer({super.key, required this.onNewChat, required this.onOpenSettings});
 
   final VoidCallback onNewChat;
+  final VoidCallback onOpenSettings;
 
   @override
   Widget build(BuildContext context) {
@@ -51,9 +52,13 @@ class AppDrawer extends StatelessWidget {
               onTap: () => Navigator.of(context).pop(),
             ),
             const Spacer(),
-            const ListTile(
-              leading: Icon(Icons.settings_outlined),
-              title: Text('设置'),
+            ListTile(
+              leading: const Icon(Icons.settings_outlined),
+              title: const Text('设置'),
+              onTap: () {
+                Navigator.of(context).pop();
+                onOpenSettings();
+              },
             ),
           ],
         ),

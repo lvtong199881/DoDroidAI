@@ -1,7 +1,8 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../ai/ai_config.dart';
+import '../../ai/chat_api.dart';
+import '../../data/chat_database.dart';
 import '../../models/chat_message.dart';
 
 class ChatState {
@@ -9,68 +10,104 @@ class ChatState {
     List<ChatMessage>? messages,
     this.isLoading = false,
     this.autoRead = false,
+    this.error,
   }) : messages = messages ?? [];
 
   final List<ChatMessage> messages;
   final bool isLoading;
   final bool autoRead;
+  final String? error;
 
   ChatState copyWith({
     List<ChatMessage>? messages,
     bool? isLoading,
     bool? autoRead,
+    String? error,
   }) {
     return ChatState(
       messages: messages ?? this.messages,
       isLoading: isLoading ?? this.isLoading,
       autoRead: autoRead ?? this.autoRead,
+      error: error,
     );
   }
 }
 
 class ChatController extends StateNotifier<ChatState> {
-  ChatController() : super(ChatState());
+  ChatController({
+    ChatApi? api,
+    ChatDatabase? database,
+    AiConfigStore? configStore,
+  })  : _api = api ?? ChatApi(),
+        _database = database ?? ChatDatabase.instance,
+        _configStore = configStore ?? AiConfigStore(),
+        super(ChatState());
 
-  Timer? _timer;
+  final ChatApi _api;
+  final ChatDatabase _database;
+  final AiConfigStore _configStore;
 
-  /// 发送消息（当前为本地演示回复，后续接入 SSE）
-  void send(String text) {
+  AiConfig? _config;
+  String? _sessionId;
+  bool _ready = false;
+
+  Future<void> ensureReady() async {
+    if (_ready) return;
+    _ready = true;
+    _config = await _configStore.load();
+    _sessionId = 'session_${DateTime.now().millisecondsSinceEpoch}';
+    await _database.ensureSession(_sessionId!, 'hello');
+    final history = await _database.messagesOf(_sessionId!);
+    if (history.isNotEmpty) {
+      state = state.copyWith(messages: history);
+    }
+  }
+
+  Future<void> reloadConfig() async {
+    _config = await _configStore.load();
+  }
+
+  Future<void> send(String text) async {
     if (text.trim().isEmpty || state.isLoading) return;
+
+    final config = _config;
+    if (config == null || !config.isConfigured) {
+      state = state.copyWith(error: '请先在设置中配置 API 地址、Key 和模型');
+      return;
+    }
+
     final user = ChatMessage(role: ChatRole.user, content: text.trim());
-    final assistant = ChatMessage(role: ChatRole.assistant, content: '', isLoading: true);
+    final assistant =
+        ChatMessage(role: ChatRole.assistant, content: '', isLoading: true);
     state = state.copyWith(
       messages: [...state.messages, user, assistant],
       isLoading: true,
+      error: null,
     );
-    _generateReply(assistant);
-  }
+    await _database.insertMessage(_sessionId!, user);
 
-  void _generateReply(ChatMessage assistant) {
-    const reply = '你好！我是 DoDroidAI。Flutter 版本正在迁移中，'
-        '这条回复由本地演示逻辑生成。\n\n'
-        '发送消息后可以看到流式效果：\n\n'
-        '- 支持 Markdown\n'
-        '- 支持**思考过程**折叠\n'
-        '- 支持工具调用卡片';
-    var index = 0;
-    _timer?.cancel();
-    _timer = Timer.periodic(const Duration(milliseconds: 24), (timer) {
-      index += 2;
-      if (index >= reply.length) {
-        index = reply.length;
-        timer.cancel();
-        assistant.isLoading = false;
-        state = state.copyWith(isLoading: false);
+    final history = state.messages.where((m) => m.content.isNotEmpty).toList();
+    try {
+      await for (final delta in _api.stream(config, history)) {
+        assistant.content += delta;
+        state = state.copyWith();
       }
-      assistant.content = reply.substring(0, index);
-      assistant.reasoning ??= '用户发送了消息，需要给出迁移中的演示回复。';
-      assistant.reasoningSeconds = 1;
-      state = state.copyWith();
-    });
+      if (assistant.content.isEmpty) {
+        assistant.content = '（空回复）';
+      }
+    } catch (e) {
+      assistant.isError = true;
+      assistant.content = '请求失败：$e';
+    } finally {
+      assistant.isLoading = false;
+      state = state.copyWith(isLoading: false);
+      await _database.insertMessage(_sessionId!, assistant);
+    }
   }
 
   void startNewChat() {
-    _timer?.cancel();
+    _sessionId = 'session_${DateTime.now().millisecondsSinceEpoch}';
+    _database.ensureSession(_sessionId!, 'hello');
     state = ChatState(autoRead: state.autoRead);
   }
 
@@ -78,10 +115,8 @@ class ChatController extends StateNotifier<ChatState> {
     state = state.copyWith(autoRead: !state.autoRead);
   }
 
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
+  void clearError() {
+    state = state.copyWith(error: null);
   }
 }
 
