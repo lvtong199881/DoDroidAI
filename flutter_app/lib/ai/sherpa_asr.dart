@@ -2,45 +2,20 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:sherpa_onnx/sherpa_onnx.dart' as sherpa;
 
-/// 纯 Flutter 离线 ASR（sherpa-onnx SenseVoice）
+import 'speech_worker.dart';
+
+/// 离线 ASR（sherpa-onnx SenseVoice）。
+/// 识别在常驻 isolate 中执行，避免阻塞 UI。
 class SherpaAsr {
-  static sherpa.OfflineRecognizer? _recognizer;
-  static bool _ready = false;
+  static Future<String> modelDir() async {
+    final dir = await getApplicationSupportDirectory();
+    return '${dir.path}/stt_models/sense_voice_2025_09_09';
+  }
 
-  static Future<bool> init() async {
-    if (_ready) return true;
-    try {
-      sherpa.initBindings();
-      final dir = await getApplicationSupportDirectory();
-      final modelDir = '${dir.path}/stt_models/sense_voice_2025_09_09';
-      if (!File('$modelDir/model.int8.onnx').existsSync()) {
-        return false;
-      }
-      _recognizer = sherpa.OfflineRecognizer(
-        sherpa.OfflineRecognizerConfig(
-          feat: const sherpa.FeatureConfig(
-            sampleRate: 16000,
-            featureDim: 80,
-          ),
-          model: sherpa.OfflineModelConfig(
-            senseVoice: sherpa.OfflineSenseVoiceModelConfig(
-              model: '$modelDir/model.int8.onnx',
-            ),
-            tokens: '$modelDir/tokens.txt',
-            numThreads: 2,
-          ),
-        ),
-      );
-      _ready = true;
-      debugPrint('SherpaAsr: 初始化成功');
-      return true;
-    } catch (e) {
-      debugPrint('SherpaAsr: 初始化失败 $e');
-      _ready = false;
-      return false;
-    }
+  static Future<bool> isReady() async {
+    final dir = await modelDir();
+    return File('$dir/model.int8.onnx').existsSync();
   }
 
   static Future<String> transcribe(
@@ -48,20 +23,19 @@ class SherpaAsr {
     int sampleRate = 16000,
   }) async {
     if (samples.isEmpty) return '';
-    if (!await init()) return '';
-    final recognizer = _recognizer;
-    if (recognizer == null) return '';
-    final stream = recognizer.createStream();
+    final dir = await modelDir();
+    if (!File('$dir/model.int8.onnx').existsSync()) {
+      debugPrint('SherpaAsr: 模型未下载 $dir');
+      return '';
+    }
     try {
-      stream.acceptWaveform(samples: samples, sampleRate: sampleRate);
-      recognizer.decode(stream);
-      final result = recognizer.getResult(stream);
-      return result.text.trim();
+      return await SpeechWorker.transcribe(
+        modelDir: dir,
+        samples: samples.toList(growable: false),
+      );
     } catch (e) {
       debugPrint('SherpaAsr: 识别失败 $e');
       return '';
-    } finally {
-      stream.free();
     }
   }
 }

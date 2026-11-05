@@ -78,6 +78,7 @@ class _AssistantMessageViewState
     extends ConsumerState<AssistantMessageView> {
   bool _reasoningExpanded = false;
   bool _toolExpanded = false;
+  bool _speaking = false;
 
   @override
   Widget build(BuildContext context) {
@@ -123,14 +124,25 @@ class _AssistantMessageViewState
           Row(
             children: [
               IconButton(
-                onPressed: () async {
-                  try {
-                    await SherpaTts.speak(message.content);
-                  } catch (_) {
-                    if (context.mounted) showToast(context, '朗读失败，请检查语音模型');
-                  }
-                },
-                icon: Icon(Icons.volume_up_outlined, size: 20, color: scheme.outline),
+                onPressed: _speaking
+                    ? null
+                    : () async {
+                        setState(() => _speaking = true);
+                        try {
+                          await SherpaTts.speak(message.content);
+                        } catch (_) {
+                          if (context.mounted) {
+                            showToast(context, '朗读失败，请检查语音模型');
+                          }
+                        } finally {
+                          if (mounted) setState(() => _speaking = false);
+                        }
+                      },
+                icon: Icon(
+                  _speaking ? Icons.hourglass_empty : Icons.volume_up_outlined,
+                  size: 20,
+                  color: scheme.outline,
+                ),
                 visualDensity: VisualDensity.compact,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
