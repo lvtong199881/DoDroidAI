@@ -11,6 +11,7 @@ import 'package:record/record.dart';
 
 import '../../../ai/sherpa_asr.dart';
 import '../../../data/permission_policy_database.dart';
+import '../../../l10n/app_strings.dart';
 
 
 
@@ -49,12 +50,12 @@ class _ChatInputBoxState extends State<ChatInputBox> {
           children: [
             ListTile(
               leading: const Icon(Icons.image_outlined),
-              title: const Text('图片'),
+              title: Text(AppStrings.of(context).t('attachImage')),
               onTap: () => Navigator.of(ctx).pop('image'),
             ),
             ListTile(
               leading: const Icon(Icons.insert_drive_file_outlined),
-              title: const Text('文本文件'),
+              title: Text(AppStrings.of(context).t('attachFile')),
               onTap: () => Navigator.of(ctx).pop('file'),
             ),
           ],
@@ -198,11 +199,11 @@ class _ChatInputBoxState extends State<ChatInputBox> {
             maxLines: 5,
             textInputAction: TextInputAction.send,
             onSubmitted: (_) => _send(),
-            decoration: const InputDecoration(
-              hintText: '输入消息...',
+            decoration: InputDecoration(
+              hintText: AppStrings.of(context).inputHint,
               border: InputBorder.none,
               isDense: true,
-              contentPadding: EdgeInsets.symmetric(vertical: 10),
+              contentPadding: const EdgeInsets.symmetric(vertical: 10),
             ),
           ),
           const SizedBox(height: 8),

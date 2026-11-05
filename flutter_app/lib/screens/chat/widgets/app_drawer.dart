@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../../l10n/app_strings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../chat_provider.dart';
@@ -39,7 +41,7 @@ class AppDrawer extends ConsumerWidget {
             ),
             ListTile(
               leading: const Icon(Icons.add_comment_outlined),
-              title: const Text('新对话'),
+              title: Text(AppStrings.of(context).newChat),
               onTap: () {
                 Navigator.of(context).pop();
                 onNewChat();
@@ -47,7 +49,7 @@ class AppDrawer extends ConsumerWidget {
             ),
             ListTile(
               leading: const Icon(Icons.settings_outlined),
-              title: const Text('设置'),
+              title: Text(AppStrings.of(context).settings),
               onTap: () {
                 debugPrint('drawer settings tapped');
                 Navigator.of(context).pop();
@@ -55,9 +57,10 @@ class AppDrawer extends ConsumerWidget {
               },
             ),
             const Divider(height: 1),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 12, 16, 4),
-              child: Text('最近对话', style: TextStyle(fontSize: 12)),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+              child: Text(AppStrings.of(context).recentChats,
+                  style: const TextStyle(fontSize: 12)),
             ),
             Expanded(
               child: state.sessions.isEmpty
