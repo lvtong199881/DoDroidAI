@@ -1,5 +1,11 @@
 
+import 'dart:async';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:record/record.dart';
+
+import '../../../ai/sherpa_asr.dart';
 
 
 
@@ -22,15 +28,63 @@ class ChatInputBox extends StatefulWidget {
 class _ChatInputBoxState extends State<ChatInputBox> {
   bool _deepThink = false;
   bool _webSearch = false;
+  bool _recording = false;
+  final AudioRecorder _recorder = AudioRecorder();
+  StreamSubscription<Uint8List>? _micSub;
+  final List<int> _pcmBuffer = [];
 
   Future<void> _toggleMic() async {
-    // 纯 Flutter 录音方案迁移中（record 包 Linux 实现编译冲突，待替换）
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('语音输入正在迁移为纯 Flutter 实现'),
-        duration: Duration(seconds: 1),
-      ),
-    );
+    if (_recording) {
+      setState(() => _recording = false);
+      await _micSub?.cancel();
+      _micSub = null;
+      await _recorder.stop();
+      if (_pcmBuffer.isEmpty) return;
+      final samples = Float32List(_pcmBuffer.length ~/ 2);
+      for (var i = 0; i < samples.length; i++) {
+        final lo = _pcmBuffer[i * 2];
+        final hi = _pcmBuffer[i * 2 + 1];
+        var v = (hi << 8) | lo;
+        if (v >= 32768) v -= 65536;
+        samples[i] = v / 32768.0;
+      }
+      _pcmBuffer.clear();
+      final text = await SherpaAsr.transcribe(samples);
+      if (!mounted) return;
+      if (text.isNotEmpty) {
+        widget.controller.text = text;
+        widget.controller.selection =
+            TextSelection.collapsed(offset: text.length);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('未识别到语音'),
+            duration: Duration(seconds: 1),
+          ),
+        );
+      }
+      return;
+    }
+
+    final hasPerm = await _recorder.hasPermission();
+    if (!mounted) return;
+    if (!hasPerm) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('请先授予录音权限'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+    _pcmBuffer.clear();
+    final stream = await _recorder.startStream(const RecordConfig(
+      encoder: AudioEncoder.pcm16bits,
+      sampleRate: 16000,
+      numChannels: 1,
+    ));
+    _micSub = stream.listen((data) => _pcmBuffer.addAll(data));
+    setState(() => _recording = true);
   }
 
   @override
@@ -72,7 +126,10 @@ class _ChatInputBoxState extends State<ChatInputBox> {
               ),
               IconButton(
                 onPressed: _toggleMic,
-                icon: Icon(Icons.mic_none, color: scheme.onSurfaceVariant),
+                icon: Icon(
+                  _recording ? Icons.mic : Icons.mic_none,
+                  color: _recording ? scheme.error : scheme.onSurfaceVariant,
+                ),
                 visualDensity: VisualDensity.compact,
               ),
               const SizedBox(width: 4),
