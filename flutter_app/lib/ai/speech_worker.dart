@@ -69,11 +69,13 @@ class SpeechWorker {
     required String modelDir,
     required String text,
     required String outPath,
+    String kind = 'vits',
   }) async {
     final result = await _call('tts', {
       'modelDir': modelDir,
       'text': text,
       'outPath': outPath,
+      'kind': kind,
     });
     return result as String;
   }
@@ -83,6 +85,7 @@ class SpeechWorker {
     required String modelDir,
     required String text,
     required String tempDir,
+    String kind = 'vits',
     required void Function(String path) onChunk,
   }) async {
     await _ensureStarted();
@@ -97,7 +100,12 @@ class SpeechWorker {
     _commandPort!.send({
       'id': id,
       'type': 'tts-stream',
-      'args': {'modelDir': modelDir, 'text': text, 'tempDir': tempDir},
+      'args': {
+        'modelDir': modelDir,
+        'text': text,
+        'tempDir': tempDir,
+        'kind': kind,
+      },
     });
     try {
       await completer.future.timeout(const Duration(seconds: 120));
@@ -109,9 +117,9 @@ class SpeechWorker {
   }
 
   /// 预加载 TTS 模型，避免首次朗读等待
-  static Future<void> warmUpTts(String modelDir) async {
+  static Future<void> warmUpTts(String modelDir, {String kind = 'vits'}) async {
     try {
-      await _call('tts-warmup', {'modelDir': modelDir});
+      await _call('tts-warmup', {'modelDir': modelDir, 'kind': kind});
     } catch (e) {
       // 预热失败不影响使用
     }
@@ -139,6 +147,46 @@ class SpeechWorker {
   }
 }
 
+
+/// 按引擎类型构建 OfflineTts（vits / matcha）
+sherpa.OfflineTts _createTts(String modelDir, String kind) {
+  if (kind == 'matcha') {
+    return sherpa.OfflineTts(
+      sherpa.OfflineTtsConfig(
+        model: sherpa.OfflineTtsModelConfig(
+          matcha: sherpa.OfflineTtsMatchaModelConfig(
+            acousticModel: '$modelDir/model-steps-3.onnx',
+            vocoder: '$modelDir/vocos-16khz-univ.onnx',
+            tokens: '$modelDir/tokens.txt',
+            lexicon: '$modelDir/lexicon.txt',
+            dataDir: modelDir,
+          ),
+          numThreads: 2,
+        ),
+        ruleFsts: ['date-zh.fst', 'number-zh.fst', 'phone-zh.fst']
+            .map((f) => '$modelDir/$f')
+            .join(','),
+      ),
+    );
+  }
+  return sherpa.OfflineTts(
+    sherpa.OfflineTtsConfig(
+      model: sherpa.OfflineTtsModelConfig(
+        vits: sherpa.OfflineTtsVitsModelConfig(
+          model: '$modelDir/model.int8.onnx',
+          tokens: '$modelDir/tokens.txt',
+          lexicon: '$modelDir/lexicon.txt',
+          dictDir: '$modelDir/dict',
+        ),
+        numThreads: 2,
+      ),
+      ruleFsts: ['date.fst', 'new_heteronym.fst', 'number.fst', 'phone.fst']
+          .map((f) => '$modelDir/$f')
+          .join(','),
+    ),
+  );
+}
+
 void _workerEntry(SendPort mainPort) async {
   final receivePort = ReceivePort();
   mainPort.send(receivePort.sendPort);
@@ -161,24 +209,9 @@ void _workerEntry(SendPort mainPort) async {
           final modelDir = args['modelDir'] as String;
           final text = args['text'] as String;
           final outPath = args['outPath'] as String;
+          final kind = (args['kind'] as String?) ?? 'vits';
           if (tts == null || ttsDir != modelDir) {
-            tts = sherpa.OfflineTts(
-              sherpa.OfflineTtsConfig(
-                model: sherpa.OfflineTtsModelConfig(
-                  vits: sherpa.OfflineTtsVitsModelConfig(
-                    model: '$modelDir/model.int8.onnx',
-                    tokens: '$modelDir/tokens.txt',
-                    lexicon: '$modelDir/lexicon.txt',
-                    dictDir: '$modelDir/dict',
-                  ),
-                  numThreads: 2,
-                ),
-                ruleFsts:
-                    ['date.fst', 'new_heteronym.fst', 'number.fst', 'phone.fst']
-                        .map((f) => '$modelDir/$f')
-                        .join(','),
-              ),
-            );
+            tts = _createTts(modelDir, kind);
             ttsDir = modelDir;
           }
           final audio = tts.generate(text: text);
@@ -188,24 +221,9 @@ void _workerEntry(SendPort mainPort) async {
 
         case 'tts-warmup':
           final modelDir = args['modelDir'] as String;
+          final kind = (args['kind'] as String?) ?? 'vits';
           if (tts == null || ttsDir != modelDir) {
-            tts = sherpa.OfflineTts(
-              sherpa.OfflineTtsConfig(
-                model: sherpa.OfflineTtsModelConfig(
-                  vits: sherpa.OfflineTtsVitsModelConfig(
-                    model: '$modelDir/model.int8.onnx',
-                    tokens: '$modelDir/tokens.txt',
-                    lexicon: '$modelDir/lexicon.txt',
-                    dictDir: '$modelDir/dict',
-                  ),
-                  numThreads: 2,
-                ),
-                ruleFsts:
-                    ['date.fst', 'new_heteronym.fst', 'number.fst', 'phone.fst']
-                        .map((f) => '$modelDir/$f')
-                        .join(','),
-              ),
-            );
+            tts = _createTts(modelDir, kind);
             ttsDir = modelDir;
           }
           mainPort.send({'id': id, 'result': true});
@@ -215,24 +233,9 @@ void _workerEntry(SendPort mainPort) async {
           final modelDir = args['modelDir'] as String;
           final text = args['text'] as String;
           final tempDir = args['tempDir'] as String;
+          final kind = (args['kind'] as String?) ?? 'vits';
           if (tts == null || ttsDir != modelDir) {
-            tts = sherpa.OfflineTts(
-              sherpa.OfflineTtsConfig(
-                model: sherpa.OfflineTtsModelConfig(
-                  vits: sherpa.OfflineTtsVitsModelConfig(
-                    model: '$modelDir/model.int8.onnx',
-                    tokens: '$modelDir/tokens.txt',
-                    lexicon: '$modelDir/lexicon.txt',
-                    dictDir: '$modelDir/dict',
-                  ),
-                  numThreads: 2,
-                ),
-                ruleFsts:
-                    ['date.fst', 'new_heteronym.fst', 'number.fst', 'phone.fst']
-                        .map((f) => '$modelDir/$f')
-                        .join(','),
-              ),
-            );
+            tts = _createTts(modelDir, kind);
             ttsDir = modelDir;
           }
           final engine = tts;

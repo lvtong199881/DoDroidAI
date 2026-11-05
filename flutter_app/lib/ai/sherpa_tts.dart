@@ -1,25 +1,39 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:audioplayers/audioplayers.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'model_catalog.dart';
+import 'model_manager.dart';
 import 'speech_worker.dart';
 
 /// 离线 TTS（sherpa-onnx MeloTTS）。
 /// 合成在常驻 isolate 执行；长文本按句切分、边合成边播放，首句很快出声。
 class SherpaTts {
   static final AudioPlayer _player = AudioPlayer();
+  static ConcatenatingAudioSource? _playlist;
   static Future<void>? _warming;
 
+  /// 当前激活的 TTS 模型（默认 Matcha）
+  static Future<VoiceModel> activeModel() async {
+    final id = await ModelManager('tts').activeModelId();
+    return TtsModels.byId(id);
+  }
+
   static Future<String> modelDir() async {
-    final dir = await getApplicationSupportDirectory();
-    return '${dir.path}/tts_models/vits_melo_tts_zh_en';
+    final model = await activeModel();
+    return ModelManager('tts').modelDir(model);
   }
 
   static Future<bool> isReady() async {
-    final dir = await modelDir();
+    final model = await activeModel();
+    final dir = await ModelManager('tts').modelDir(model);
+    if (model.kind == 'matcha') {
+      return File('$dir/model-steps-3.onnx').existsSync() &&
+          File('$dir/vocos-16khz-univ.onnx').existsSync();
+    }
     return File('$dir/model.int8.onnx').existsSync();
   }
 
@@ -27,10 +41,11 @@ class SherpaTts {
   static Future<void> warmUp() async {
     if (_warming != null) return _warming!;
     _warming = () async {
-      final dir = await modelDir();
-      if (!File('$dir/model.int8.onnx').existsSync()) return;
-      await SpeechWorker.warmUpTts(dir);
-      debugPrint('SherpaTts: 预热完成');
+      final model = await activeModel();
+      final dir = await ModelManager('tts').modelDir(model);
+      if (!await isReady()) return;
+      await SpeechWorker.warmUpTts(dir, kind: model.kind);
+      debugPrint('SherpaTts: 预热完成 engine=${model.kind}');
     }();
     return _warming!;
   }
@@ -38,8 +53,9 @@ class SherpaTts {
   /// 仅合成到 wav（不播放），失败返回 null
   static Future<String?> synthesizeToWav(String text) async {
     if (text.trim().isEmpty) return null;
-    final dir = await modelDir();
-    if (!File('$dir/model.int8.onnx').existsSync()) {
+    final model = await activeModel();
+    final dir = await ModelManager('tts').modelDir(model);
+    if (!await isReady()) {
       debugPrint('SherpaTts: 模型未下载 $dir');
       return null;
     }
@@ -51,6 +67,7 @@ class SherpaTts {
         modelDir: dir,
         text: text,
         outPath: path,
+        kind: model.kind,
       );
     } catch (e) {
       debugPrint('SherpaTts: 合成失败 $e');
@@ -58,80 +75,69 @@ class SherpaTts {
     }
   }
 
-  /// 朗读：逐句流式合成，边生成边播（首声最快）
+  /// 朗读：逐句流式合成，边生成边播，播放队列无缝衔接
   static Future<void> speak(String text) async {
     if (text.trim().isEmpty) return;
-    final dir = await modelDir();
-    if (!File('$dir/model.int8.onnx').existsSync()) {
+    if (!await isReady()) {
       debugPrint('SherpaTts: 模型未下载');
       return;
     }
+    final model = await activeModel();
+    final dir = await ModelManager('tts').modelDir(model);
     final temp = await getTemporaryDirectory();
 
-    final queue = <String>[];
-    var playing = false;
-    var finished = false;
+    final playlist = ConcatenatingAudioSource(children: []);
+    _playlist = playlist;
+    var added = 0;
+    var started = false;
     var firstChunkAt = -1;
     final sw = Stopwatch()..start();
-    final done = Completer<void>();
-
-    Future<void> pump() async {
-      if (playing) return;
-      while (queue.isNotEmpty) {
-        playing = true;
-        await _playAndWait(queue.removeAt(0));
-        playing = false;
-      }
-      if (finished && queue.isEmpty && !done.isCompleted) done.complete();
-    }
 
     try {
+      await _player.setAudioSource(playlist);
       for (final piece in splitForSpeech(text)) {
         await SpeechWorker.synthesizeStream(
           modelDir: dir,
           text: piece,
           tempDir: temp.path,
+          kind: model.kind,
           onChunk: (path) {
             if (firstChunkAt < 0) {
               firstChunkAt = sw.elapsedMilliseconds;
               debugPrint('TTS_STREAM first_chunk_ms=$firstChunkAt');
             }
-            queue.add(path);
-            pump();
+            added++;
+            // 播放中追加，实现无缝续播
+            unawaited(playlist.add(AudioSource.file(path)));
+            if (!started) {
+              started = true;
+              unawaited(_player.play());
+            }
           },
         );
+      }
+      // 等待队列播完
+      if (added > 0) {
+        await _player.processingStateStream
+            .firstWhere((state) => state == ProcessingState.completed)
+            .timeout(const Duration(seconds: 120), onTimeout: () {
+          return ProcessingState.completed;
+        });
       }
     } catch (e) {
       debugPrint('SherpaTts: 流式合成失败 $e');
     } finally {
-      finished = true;
-      if (!playing && queue.isEmpty && !done.isCompleted) done.complete();
-      await done.future.timeout(const Duration(seconds: 90), onTimeout: () {});
-    }
-  }
-
-  static Future<void> _playAndWait(String path) async {
-    final completer = Completer<void>();
-    late StreamSubscription<void> sub;
-    sub = _player.onPlayerComplete.listen((_) {
-      if (!completer.isCompleted) completer.complete();
-      sub.cancel();
-    });
-    try {
-      await _player.play(DeviceFileSource(path));
-      await completer.future.timeout(
-        const Duration(seconds: 60),
-        onTimeout: () {},
-      );
-    } catch (e) {
-      debugPrint('SherpaTts: 播放失败 $e');
-    } finally {
-      await sub.cancel();
+      _playlist = null;
+      try {
+        await _player.stop();
+      } catch (_) {}
     }
   }
 
   static Future<void> stop() async {
-    await _player.stop();
+    try {
+      await _player.stop();
+    } catch (_) {}
   }
 
   /// 按中英文句读切分；首段控制得更短，让第一声尽快出来

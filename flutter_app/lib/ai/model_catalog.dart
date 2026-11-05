@@ -13,7 +13,11 @@ class VoiceModel {
     required this.repo,
     required this.files,
     required this.languages,
+    this.kind = 'vits',
   });
+
+  /// 'vits' 或 'matcha'
+  final String kind;
 
   final String id;
   final String displayName;
@@ -87,8 +91,25 @@ class TtsModels {
     languages: '中文 / 英文',
   );
 
-  static const all = [melo];
+  /// Matcha-TTS：ODE 步数少，移动端明显快于 VITS
+  static const matcha = VoiceModel(
+    id: 'matcha_icefall_zh_en',
+    displayName: 'Matcha 中英混合（更快）',
+    repo: 'csukuangfj/matcha-icefall-zh-en',
+    kind: 'matcha',
+    files: [
+      ModelFile('model-steps-3.onnx', 75500000),
+      ModelFile('tokens.txt', 21000),
+      ModelFile('lexicon.txt', 1360000),
+      ModelFile('date-zh.fst', 59000),
+      ModelFile('number-zh.fst', 64000),
+      ModelFile('phone-zh.fst', 89000),
+    ],
+    languages: '中文 / 英文',
+  );
+
+  static const all = [matcha, melo];
 
   static VoiceModel byId(String? id) =>
-      all.firstWhere((m) => m.id == id, orElse: () => melo);
+      all.firstWhere((m) => m.id == id, orElse: () => matcha);
 }

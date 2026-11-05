@@ -39,7 +39,8 @@ class ModelManager {
 
   Future<String> activeModelId() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_prefsActiveKey) ?? (kind == 'stt' ? SttModels.senseVoice.id : TtsModels.melo.id);
+    return prefs.getString(_prefsActiveKey) ??
+        (kind == 'stt' ? SttModels.senseVoice.id : TtsModels.matcha.id);
   }
 
   Future<void> setActive(VoiceModel model) async {

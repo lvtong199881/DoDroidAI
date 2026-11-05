@@ -5,9 +5,10 @@ import 'package:flutter/material.dart';
 
 import '../../ai/model_catalog.dart';
 import '../../ai/model_manager.dart';
+import '../../ai/sherpa_tts.dart';
 import '../../widgets/app_toast.dart';
 
-/// 语音输出设置（对齐原生 fragment_tts_settings.xml：单模型详情页）
+/// 语音输出设置：多模型列表（Matcha 更快 / MeloTTS 兼容）
 class TtsSettingsScreen extends StatefulWidget {
   const TtsSettingsScreen({super.key});
 
@@ -17,17 +18,17 @@ class TtsSettingsScreen extends StatefulWidget {
 
 class _TtsSettingsScreenState extends State<TtsSettingsScreen> {
   final _manager = ModelManager('tts');
-  final _model = TtsModels.melo;
-  bool _downloaded = false;
-  bool _active = false;
-  bool _downloading = false;
+  final _models = TtsModels.all;
+  final Map<String, bool> _downloaded = {};
+  String _activeId = '';
+  String? _downloadingId;
   int _progress = 0;
   CancelToken? _cancelToken;
 
   @override
   void initState() {
     super.initState();
-    _render();
+    _load();
   }
 
   @override
@@ -36,20 +37,36 @@ class _TtsSettingsScreenState extends State<TtsSettingsScreen> {
     super.dispose();
   }
 
-  Future<void> _render() async {
-    final downloaded = await _manager.isDownloaded(_model);
+  Future<void> _load() async {
     final activeId = await _manager.activeModelId();
+    final downloaded = <String, bool>{};
+    for (final model in _models) {
+      downloaded[model.id] = await _isReady(model);
+    }
     if (!mounted) return;
     setState(() {
-      _downloaded = downloaded;
-      _active = downloaded && activeId == _model.id;
+      _activeId = activeId;
+      _downloaded
+        ..clear()
+        ..addAll(downloaded);
     });
   }
 
-  Future<void> _startDownload() async {
-    if (_downloading) return;
+  Future<bool> _isReady(VoiceModel model) async {
+    final downloaded = await _manager.isDownloaded(model);
+    if (!downloaded) return false;
+    if (model.kind == 'matcha') {
+      final dir = await _manager.modelDir(model);
+      return await _manager.isDownloaded(model) &&
+          await Future.value(dir.isNotEmpty);
+    }
+    return true;
+  }
+
+  Future<void> _startDownload(VoiceModel model) async {
+    if (_downloadingId != null) return;
     setState(() {
-      _downloading = true;
+      _downloadingId = model.id;
       _progress = 0;
     });
     final token = CancelToken();
@@ -57,7 +74,7 @@ class _TtsSettingsScreenState extends State<TtsSettingsScreen> {
     try {
       final source = await _manager.source();
       await _manager.download(
-        _model,
+        model,
         source: source,
         cancelToken: token,
         onProgress: (done, total) {
@@ -65,7 +82,8 @@ class _TtsSettingsScreenState extends State<TtsSettingsScreen> {
           setState(() => _progress = total > 0 ? done * 100 ~/ total : 0);
         },
       );
-      await _manager.setActive(_model);
+      await _manager.setActive(model);
+      await SherpaTts.warmUp();
       if (!mounted) return;
       showToast(context, '下载完成');
     } on DioException catch (e) {
@@ -74,38 +92,32 @@ class _TtsSettingsScreenState extends State<TtsSettingsScreen> {
     } finally {
       if (mounted) {
         setState(() {
-          _downloading = false;
+          _downloadingId = null;
           _progress = 0;
         });
       }
       _cancelToken = null;
-      await _render();
+      await _load();
     }
   }
 
-  Future<void> _delete() async {
+  Future<void> _delete(VoiceModel model) async {
     _cancelToken?.cancel();
-    await _manager.delete(_model);
-    await _render();
+    await _manager.delete(model);
+    await _load();
   }
 
-  Future<void> _use() async {
-    await _manager.setActive(_model);
-    await _render();
+  Future<void> _use(VoiceModel model) async {
+    await _manager.setActive(model);
+    await SherpaTts.warmUp();
+    await _load();
+    if (!mounted) return;
+    showToast(context, '已切换为 ${model.displayName}');
   }
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final status = _downloading
-        ? '下载中'
-        : _active
-            ? '使用中'
-            : _downloaded
-                ? '已下载'
-                : '';
-    final sizeMb = _model.totalBytes ~/ 1024 ~/ 1024;
-
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -115,76 +127,104 @@ class _TtsSettingsScreenState extends State<TtsSettingsScreen> {
         title: const Text('语音输出', style: TextStyle(fontSize: 20)),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        children: [
+          for (final model in _models) _buildCard(model, scheme),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              '离线合成，不依赖系统语音引擎；下载后自动启用。Matcha 为 flow-matching 引擎，首声更快。',
+              style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCard(VoiceModel model, ColorScheme scheme) {
+    final downloaded = _downloaded[model.id] == true;
+    final downloading = _downloadingId == model.id;
+    final active = downloaded && _activeId == model.id;
+    final status = downloading
+        ? '下载中'
+        : active
+            ? '使用中'
+            : downloaded
+                ? '已下载'
+                : '未下载';
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _model.displayName,
-                      style: const TextStyle(fontSize: 20),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${_model.languages} · $sizeMb MB',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: scheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  model.displayName,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
               ),
               const SizedBox(width: 8),
               Text(
                 status,
-                style: TextStyle(fontSize: 13, color: scheme.primary),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: active || downloading
+                      ? scheme.primary
+                      : scheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),
-          if (_downloading) ...[
-            const SizedBox(height: 12),
+          const SizedBox(height: 2),
+          Text(
+            model.languages,
+            style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            '${(model.totalBytes / 1048576).toStringAsFixed(0)} MB',
+            style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+          ),
+          if (downloading) ...[
+            const SizedBox(height: 8),
             LinearProgressIndicator(
               value: _progress / 100,
               minHeight: 4,
               borderRadius: BorderRadius.circular(2),
             ),
-            const SizedBox(height: 4),
-            Text(
-              '$_progress%',
-              style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
-            ),
           ],
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           Row(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              if (!_downloaded && !_downloading)
-                FilledButton(
-                  onPressed: _startDownload,
-                  child: const Text('下载'),
-                ),
-              if (_downloaded && !_active)
-                FilledButton(
-                  onPressed: _use,
-                  child: const Text('使用'),
-                ),
-              if (_downloaded) ...[
-                const SizedBox(width: 8),
+              if (downloaded && !downloading)
                 TextButton(
-                  onPressed: _delete,
+                  onPressed: () => _delete(model),
                   child: const Text('删除'),
                 ),
-              ],
+              const SizedBox(width: 8),
+              if (!downloading)
+                FilledButton.tonal(
+                  onPressed: downloaded && active
+                      ? null
+                      : downloaded
+                          ? () => _use(model)
+                          : () => _startDownload(model),
+                  child: Text(
+                    downloaded && active ? '使用中' : (downloaded ? '使用' : '下载'),
+                  ),
+                ),
             ],
-          ),
-          const SizedBox(height: 24),
-          Text(
-            '离线合成，不依赖系统语音引擎；下载后自动启用。',
-            style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
           ),
         ],
       ),
