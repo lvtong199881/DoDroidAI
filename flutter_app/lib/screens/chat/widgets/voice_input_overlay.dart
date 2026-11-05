@@ -13,6 +13,7 @@ class VoiceInputOverlay {
     _amplitudes.value = <double>[];
     final overlay = Overlay.of(context, rootOverlay: true);
     final screenHeight = MediaQuery.of(context).size.height;
+    final scheme = Theme.of(context).colorScheme;
     _entry = OverlayEntry(
       builder: (ctx) => Positioned(
         left: 0,
@@ -22,7 +23,13 @@ class VoiceInputOverlay {
           color: Colors.transparent,
           child: Container(
             height: screenHeight * 0.4,
-            color: const Color(0xFF1F1F1F),
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
+            decoration: BoxDecoration(
+              color: scheme.surface,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(28),
+              ),
+            ),
             child: ValueListenableBuilder<List<double>>(
               valueListenable: _amplitudes,
               builder: (context, values, _) => CustomPaint(
