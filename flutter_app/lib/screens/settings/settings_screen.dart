@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../ai/ai_config.dart';
 import '../../settings/app_settings.dart';
+import '../memory/memory_screen.dart';
 import '../notes/note_list_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -122,6 +123,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const NoteListScreen()),
+                  ),
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.psychology_outlined),
+                  title: const Text('记忆'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const MemoryScreen()),
                   ),
                 ),
               ],
