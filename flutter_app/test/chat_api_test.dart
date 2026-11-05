@@ -90,6 +90,78 @@ void main() {
     await server.close(force: true);
   });
 
+  test('accumulates multiple tool_calls and reasoning', () async {
+    final server = await HttpServer.bind('127.0.0.1', 0);
+    server.listen((request) async {
+      request.response.statusCode = 200;
+      request.response.headers.contentType =
+          ContentType('text', 'event-stream', charset: 'utf-8');
+      request.response.write(
+        'data: ${jsonEncode({
+              'choices': [
+                {
+                  'delta': {
+                    'reasoning_content': '思考中',
+                  }
+                }
+              ]
+            })}\n\n',
+      );
+      request.response.write(
+        'data: ${jsonEncode({
+              'choices': [
+                {
+                  'delta': {
+                    'tool_calls': [
+                      {
+                        'index': 0,
+                        'id': 'call_a',
+                        'function': {'name': 'get_current_time', 'arguments': ''}
+                      }
+                    ]
+                  }
+                }
+              ]
+            })}\n\n',
+      );
+      request.response.write(
+        'data: ${jsonEncode({
+              'choices': [
+                {
+                  'delta': {
+                    'tool_calls': [
+                      {
+                        'index': 0,
+                        'function': {'arguments': '{}'}
+                      }
+                    ]
+                  }
+                }
+              ]
+            })}\n\n',
+      );
+      request.response.write('data: [DONE]\n\n');
+      await request.response.close();
+    });
+
+    final api = ChatApi();
+    final config = AiConfig(
+      baseUrl: 'http://127.0.0.1:${server.port}',
+      apiKey: 'k',
+      model: 'm',
+    );
+    final events = await api
+        .stream(config, [ChatMessage(role: ChatRole.user, content: 'hi')])
+        .toList();
+    final reasoning = events.where((e) => e.reasoning != null).length;
+    final calls = events.where((e) => e.toolCall != null).toList();
+    expect(reasoning, 1);
+    expect(calls.length, 2);
+    expect(calls.first.toolCall!.name, 'get_current_time');
+    expect(calls.last.toolCall!.arguments, '{}');
+    await server.close(force: true);
+  });
+
   test('executes local tools', () async {
     final result = await ToolRegistry.execute('get_current_time', '{}');
     expect(result, isNotEmpty);

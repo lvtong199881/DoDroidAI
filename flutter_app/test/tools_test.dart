@@ -18,3 +18,4 @@ void main() {
     expect(ToolRegistry.isHighRisk('get_current_time'), isFalse);
   });
 }
+
