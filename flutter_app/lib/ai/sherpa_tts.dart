@@ -101,8 +101,8 @@ class SherpaTts {
     await _player.stop();
   }
 
-  /// 按中英文句读切分，单段不超过 maxLen
-  static List<String> splitForSpeech(String text, {int maxLen = 60}) {
+  /// 按中英文句读切分；首段控制得更短，让第一声尽快出来
+  static List<String> splitForSpeech(String text, {int maxLen = 30}) {
     final normalized = text.replaceAll(RegExp(r'\s+'), ' ').trim();
     if (normalized.isEmpty) return const [];
 

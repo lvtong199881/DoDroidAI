@@ -135,7 +135,7 @@ void _workerEntry(SendPort mainPort) async {
                     lexicon: '$modelDir/lexicon.txt',
                     dictDir: '$modelDir/dict',
                   ),
-                  numThreads: 4,
+                  numThreads: 2,
                 ),
                 ruleFsts:
                     ['date.fst', 'new_heteronym.fst', 'number.fst', 'phone.fst']
@@ -162,7 +162,7 @@ void _workerEntry(SendPort mainPort) async {
                     lexicon: '$modelDir/lexicon.txt',
                     dictDir: '$modelDir/dict',
                   ),
-                  numThreads: 4,
+                  numThreads: 2,
                 ),
                 ruleFsts:
                     ['date.fst', 'new_heteronym.fst', 'number.fst', 'phone.fst']
@@ -190,7 +190,7 @@ void _workerEntry(SendPort mainPort) async {
                     model: '$modelDir/model.int8.onnx',
                   ),
                   tokens: '$modelDir/tokens.txt',
-                  numThreads: 4,
+                  numThreads: 2,
                 ),
               ),
             );
