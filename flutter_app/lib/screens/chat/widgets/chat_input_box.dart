@@ -37,6 +37,7 @@ class _ChatInputBoxState extends State<ChatInputBox> {
   bool _deepThink = false;
   bool _webSearch = false;
   bool _recording = false;
+  bool _voiceMode = false;
   final AudioRecorder _recorder = AudioRecorder();
   StreamSubscription<Uint8List>? _micSub;
   StreamSubscription<Amplitude>? _ampSub;
@@ -202,19 +203,39 @@ class _ChatInputBoxState extends State<ChatInputBox> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          TextField(
-            controller: widget.controller,
-            minLines: 1,
-            maxLines: 5,
-            textInputAction: TextInputAction.send,
-            onSubmitted: (_) => _send(),
-            decoration: InputDecoration(
-              hintText: AppStrings.of(context).inputHint,
-              border: InputBorder.none,
-              isDense: true,
-              contentPadding: const EdgeInsets.symmetric(vertical: 10),
+          if (_voiceMode)
+            Listener(
+              onPointerDown: (_) => _startVoice(),
+              onPointerUp: (_) => _stopVoice(),
+              onPointerCancel: (_) => _stopVoice(),
+              child: Container(
+                height: 48,
+                width: double.infinity,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: scheme.surface,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  _recording ? '正在录音…' : '按住说话',
+                  style: const TextStyle(fontSize: 16),
+                ),
+              ),
+            )
+          else
+            TextField(
+              controller: widget.controller,
+              minLines: 1,
+              maxLines: 1,
+              textInputAction: TextInputAction.send,
+              onSubmitted: (_) => _send(),
+              decoration: InputDecoration(
+                hintText: AppStrings.of(context).inputHint,
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(vertical: 14),
+              ),
             ),
-          ),
           const SizedBox(height: 8),
           Row(
             children: [
@@ -227,18 +248,15 @@ class _ChatInputBoxState extends State<ChatInputBox> {
                 icon: Icon(Icons.add, color: scheme.onSurfaceVariant),
                 visualDensity: VisualDensity.compact,
               ),
-              Listener(
-                onPointerDown: (_) => _startVoice(),
-                onPointerUp: (_) => _stopVoice(),
-                onPointerCancel: (_) => _stopVoice(),
-                child: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Icon(
-                    _recording ? Icons.mic : Icons.mic_none,
-                    size: 24,
-                    color: _recording ? scheme.error : scheme.onSurfaceVariant,
-                  ),
+              IconButton(
+                onPressed: () => setState(() => _voiceMode = !_voiceMode),
+                icon: Icon(
+                  _voiceMode ? Icons.keyboard : Icons.mic_none,
+                  size: 24,
+                  color: scheme.onSurfaceVariant,
                 ),
+                visualDensity: VisualDensity.compact,
+                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
               ),
               const SizedBox(width: 4),
               ValueListenableBuilder<TextEditingValue>(
