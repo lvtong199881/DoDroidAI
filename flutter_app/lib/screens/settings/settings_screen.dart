@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../ai/ai_config.dart';
+import '../../l10n/app_strings.dart';
 import '../../settings/app_settings.dart';
 import '../memory/memory_screen.dart';
 import '../notes/note_list_screen.dart';
@@ -52,22 +53,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('设置', style: TextStyle(fontSize: 20)),
+        title: Text(strings.settings, style: const TextStyle(fontSize: 20)),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                const Text('外观', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+                Text(strings.appearance,
+                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
                 SegmentedButton<ThemeMode>(
-                  segments: const [
-                    ButtonSegment(value: ThemeMode.system, label: Text('跟随系统')),
-                    ButtonSegment(value: ThemeMode.light, label: Text('浅色')),
-                    ButtonSegment(value: ThemeMode.dark, label: Text('深色')),
+                  segments: [
+                    ButtonSegment(value: ThemeMode.system, label: Text(strings.followSystem)),
+                    ButtonSegment(value: ThemeMode.light, label: Text(strings.light)),
+                    ButtonSegment(value: ThemeMode.dark, label: Text(strings.dark)),
                   ],
                   selected: {ref.watch(themeModeProvider)},
                   onSelectionChanged: (selection) => ref
@@ -75,7 +78,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       .setMode(selection.first),
                 ),
                 const SizedBox(height: 24),
-                const Text('API 配置', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+                Text(strings.language,
+                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 8),
+                SegmentedButton<String>(
+                  segments: const [
+                    ButtonSegment(value: 'system', label: Text('跟随系统')),
+                    ButtonSegment(value: 'zh', label: Text('中文')),
+                    ButtonSegment(value: 'en', label: Text('English')),
+                  ],
+                  selected: {
+                    ref.watch(localeProvider)?.languageCode ?? 'system'
+                  },
+                  onSelectionChanged: (selection) {
+                    final value = selection.first;
+                    ref.read(localeProvider.notifier).setLocale(
+                          value == 'system' ? null : Locale(value),
+                        );
+                  },
+                ),
+                const SizedBox(height: 24),
+                Text(strings.apiConfig,
+                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _baseUrl,
@@ -110,16 +134,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 const SizedBox(height: 20),
                 FilledButton(
                   onPressed: _save,
-                  child: const Text('保存'),
+                  child: Text(strings.save),
                 ),
                 const SizedBox(height: 32),
-                const Text('功能',
-                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+                Text(strings.features,
+                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.sticky_note_2_outlined),
-                  title: const Text('笔记'),
+                  title: Text(strings.notes),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const NoteListScreen()),
@@ -128,7 +152,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.psychology_outlined),
-                  title: const Text('记忆'),
+                  title: Text(strings.memory),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const MemoryScreen()),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/app_strings.dart';
 import '../../models/chat_message.dart';
 import '../settings/settings_screen.dart';
 import 'chat_provider.dart';
@@ -42,10 +43,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Future<void> _showToolConfirmDialog(ToolCallInfo call) async {
+    final strings = AppStrings.of(context);
     final approved = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('确认执行工具'),
+        title: Text(strings.confirmTool),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,11 +63,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('取消'),
+            child: Text(strings.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('执行'),
+            child: Text(strings.execute),
           ),
         ],
       ),
@@ -167,7 +169,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             child: state.messages.isEmpty
                 ? Center(
                     child: Text(
-                      '发送消息开始对话',
+                      AppStrings.of(context).emptyHint,
                       style: TextStyle(color: scheme.onSurfaceVariant),
                     ),
                   )

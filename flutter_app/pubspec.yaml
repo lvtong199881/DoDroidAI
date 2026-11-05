@@ -24,6 +24,9 @@ dependencies:
   android_intent_plus: ^6.1.0
   url_launcher: ^6.3.3
   record: ^5.2.0
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.3
 dependency_overrides:
   record_linux:
     path: third_party/record_linux_stub
