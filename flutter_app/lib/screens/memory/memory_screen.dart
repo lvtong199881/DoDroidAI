@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_strings.dart';
+
 import '../../data/memory_database.dart';
 
 class MemoryScreen extends StatefulWidget {
@@ -34,20 +36,20 @@ class _MemoryScreenState extends State<MemoryScreen> {
     final saved = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('新增记忆'),
+        title: Text(AppStrings.of(context).t('newNote')),
         content: TextField(
           controller: controller,
           maxLines: 3,
-          decoration: const InputDecoration(labelText: '内容'),
+          decoration: InputDecoration(labelText: AppStrings.of(context).t('content')),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('取消'),
+            child: Text(AppStrings.of(context).t('cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('保存'),
+            child: Text(AppStrings.of(context).save),
           ),
         ],
       ),
@@ -63,7 +65,7 @@ class _MemoryScreenState extends State<MemoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('记忆', style: TextStyle(fontSize: 20)),
+        title: Text(AppStrings.of(context).memory, style: const TextStyle(fontSize: 20)),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addFact,
@@ -72,7 +74,7 @@ class _MemoryScreenState extends State<MemoryScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _facts.isEmpty
-              ? const Center(child: Text('暂无记忆'))
+              ? Center(child: Text(AppStrings.of(context).t('emptyMemory')))
               : ListView.separated(
                   itemCount: _facts.length,
                   separatorBuilder: (_, __) => const Divider(height: 1),

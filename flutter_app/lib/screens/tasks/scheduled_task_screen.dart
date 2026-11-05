@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_strings.dart';
+
 import '../../data/scheduled_task_database.dart';
 
 class ScheduledTaskScreen extends StatefulWidget {
@@ -36,26 +38,26 @@ class _ScheduledTaskScreenState extends State<ScheduledTaskScreen> {
     final saved = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('新建定时任务'),
+        title: Text(AppStrings.of(context).t('newTask')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: titleController,
-              decoration: const InputDecoration(labelText: '名称'),
+              decoration: InputDecoration(labelText: AppStrings.of(context).t('name')),
             ),
             const SizedBox(height: 8),
             TextField(
               controller: promptController,
               maxLines: 3,
-              decoration: const InputDecoration(labelText: '执行内容'),
+              decoration: InputDecoration(labelText: AppStrings.of(context).t('prompt')),
             ),
             const SizedBox(height: 8),
             TextField(
               controller: scheduleController,
-              decoration: const InputDecoration(
-                labelText: '时间/周期',
-                hintText: '如 08:00 或 0 8 * * *',
+              decoration: InputDecoration(
+                labelText: AppStrings.of(context).t('schedule'),
+                hintText: AppStrings.of(context).t('scheduleHint'),
               ),
             ),
           ],
@@ -63,11 +65,11 @@ class _ScheduledTaskScreenState extends State<ScheduledTaskScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('取消'),
+            child: Text(AppStrings.of(context).t('cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('保存'),
+            child: Text(AppStrings.of(context).save),
           ),
         ],
       ),
@@ -89,7 +91,7 @@ class _ScheduledTaskScreenState extends State<ScheduledTaskScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('定时任务', style: TextStyle(fontSize: 20)),
+        title: Text(AppStrings.of(context).t('scheduledTasks'), style: const TextStyle(fontSize: 20)),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _createTask,
@@ -98,7 +100,7 @@ class _ScheduledTaskScreenState extends State<ScheduledTaskScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _tasks.isEmpty
-              ? const Center(child: Text('暂无定时任务'))
+              ? Center(child: Text(AppStrings.of(context).t('emptyTasks')))
               : ListView.separated(
                   itemCount: _tasks.length,
                   separatorBuilder: (_, __) => const Divider(height: 1),
@@ -107,7 +109,7 @@ class _ScheduledTaskScreenState extends State<ScheduledTaskScreen> {
                     return ListTile(
                       title: Text(task.title),
                       subtitle: Text(
-                        task.schedule.isEmpty ? '未设置时间' : task.schedule,
+                        task.schedule.isEmpty ? AppStrings.of(context).t('noSchedule') : task.schedule,
                       ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,

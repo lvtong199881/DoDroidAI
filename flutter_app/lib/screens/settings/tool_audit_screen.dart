@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_strings.dart';
+
 import '../../data/permission_policy_database.dart';
 import '../../data/tool_audit_database.dart';
 
@@ -44,7 +46,7 @@ class _ToolAuditScreenState extends State<ToolAuditScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('工具审计', style: TextStyle(fontSize: 20)),
+        title: Text(AppStrings.of(context).t('toolAudit'), style: const TextStyle(fontSize: 20)),
         actions: [
           IconButton(
             tooltip: '重置权限策略',
@@ -69,7 +71,7 @@ class _ToolAuditScreenState extends State<ToolAuditScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _entries.isEmpty
-              ? const Center(child: Text('暂无工具执行记录'))
+              ? Center(child: Text(AppStrings.of(context).t('emptyAudit')))
               : ListView.separated(
                   itemCount: _entries.length,
                   separatorBuilder: (_, __) => const Divider(height: 1),
