@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../ai/asr_channel.dart';
 import '../../models/chat_message.dart';
 import '../settings/settings_screen.dart';
 import 'chat_provider.dart';
@@ -24,6 +25,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void initState() {
     super.initState();
     Future.microtask(() => ref.read(chatProvider.notifier).ensureReady());
+    // 预热 ASR 引擎
+    Future.microtask(() => AsrChannel.init());
   }
 
   @override
