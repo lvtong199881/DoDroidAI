@@ -227,14 +227,22 @@ class _ChatInputBoxState extends State<ChatInputBox> {
                 visualDensity: VisualDensity.compact,
               ),
               const SizedBox(width: 4),
-              IconButton.filled(
-                onPressed: _send,
-                icon: const Icon(Icons.arrow_upward, size: 18),
-                visualDensity: VisualDensity.compact,
-                style: IconButton.styleFrom(
-                  minimumSize: const Size(32, 32),
-                  padding: EdgeInsets.zero,
-                ),
+              ValueListenableBuilder<TextEditingValue>(
+                valueListenable: widget.controller,
+                builder: (context, value, _) {
+                  if (value.text.trim().isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+                  return IconButton.filled(
+                    onPressed: _send,
+                    icon: const Icon(Icons.arrow_upward, size: 18),
+                    visualDensity: VisualDensity.compact,
+                    style: IconButton.styleFrom(
+                      minimumSize: const Size(32, 32),
+                      padding: EdgeInsets.zero,
+                    ),
+                  );
+                },
               ),
             ],
           ),

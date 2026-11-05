@@ -135,7 +135,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           onPressed: () => _scaffoldKey.currentState?.openDrawer(),
         ),
         title: Text(
-          state.currentSession?.name ?? '',
+          state.messages.isEmpty ? '' : (state.currentSession?.name ?? ''),
           style: const TextStyle(fontSize: 20),
         ),
         actions: [
@@ -168,14 +168,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               ref.read(chatProvider.notifier).startNewChat();
             },
             icon: const Icon(Icons.add),
-          ),
-          IconButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SettingsScreen()),
-              ).then((_) => ref.read(chatProvider.notifier).reloadConfig());
-            },
-            icon: const Icon(Icons.settings_outlined),
           ),
           const SizedBox(width: 4),
         ],
