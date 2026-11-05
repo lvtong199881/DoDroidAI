@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../ai/ai_config.dart';
 import '../../settings/app_settings.dart';
+import '../notes/note_list_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -109,6 +110,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 FilledButton(
                   onPressed: _save,
                   child: const Text('保存'),
+                ),
+                const SizedBox(height: 32),
+                const Text('功能',
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 8),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.sticky_note_2_outlined),
+                  title: const Text('笔记'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const NoteListScreen()),
+                  ),
                 ),
               ],
             ),
