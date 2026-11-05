@@ -109,6 +109,7 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
                 (AiProvider.openai, 'OpenAI'),
                 (AiProvider.deepseek, 'DeepSeek'),
                 (AiProvider.minimax, 'MiniMax'),
+                (AiProvider.opencode, 'OpenCode'),
                 (AiProvider.custom, '自定义'),
               ])
                 ChoiceChip(
@@ -125,7 +126,8 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<ApiFormat>(
-            value: _apiFormat,
+            key: ValueKey(_apiFormat),
+            initialValue: _apiFormat,
             decoration: const InputDecoration(labelText: 'API 格式'),
             items: const [
               DropdownMenuItem(

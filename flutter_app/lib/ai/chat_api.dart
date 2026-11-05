@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:dio/dio.dart';
 
@@ -58,16 +59,23 @@ class ChatApi {
       body['tools'] = tools;
     }
 
+    final headers = <String, String>{
+      'Authorization': 'Bearer ${config.apiKey}',
+      'Content-Type': 'application/json',
+      'Accept': 'text/event-stream',
+    };
+    final baseUrl = _normalizeBaseUrl(config.baseUrl);
+    // OpenCode Go：与原生一致，仅需稳定会话 ID（用于路由与 prompt cache）
+    if (baseUrl.contains('opencode')) {
+      headers['x-opencode-session'] = _opencodeSessionIdFor(config.id);
+    }
+
     final response = await _dio.post<ResponseBody>(
-      '${_normalizeBaseUrl(config.baseUrl)}/v1/chat/completions',
+      '$baseUrl/v1/chat/completions',
       data: body,
       options: Options(
         responseType: ResponseType.stream,
-        headers: {
-          'Authorization': 'Bearer ${config.apiKey}',
-          'Content-Type': 'application/json',
-          'Accept': 'text/event-stream',
-        },
+        headers: headers,
         validateStatus: (code) => code != null && code >= 200 && code < 300,
       ),
     );
@@ -94,6 +102,19 @@ class ChatApi {
         ..clear()
         ..write(text);
     }
+  }
+
+  /// 每个配置生成一个稳定会话 ID（原生同样按配置持有 sessionId）
+  static final Map<String, String> _sessionIds = {};
+
+  static String _opencodeSessionIdFor(String configId) {
+    return _sessionIds.putIfAbsent(configId, () {
+      const base62 =
+          '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+      final random = Random.secure();
+      return List.generate(24, (_) => base62[random.nextInt(base62.length)])
+          .join();
+    });
   }
 
   /// Anthropic Messages 协议（/v1/messages + x-api-key）

@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-enum AiProvider { openai, deepseek, minimax, custom }
+enum AiProvider { openai, deepseek, minimax, opencode, custom }
 
 enum ApiFormat { anthropicMessages, openAiChatCompletions }
 
@@ -67,6 +67,7 @@ class AiConfig {
         'OPENAI' || 'openai' => AiProvider.openai,
         'DEEPSEEK' || 'deepseek' => AiProvider.deepseek,
         'MINIMAX' || 'minimax' => AiProvider.minimax,
+        'OPENCODE' || 'opencode' => AiProvider.opencode,
         _ => AiProvider.custom,
       },
       apiFormat: format == 'ANTHROPIC_MESSAGES'
@@ -111,6 +112,16 @@ class AiConfig {
           baseUrl: 'https://api.minimaxi.com/anthropic',
           apiKey: '',
           model: 'MiniMax-M2.7',
+        );
+      case AiProvider.opencode:
+        return AiConfig(
+          id: now,
+          provider: provider,
+          apiFormat: ApiFormat.openAiChatCompletions,
+          providerName: 'OpenCode',
+          baseUrl: 'https://opencode.ai/inference',
+          apiKey: 'public',
+          model: 'deepseek-v4.1-flash-free',
         );
       case AiProvider.custom:
         return AiConfig(

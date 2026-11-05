@@ -198,22 +198,6 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _showWebSearch(BuildContext context) async {
-    await showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('联网搜索'),
-        content: const Text('联网搜索由模型工具 web_search 提供，当前 Flutter 版尚未接入。'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('知道了'),
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> _showPlaceholder(BuildContext context, String title) async {
     await showDialog<void>(
       context: context,
