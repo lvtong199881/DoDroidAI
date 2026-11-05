@@ -4,9 +4,25 @@ import 'package:android_intent_plus/android_intent.dart';
 import 'package:battery_plus/battery_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'web_search.dart';
+
 /// Flutter 侧工具注册与执行（纯 Flutter，无原生桥接）
 class ToolRegistry {
   static const List<Map<String, dynamic>> definitions = [
+    {
+      'type': 'function',
+      'function': {
+        'name': 'web_search',
+        'description': '搜索互联网获取实时信息（需要配置 Brave Search API Key）',
+        'parameters': {
+          'type': 'object',
+          'properties': {
+            'query': {'type': 'string', 'description': '搜索关键词'},
+          },
+          'required': ['query'],
+        },
+      },
+    },
     {
       'type': 'function',
       'function': {
@@ -72,6 +88,9 @@ class ToolRegistry {
   static Future<String> execute(String name, String argumentsJson) async {
     final args = _decode(argumentsJson);
     switch (name) {
+      case 'web_search':
+        final query = (args['query'] as String?) ?? '';
+        return WebSearch.search(query);
       case 'get_current_time':
         return DateTime.now().toIso8601String();
       case 'get_battery_level':
