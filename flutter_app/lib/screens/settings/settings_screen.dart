@@ -5,6 +5,7 @@ import '../../ai/ai_config.dart';
 import '../../l10n/app_strings.dart';
 import '../../settings/app_settings.dart';
 import '../memory/memory_screen.dart';
+import '../tasks/scheduled_task_screen.dart';
 import '../notes/note_list_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -156,6 +157,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const MemoryScreen()),
+                  ),
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.schedule_outlined),
+                  title: const Text('定时任务'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const ScheduledTaskScreen()),
                   ),
                 ),
               ],
