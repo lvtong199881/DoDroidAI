@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../ai/ai_config.dart';
+import '../../settings/app_settings.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -58,6 +59,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
+                const Text('外观', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 8),
+                SegmentedButton<ThemeMode>(
+                  segments: const [
+                    ButtonSegment(value: ThemeMode.system, label: Text('跟随系统')),
+                    ButtonSegment(value: ThemeMode.light, label: Text('浅色')),
+                    ButtonSegment(value: ThemeMode.dark, label: Text('深色')),
+                  ],
+                  selected: {ref.watch(themeModeProvider)},
+                  onSelectionChanged: (selection) => ref
+                      .read(themeModeProvider.notifier)
+                      .setMode(selection.first),
+                ),
+                const SizedBox(height: 24),
                 const Text('API 配置', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 12),
                 TextField(

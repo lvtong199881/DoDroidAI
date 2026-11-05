@@ -74,9 +74,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ref.read(chatProvider.notifier).startNewChat();
         },
         onOpenSettings: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const SettingsScreen()),
-          ).then((_) => ref.read(chatProvider.notifier).reloadConfig());
+          Future.delayed(const Duration(milliseconds: 250), () {
+            if (!context.mounted) return;
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            ).then((_) => ref.read(chatProvider.notifier).reloadConfig());
+          });
         },
       ),
       appBar: AppBar(

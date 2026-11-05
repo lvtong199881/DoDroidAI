@@ -45,6 +45,15 @@ class AppDrawer extends ConsumerWidget {
                 onNewChat();
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.settings_outlined),
+              title: const Text('设置'),
+              onTap: () {
+                debugPrint('drawer settings tapped');
+                Navigator.of(context).pop();
+                onOpenSettings();
+              },
+            ),
             const Divider(height: 1),
             const Padding(
               padding: EdgeInsets.fromLTRB(16, 12, 16, 4),
@@ -86,14 +95,6 @@ class AppDrawer extends ConsumerWidget {
                         );
                       },
                     ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings_outlined),
-              title: const Text('设置'),
-              onTap: () {
-                Navigator.of(context).pop();
-                onOpenSettings();
-              },
             ),
           ],
         ),
