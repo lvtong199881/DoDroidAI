@@ -119,9 +119,9 @@ class AiConfig {
           provider: provider,
           apiFormat: ApiFormat.openAiChatCompletions,
           providerName: 'OpenCode',
-          baseUrl: 'https://opencode.ai/inference',
+          baseUrl: 'https://opencode.ai/zen/go/v1',
           apiKey: 'public',
-          model: 'deepseek-v4.1-flash-free',
+          model: 'deepseek-v4.1-flash',
         );
       case AiProvider.custom:
         return AiConfig(

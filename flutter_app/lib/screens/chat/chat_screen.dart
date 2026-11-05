@@ -30,9 +30,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     super.initState();
     Future.microtask(() => ref.read(chatProvider.notifier).ensureReady());
     pendingShortcut.addListener(_handleShortcut);
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) ref.read(chatProvider.notifier).send('hi');
-    });
   }
 
   @override
