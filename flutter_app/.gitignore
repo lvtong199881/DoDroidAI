@@ -47,6 +47,3 @@ app.*.map.json
 # Widget Preview related
 .widget_preview/
 
-# signing
-android/key.properties
-android/app/release.jks
