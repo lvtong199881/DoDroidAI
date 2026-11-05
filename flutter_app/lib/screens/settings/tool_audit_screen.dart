@@ -39,7 +39,12 @@ class _ToolAuditScreenState extends State<ToolAuditScreen> {
 
   String _formatTime(int millis) {
     final date = DateTime.fromMillisecondsSinceEpoch(millis);
-    return '${date.month}/${date.day} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    final hour = date.hour.toString().padLeft(2, '0');
+    final minute = date.minute.toString().padLeft(2, '0');
+    final second = date.second.toString().padLeft(2, '0');
+    return '$month-$day $hour:$minute:$second';
   }
 
   @override
@@ -48,23 +53,9 @@ class _ToolAuditScreenState extends State<ToolAuditScreen> {
       appBar: AppBar(
         title: Text(AppStrings.of(context).t('toolAudit'), style: const TextStyle(fontSize: 20)),
         actions: [
-          IconButton(
-            tooltip: '重置权限策略',
-            icon: const Icon(Icons.lock_reset_outlined),
-            onPressed: () async {
-              await PermissionPolicyRepository.instance.clearAll();
-              if (!context.mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('已重置权限策略'),
-                  duration: Duration(seconds: 1),
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete_sweep_outlined),
+          TextButton(
             onPressed: _entries.isEmpty ? null : _clear,
+            child: const Text('清空'),
           ),
         ],
       ),
@@ -72,25 +63,95 @@ class _ToolAuditScreenState extends State<ToolAuditScreen> {
           ? const Center(child: CircularProgressIndicator())
           : _entries.isEmpty
               ? Center(child: Text(AppStrings.of(context).t('emptyAudit')))
-              : ListView.separated(
-                  itemCount: _entries.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1),
+              : ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  itemCount: _entries.length + 1,
                   itemBuilder: (context, index) {
+                    if (index == _entries.length) {
+                      final scheme = Theme.of(context).colorScheme;
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Center(
+                          child: TextButton(
+                            onPressed: () async {
+                              await PermissionPolicyRepository.instance.clearAll();
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('已重置权限策略'),
+                                  duration: Duration(seconds: 1),
+                                ),
+                              );
+                            },
+                            child: Text(
+                              '重置权限提示',
+                              style: TextStyle(color: scheme.primary),
+                            ),
+                          ),
+                        ),
+                      );
+                    }
                     final entry = _entries[index];
-                    return ListTile(
-                      leading: Icon(
-                        entry.success
-                            ? Icons.check_circle_outline
-                            : Icons.error_outline,
-                        color: entry.success
-                            ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context).colorScheme.error,
-                      ),
-                      title: Text(entry.toolName),
-                      subtitle: Text(
-                        '${_formatTime(entry.createdAt)} · ${entry.argsSummary.isEmpty ? '无参数' : entry.argsSummary}',
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                    final scheme = Theme.of(context).colorScheme;
+                    final statusColor =
+                        entry.success ? const Color(0xFF1E8E5A) : scheme.error;
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: scheme.surfaceContainer,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    entry.toolName,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: scheme.onSurface,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  entry.success ? '成功' : '失败',
+                                  style: TextStyle(fontSize: 14, color: statusColor),
+                                ),
+                              ],
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
+                                entry.argsSummary.isEmpty ? '{}' : entry.argsSummary,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 6),
+                              child: Text(
+                                _formatTime(entry.createdAt),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: scheme.onSurface,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },
