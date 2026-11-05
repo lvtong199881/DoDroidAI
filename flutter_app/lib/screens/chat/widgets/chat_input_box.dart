@@ -12,6 +12,7 @@ import 'package:record/record.dart';
 import '../../../ai/sherpa_asr.dart';
 import '../../../data/permission_policy_database.dart';
 import '../../../widgets/app_toast.dart';
+import 'voice_input_overlay.dart';
 import '../../../l10n/app_strings.dart';
 
 
@@ -38,6 +39,7 @@ class _ChatInputBoxState extends State<ChatInputBox> {
   bool _recording = false;
   final AudioRecorder _recorder = AudioRecorder();
   StreamSubscription<Uint8List>? _micSub;
+  StreamSubscription<Amplitude>? _ampSub;
   final List<int> _pcmBuffer = [];
   final List<String> _images = [];
   String _fileText = '';
@@ -114,70 +116,78 @@ class _ChatInputBoxState extends State<ChatInputBox> {
     });
   }
 
-  Future<void> _toggleMic() async {
+  Future<void> _startVoice() async {
+    if (_recording) return;
     try {
-      await _handleMicTap();
+      final policy = PermissionPolicyRepository.instance;
+      final denied = await policy.isDenied('microphone');
+      if (!mounted) return;
+      if (denied) {
+        showToast(context, '麦克风权限已被拒绝，请在系统设置中开启');
+        return;
+      }
+      final hasPerm = await _recorder.hasPermission();
+      if (!mounted) return;
+      if (!hasPerm) {
+        await policy.setDenied('microphone');
+        if (!mounted) return;
+        showToast(context, '请先授予录音权限');
+        return;
+      }
+
+      _pcmBuffer.clear();
+      final stream = await _recorder.startStream(const RecordConfig(
+        encoder: AudioEncoder.pcm16bits,
+        sampleRate: 16000,
+        numChannels: 1,
+      ));
+      _micSub = stream.listen((data) => _pcmBuffer.addAll(data));
+      _ampSub = _recorder
+          .onAmplitudeChanged(const Duration(milliseconds: 80))
+          .listen((amp) {
+        final normalized = ((amp.current + 60) / 60).clamp(0.0, 1.0);
+        VoiceInputOverlay.update(normalized);
+      });
+      if (!mounted) return;
+      setState(() => _recording = true);
+      VoiceInputOverlay.show(context);
     } catch (e) {
-      debugPrint('MIC error: $e');
-      if (mounted) showToast(context, '语音输入暂不可用：$e');
+      debugPrint('MIC start failed: $e');
+      if (mounted) showToast(context, '语音输入暂不可用');
     }
   }
 
-  Future<void> _handleMicTap() async {
-    debugPrint('MIC toggle start recording=$_recording');
-    if (_recording) {
-      setState(() => _recording = false);
+  Future<void> _stopVoice() async {
+    if (!_recording) return;
+    setState(() => _recording = false);
+    VoiceInputOverlay.dismiss();
+    try {
+      await _ampSub?.cancel();
+      _ampSub = null;
       await _micSub?.cancel();
       _micSub = null;
       await _recorder.stop();
-      if (_pcmBuffer.isEmpty) return;
-      final samples = Float32List(_pcmBuffer.length ~/ 2);
-      for (var i = 0; i < samples.length; i++) {
-        final lo = _pcmBuffer[i * 2];
-        final hi = _pcmBuffer[i * 2 + 1];
-        var v = (hi << 8) | lo;
-        if (v >= 32768) v -= 65536;
-        samples[i] = v / 32768.0;
-      }
-      _pcmBuffer.clear();
-      final text = await SherpaAsr.transcribe(samples);
-      if (!mounted) return;
-      if (text.isNotEmpty) {
-        widget.controller.text = text;
-        widget.controller.selection =
-            TextSelection.collapsed(offset: text.length);
-      } else {
-        showToast(context, '未识别到语音');
-      }
-      return;
-    }
+    } catch (_) {}
+    if (_pcmBuffer.isEmpty) return;
 
-    final policy = PermissionPolicyRepository.instance;
-    final denied = await policy.isDenied('microphone');
-    debugPrint('MIC denied=$denied');
-    if (!mounted) return;
-    if (denied) {
-      showToast(context, '麦克风权限已被拒绝，请在系统设置中开启');
-      return;
-    }
-    final hasPerm = await _recorder.hasPermission();
-    debugPrint('MIC hasPerm=$hasPerm');
-    if (!mounted) return;
-    if (!hasPerm) {
-      await policy.setDenied('microphone');
-      if (!mounted) return;
-      showToast(context, '请先授予录音权限');
-      return;
+    final samples = Float32List(_pcmBuffer.length ~/ 2);
+    for (var i = 0; i < samples.length; i++) {
+      final lo = _pcmBuffer[i * 2];
+      final hi = _pcmBuffer[i * 2 + 1];
+      var v = (hi << 8) | lo;
+      if (v >= 32768) v -= 65536;
+      samples[i] = v / 32768.0;
     }
     _pcmBuffer.clear();
-    final stream = await _recorder.startStream(const RecordConfig(
-      encoder: AudioEncoder.pcm16bits,
-      sampleRate: 16000,
-      numChannels: 1,
-    ));
-    _micSub = stream.listen((data) => _pcmBuffer.addAll(data));
-    debugPrint('MIC recording started');
-    setState(() => _recording = true);
+    final text = await SherpaAsr.transcribe(samples);
+    if (!mounted) return;
+    if (text.isNotEmpty) {
+      widget.controller.text = text;
+      widget.controller.selection =
+          TextSelection.collapsed(offset: text.length);
+    } else {
+      showToast(context, '未识别到语音');
+    }
   }
 
   @override
@@ -217,13 +227,18 @@ class _ChatInputBoxState extends State<ChatInputBox> {
                 icon: Icon(Icons.add, color: scheme.onSurfaceVariant),
                 visualDensity: VisualDensity.compact,
               ),
-              IconButton(
-                onPressed: _toggleMic,
-                icon: Icon(
-                  _recording ? Icons.mic : Icons.mic_none,
-                  color: _recording ? scheme.error : scheme.onSurfaceVariant,
+              Listener(
+                onPointerDown: (_) => _startVoice(),
+                onPointerUp: (_) => _stopVoice(),
+                onPointerCancel: (_) => _stopVoice(),
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Icon(
+                    _recording ? Icons.mic : Icons.mic_none,
+                    size: 24,
+                    color: _recording ? scheme.error : scheme.onSurfaceVariant,
+                  ),
                 ),
-                visualDensity: VisualDensity.compact,
               ),
               const SizedBox(width: 4),
               ValueListenableBuilder<TextEditingValue>(

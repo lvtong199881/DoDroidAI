@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
@@ -74,7 +75,7 @@ class SherpaTts {
     }
   }
 
-  /// 朗读：逐句合成 + 预取下一句 + 顺序播放
+  /// 朗读：首句先播，其余句子合成后合并为一个文件，整段只有一次切换
   static Future<void> speak(String text) async {
     if (text.trim().isEmpty) return;
     if (!await isReady()) {
@@ -88,24 +89,113 @@ class SherpaTts {
     if (pieces.isEmpty) return;
 
     final sw = Stopwatch()..start();
-    var index = 0;
-    Future<String?>? pending = _synthPiece(model, dir, temp.path, pieces[index]);
+    try {
+      // 1) 首句，尽快出声
+      final first = await _synthPiece(model, dir, temp.path, pieces[0]);
+      if (first == null) return;
+      debugPrint('TTS_FIRST_READY ms=${sw.elapsedMilliseconds}');
 
-    while (true) {
-      final path = await pending;
-      if (path == null) break;
-      if (index == 0) debugPrint('TTS_FIRST_READY ms=${sw.elapsedMilliseconds}');
-      // 先启动下一句合成，再播放当前句
-      index++;
-      if (index < pieces.length) {
-        pending = _synthPiece(model, dir, temp.path, pieces[index]);
-      } else {
-        pending = null;
+      // 2) 首句播放的同时，并行合成剩余句子
+      final restFuture = Future.wait(
+        pieces
+            .skip(1)
+            .map((p) => _synthPiece(model, dir, temp.path, p)),
+      );
+
+      debugPrint('TTS_SEG first ${_wavDurationMs(first)}ms');
+      await _player.play(DeviceFileSource(first));
+      final firstMs = _wavDurationMs(first);
+      await Future<void>.delayed(Duration(milliseconds: firstMs));
+
+      final rest = (await restFuture).whereType<String>().toList();
+      if (rest.isEmpty) {
+        debugPrint('SherpaTts: 播放结束 total_ms=${sw.elapsedMilliseconds}');
+        return;
       }
-      await _playAndWait(path);
-      if (pending == null) break;
+
+      // 3) 其余句子合并成一个 wav，无缝续播
+      final mergedPath = '${temp.path}/tts_merged_${DateTime.now().microsecondsSinceEpoch}.wav';
+      final merged = _mergeWav(rest, mergedPath);
+      if (merged == null) return;
+      debugPrint('TTS_SEG merged ${_wavDurationMs(merged)}ms');
+      await _player.play(DeviceFileSource(merged));
+      await Future<void>.delayed(Duration(milliseconds: _wavDurationMs(merged)));
+      debugPrint('SherpaTts: 播放结束 total_ms=${sw.elapsedMilliseconds}');
+    } catch (e) {
+      debugPrint('SherpaTts: 朗读失败 $e');
     }
-    debugPrint('SherpaTts: 播放结束 total_ms=${sw.elapsedMilliseconds}');
+  }
+
+  /// 合并多个 16-bit 单声道 wav（要求采样率一致）
+  static String? _mergeWav(List<String> paths, String outPath) {
+    if (paths.isEmpty) return null;
+    try {
+      final firstBytes = File(paths.first).readAsBytesSync();
+      if (firstBytes.length < 44) return null;
+      final head = ByteData.sublistView(firstBytes);
+      var offset = 12;
+      var sampleRate = 44100;
+      var channels = 1;
+      var bits = 16;
+      while (offset + 8 <= firstBytes.length) {
+        final id = String.fromCharCodes(firstBytes.sublist(offset, offset + 4));
+        final size = head.getUint32(offset + 4, Endian.little);
+        if (id == 'fmt ') {
+          channels = head.getUint16(offset + 10, Endian.little);
+          sampleRate = head.getUint32(offset + 12, Endian.little);
+          bits = head.getUint16(offset + 22, Endian.little);
+        } else if (id == 'data') {
+          break;
+        }
+        offset += 8 + size + (size.isOdd ? 1 : 0);
+      }
+
+      final pcm = BytesBuilder();
+      for (final path in paths) {
+        final bytes = File(path).readAsBytesSync();
+        if (bytes.length < 44) continue;
+        final data = ByteData.sublistView(bytes);
+        var o = 12;
+        while (o + 8 <= bytes.length) {
+          final id = String.fromCharCodes(bytes.sublist(o, o + 4));
+          final size = data.getUint32(o + 4, Endian.little);
+          if (id == 'data') {
+            final end = (o + 8 + size).clamp(0, bytes.length);
+            pcm.add(bytes.sublist(o + 8, end));
+            break;
+          }
+          o += 8 + size + (size.isOdd ? 1 : 0);
+        }
+      }
+
+      final dataBytes = pcm.takeBytes();
+      final header = ByteData(44);
+      header.setUint32(16, 16, Endian.little); // fmt 块长度
+      header.setUint16(20, 1, Endian.little); // PCM
+      header.setUint16(22, channels, Endian.little);
+      header.setUint32(24, sampleRate, Endian.little);
+      header.setUint32(28, sampleRate * channels * bits ~/ 8, Endian.little);
+      header.setUint16(32, channels * bits ~/ 8, Endian.little);
+      header.setUint16(34, bits, Endian.little);
+      header.setUint32(40, dataBytes.length, Endian.little);
+      header.setUint32(4, 36 + dataBytes.length, Endian.little);
+
+      final out = BytesBuilder()
+        ..add('RIFF'.codeUnits)
+        ..add(header.buffer.asUint8List(4, 4))
+        ..add('WAVE'.codeUnits)
+        ..add('fmt '.codeUnits)
+        ..add(header.buffer.asUint8List(16, 4))
+        ..add(header.buffer.asUint8List(20, 16))
+        ..add('data'.codeUnits)
+        ..add(header.buffer.asUint8List(40, 4))
+        ..add(dataBytes);
+      File(outPath).writeAsBytesSync(out.takeBytes(), flush: true);
+      return outPath;
+    } catch (e) {
+      debugPrint('SherpaTts: 合并音频失败 $e');
+      return null;
+    }
   }
 
   static Future<String?> _synthPiece(
@@ -113,28 +203,18 @@ class SherpaTts {
     String dir,
     String tempDir,
     String piece,
-  ) {
-    final path =
-        '$tempDir/tts_${DateTime.now().microsecondsSinceEpoch}.wav';
-    return SpeechWorker.synthesize(
-      modelDir: dir,
-      text: piece,
-      outPath: path,
-      kind: model.kind,
-    ).catchError((Object e) {
+  ) async {
+    final path = '$tempDir/tts_${DateTime.now().microsecondsSinceEpoch}.wav';
+    try {
+      return await SpeechWorker.synthesize(
+        modelDir: dir,
+        text: piece,
+        outPath: path,
+        kind: model.kind,
+      );
+    } catch (e) {
       debugPrint('SherpaTts: 合成失败 $e');
       return null;
-    });
-  }
-
-  static Future<void> _playAndWait(String path) async {
-    try {
-      await _player.play(DeviceFileSource(path));
-      // audioplayers 的 onPlayerComplete 在部分版本不稳定，这里按音频实际时长等待
-      final ms = _wavDurationMs(path);
-      await Future<void>.delayed(Duration(milliseconds: ms + 80));
-    } catch (e) {
-      debugPrint('SherpaTts: 播放失败 $e');
     }
   }
 
