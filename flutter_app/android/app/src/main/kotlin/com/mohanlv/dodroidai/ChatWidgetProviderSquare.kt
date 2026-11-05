@@ -1,4 +1,4 @@
-package com.example.dodroidai.dodroidai
+package com.mohanlv.dodroidai
 
 import android.appwidget.AppWidgetManager
 import android.content.Context
