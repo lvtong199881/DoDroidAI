@@ -8,6 +8,30 @@ speech input runs fully offline on top of `sherpa-onnx` + SenseVoice.
 
 ---
 
+## Flutter version (migration in progress)
+
+`flutter_app/` contains the Flutter port. It currently covers every native feature except the
+WebView SDK, using pure-Flutter implementations wherever possible:
+
+- chat / SSE streaming / tool calling loop / sessions (sqflite)
+- offline speech: `sherpa_onnx` Dart FFI for both TTS (MeloTTS) and ASR (SenseVoice), recording via `record`
+- tools: battery (`battery_plus`), alarm (`android_intent_plus`), SMS (`url_launcher`), time
+- attachments: images (picker + multimodal + persistence) and text files
+- notes / memory / scheduled tasks (workmanager reminder) / tool audit / permission policy
+- home screen widgets (1x2, 1x4, 2x2 via `home_widget`) and app shortcuts (`quick_actions`)
+- Chinese/English i18n, light/dark theme
+
+```bash
+cd flutter_app
+flutter pub get
+flutter build apk --debug
+```
+
+See [docs/FLUTTER_MIGRATION.md](docs/FLUTTER_MIGRATION.md) for the migration plan and status table.
+The native `app/` is kept as the reference baseline until the Flutter version is released.
+
+---
+
 ## Features
 
 - **Multiple AI configurations** — create, clone, activate and delete provider profiles (OpenAI,

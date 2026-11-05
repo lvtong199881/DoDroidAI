@@ -8,6 +8,29 @@ tool calling 真正操作手机：闹钟、日历、短信、笔记（占位实�
 
 ---
 
+## Flutter 版本（迁移中）
+
+`flutter_app/` 是迁移到 Flutter 的版本，除 WebView SDK 外已覆盖原生全部功能，并尽量使用纯 Flutter 实现：
+
+- 聊天 / SSE 流式 / 工具调用循环 / 会话（sqflite）
+- 离线语音：`sherpa_onnx` Dart FFI（TTS MeloTTS + ASR SenseVoice），录音用 `record`
+- 工具：电池（`battery_plus`）、闹钟（`android_intent_plus`）、短信（`url_launcher`）、时间
+- 附件：图片（选图 + 多模态 + 持久化）、文本文件
+- 笔记 / 记忆 / 定时任务（workmanager 提醒）/ 工具审计 / 权限策略
+- 桌面小组件（1x2、1x4、2x2，`home_widget`）与快捷方式（`quick_actions`）
+- 中英文 i18n、浅色/深色主题
+
+```bash
+cd flutter_app
+flutter pub get
+flutter build apk --debug
+```
+
+迁移计划与完成度见 [docs/FLUTTER_MIGRATION.md](docs/FLUTTER_MIGRATION.md)。
+原生 `app/` 在 Flutter 版发布前保留作为参照基线。
+
+---
+
 ## 功能
 
 - **多套 AI 配置**：新增、克隆、启用、删除 AI 配置（OpenAI、DeepSeek、MiniMax 或自定义端点）。
