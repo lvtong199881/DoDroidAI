@@ -7,6 +7,7 @@ import '../../settings/app_settings.dart';
 import '../memory/memory_screen.dart';
 import '../tasks/scheduled_task_screen.dart';
 import '../notes/note_list_screen.dart';
+import 'tool_audit_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -157,6 +158,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const MemoryScreen()),
+                  ),
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.fact_check_outlined),
+                  title: const Text('工具审计'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const ToolAuditScreen()),
                   ),
                 ),
                 ListTile(

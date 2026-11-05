@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../ai/ai_config.dart';
 import '../../ai/chat_api.dart';
 import '../../ai/tools.dart';
+import '../../data/tool_audit_database.dart';
 import 'dart:async';
 import '../../data/chat_database.dart';
 import '../../models/chat_message.dart';
@@ -225,6 +226,12 @@ class ChatController extends StateNotifier<ChatState> {
           call.isRunning = false;
           call.isSuccess = true;
           call.resultSummary = output;
+          await ToolAuditRepository.instance.insert(
+            toolName: call.name,
+            argsSummary: call.arguments,
+            resultSummary: output,
+            success: true,
+          );
           history.add(ChatMessage(
             role: ChatRole.tool,
             content: output,
