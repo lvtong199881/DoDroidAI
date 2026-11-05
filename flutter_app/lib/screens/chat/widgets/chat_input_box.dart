@@ -11,6 +11,7 @@ import 'package:record/record.dart';
 
 import '../../../ai/sherpa_asr.dart';
 import '../../../data/permission_policy_database.dart';
+import '../../../widgets/app_toast.dart';
 import '../../../l10n/app_strings.dart';
 
 
@@ -114,6 +115,15 @@ class _ChatInputBoxState extends State<ChatInputBox> {
   }
 
   Future<void> _toggleMic() async {
+    try {
+      await _handleMicTap();
+    } catch (e) {
+      debugPrint('MIC error: $e');
+      if (mounted) showToast(context, '语音输入暂不可用：$e');
+    }
+  }
+
+  Future<void> _handleMicTap() async {
     debugPrint('MIC toggle start recording=$_recording');
     if (_recording) {
       setState(() => _recording = false);
@@ -137,12 +147,7 @@ class _ChatInputBoxState extends State<ChatInputBox> {
         widget.controller.selection =
             TextSelection.collapsed(offset: text.length);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('未识别到语音'),
-            duration: Duration(seconds: 1),
-          ),
-        );
+        showToast(context, '未识别到语音');
       }
       return;
     }
@@ -152,12 +157,7 @@ class _ChatInputBoxState extends State<ChatInputBox> {
     debugPrint('MIC denied=$denied');
     if (!mounted) return;
     if (denied) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('麦克风权限已被拒绝，请在系统设置中开启'),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      showToast(context, '麦克风权限已被拒绝，请在系统设置中开启');
       return;
     }
     final hasPerm = await _recorder.hasPermission();
@@ -166,12 +166,7 @@ class _ChatInputBoxState extends State<ChatInputBox> {
     if (!hasPerm) {
       await policy.setDenied('microphone');
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('请先授予录音权限'),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      showToast(context, '请先授予录音权限');
       return;
     }
     _pcmBuffer.clear();

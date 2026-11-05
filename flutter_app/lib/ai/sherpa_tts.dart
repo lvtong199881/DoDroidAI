@@ -64,6 +64,21 @@ class SherpaTts {
     debugPrint('SherpaTts: 播放已开始');
   }
 
+  /// 仅合成到 wav 文件（不播放），用于自检/测试
+  static Future<String?> synthesizeToWav(String text) async {
+    if (text.trim().isEmpty) return null;
+    if (!await init()) return null;
+    final engine = _tts;
+    if (engine == null) return null;
+    final audio = engine.generate(text: text);
+    if (audio.samples.isEmpty) return null;
+    final temp = await getTemporaryDirectory();
+    final path = '${temp.path}/tts_probe_${DateTime.now().millisecondsSinceEpoch}.wav';
+    _writeWav(path, audio.samples, audio.sampleRate);
+    debugPrint('SherpaTts: 合成 ${audio.samples.length} samples @ ${audio.sampleRate}Hz -> $path');
+    return path;
+  }
+
   static Future<void> stop() async {
     await _player.stop();
   }
