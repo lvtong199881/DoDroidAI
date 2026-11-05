@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:record/record.dart';
 
 import '../../../ai/sherpa_asr.dart';
+import '../../../data/permission_policy_database.dart';
 
 
 
@@ -144,9 +145,23 @@ class _ChatInputBoxState extends State<ChatInputBox> {
       return;
     }
 
+    final policy = PermissionPolicyRepository.instance;
+    final denied = await policy.isDenied('microphone');
+    if (!mounted) return;
+    if (denied) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('麦克风权限已被拒绝，请在系统设置中开启'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
     final hasPerm = await _recorder.hasPermission();
     if (!mounted) return;
     if (!hasPerm) {
+      await policy.setDenied('microphone');
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('请先授予录音权限'),

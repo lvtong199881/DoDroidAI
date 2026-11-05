@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../data/permission_policy_database.dart';
 import '../../data/tool_audit_database.dart';
 
 class ToolAuditScreen extends StatefulWidget {
@@ -45,6 +46,20 @@ class _ToolAuditScreenState extends State<ToolAuditScreen> {
       appBar: AppBar(
         title: const Text('工具审计', style: TextStyle(fontSize: 20)),
         actions: [
+          IconButton(
+            tooltip: '重置权限策略',
+            icon: const Icon(Icons.lock_reset_outlined),
+            onPressed: () async {
+              await PermissionPolicyRepository.instance.clearAll();
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('已重置权限策略'),
+                  duration: Duration(seconds: 1),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.delete_sweep_outlined),
             onPressed: _entries.isEmpty ? null : _clear,
