@@ -38,7 +38,7 @@ void main() {
       providerName: 'test',
       baseUrl: 'http://127.0.0.1:${server.port}',
       apiKey: 'test-key',
-      model: 'mock',
+      mainModel: 'mock',
     );
     final events = await api
         .stream(config, [ChatMessage(role: ChatRole.user, content: 'hi')])
@@ -87,7 +87,7 @@ void main() {
       providerName: 'test',
       baseUrl: 'http://127.0.0.1:${server.port}',
       apiKey: 'test-key',
-      model: 'mock',
+      mainModel: 'mock',
     );
     final events = await api
         .stream(config, [ChatMessage(role: ChatRole.user, content: 'hi')])
@@ -160,7 +160,7 @@ void main() {
       providerName: 'test',
       baseUrl: 'http://127.0.0.1:${server.port}',
       apiKey: 'k',
-      model: 'm',
+      mainModel: 'm',
     );
     final events = await api
         .stream(config, [ChatMessage(role: ChatRole.user, content: 'hi')])

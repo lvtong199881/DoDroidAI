@@ -6,44 +6,75 @@ enum AiProvider { openai, deepseek, minimax, opencode, custom }
 
 enum ApiFormat { anthropicMessages, openAiChatCompletions }
 
+/// AI 配置（字段对齐原生 AIConfig.kt）
 class AiConfig {
   AiConfig({
     required this.id,
     required this.provider,
     required this.apiFormat,
     required this.providerName,
+    this.description = '',
+    this.officialUrl = '',
     required this.baseUrl,
     required this.apiKey,
-    required this.model,
+    required this.mainModel,
+    this.haikuModel = '',
+    this.sonnetModel = '',
+    this.opusModel = '',
+    this.supportsVision = true,
   });
 
   final String id;
   final AiProvider provider;
   final ApiFormat apiFormat;
   final String providerName;
+  final String description;
+  final String officialUrl;
   final String baseUrl;
   final String apiKey;
-  final String model;
+  final String mainModel;
+  final String haikuModel;
+  final String sonnetModel;
+  final String opusModel;
+  final bool supportsVision;
+
+  /// 请求实际使用的模型
+  String get model => mainModel;
 
   bool get isConfigured =>
-      baseUrl.isNotEmpty && apiKey.isNotEmpty && model.isNotEmpty;
+      baseUrl.isNotEmpty && apiKey.isNotEmpty && mainModel.isNotEmpty;
+
+  /// 原生 AIConfig.isValid：只需 key 与模型
+  bool get isValid => apiKey.isNotBlankSafe() && mainModel.isNotBlankSafe();
 
   AiConfig copyWith({
     String? providerName,
+    String? description,
+    String? officialUrl,
     String? baseUrl,
     String? apiKey,
-    String? model,
+    String? mainModel,
+    String? haikuModel,
+    String? sonnetModel,
+    String? opusModel,
     AiProvider? provider,
     ApiFormat? apiFormat,
+    bool? supportsVision,
   }) {
     return AiConfig(
       id: id,
       provider: provider ?? this.provider,
       apiFormat: apiFormat ?? this.apiFormat,
       providerName: providerName ?? this.providerName,
+      description: description ?? this.description,
+      officialUrl: officialUrl ?? this.officialUrl,
       baseUrl: baseUrl ?? this.baseUrl,
       apiKey: apiKey ?? this.apiKey,
-      model: model ?? this.model,
+      mainModel: mainModel ?? this.mainModel,
+      haikuModel: haikuModel ?? this.haikuModel,
+      sonnetModel: sonnetModel ?? this.sonnetModel,
+      opusModel: opusModel ?? this.opusModel,
+      supportsVision: supportsVision ?? this.supportsVision,
     );
   }
 
@@ -54,15 +85,22 @@ class AiConfig {
             ? 'ANTHROPIC_MESSAGES'
             : 'OPENAI_CHAT_COMPLETIONS',
         'providerName': providerName,
+        'description': description,
+        'officialUrl': officialUrl,
         'baseUrl': baseUrl,
         'apiKey': apiKey,
-        'model': model,
+        'mainModel': mainModel,
+        'haikuModel': haikuModel,
+        'sonnetModel': sonnetModel,
+        'opusModel': opusModel,
+        'supportsVision': supportsVision,
       };
 
   factory AiConfig.fromJson(Map<String, dynamic> json) {
     final format = (json['apiFormat'] as String?) ?? 'OPENAI_CHAT_COMPLETIONS';
     return AiConfig(
-      id: json['id'] as String? ?? DateTime.now().microsecondsSinceEpoch.toString(),
+      id: json['id'] as String? ??
+          DateTime.now().microsecondsSinceEpoch.toString(),
       provider: switch (json['provider'] as String?) {
         'OPENAI' || 'openai' => AiProvider.openai,
         'DEEPSEEK' || 'deepseek' => AiProvider.deepseek,
@@ -74,12 +112,20 @@ class AiConfig {
           ? ApiFormat.anthropicMessages
           : ApiFormat.openAiChatCompletions,
       providerName: json['providerName'] as String? ?? '',
+      description: json['description'] as String? ?? '',
+      officialUrl: json['officialUrl'] as String? ?? '',
       baseUrl: json['baseUrl'] as String? ?? '',
       apiKey: json['apiKey'] as String? ?? '',
-      model: json['model'] as String? ?? '',
+      mainModel:
+          (json['mainModel'] as String?) ?? (json['model'] as String?) ?? '',
+      haikuModel: json['haikuModel'] as String? ?? '',
+      sonnetModel: json['sonnetModel'] as String? ?? '',
+      opusModel: json['opusModel'] as String? ?? '',
+      supportsVision: (json['supportsVision'] as bool?) ?? true,
     );
   }
 
+  /// 与原生 AIConfig.default(provider) 一致
   static AiConfig defaultFor(AiProvider provider) {
     final now = DateTime.now().microsecondsSinceEpoch.toString();
     switch (provider) {
@@ -89,9 +135,13 @@ class AiConfig {
           provider: provider,
           apiFormat: ApiFormat.openAiChatCompletions,
           providerName: 'OpenAI',
+          officialUrl: 'https://openai.com',
           baseUrl: 'https://api.openai.com',
           apiKey: '',
-          model: 'gpt-4o',
+          mainModel: 'gpt-4o',
+          haikuModel: 'gpt-4o',
+          sonnetModel: 'gpt-4o',
+          opusModel: 'gpt-4o',
         );
       case AiProvider.deepseek:
         return AiConfig(
@@ -99,9 +149,13 @@ class AiConfig {
           provider: provider,
           apiFormat: ApiFormat.anthropicMessages,
           providerName: 'DeepSeek',
+          officialUrl: 'https://platform.deepseek.com',
           baseUrl: 'https://api.deepseek.com/anthropic',
           apiKey: '',
-          model: 'DeepSeek-V4-Flash',
+          mainModel: 'DeepSeek-V4-Flash',
+          haikuModel: 'DeepSeek-V4-Flash',
+          sonnetModel: 'DeepSeek-V4-Flash',
+          opusModel: 'DeepSeek-V4-Flash',
         );
       case AiProvider.minimax:
         return AiConfig(
@@ -109,19 +163,27 @@ class AiConfig {
           provider: provider,
           apiFormat: ApiFormat.anthropicMessages,
           providerName: 'MiniMax',
+          officialUrl: 'https://platform.minimaxi.com',
           baseUrl: 'https://api.minimaxi.com/anthropic',
           apiKey: '',
-          model: 'MiniMax-M2.7',
+          mainModel: 'MiniMax-M2.7',
+          haikuModel: 'MiniMax-M2.7',
+          sonnetModel: 'MiniMax-M2.7',
+          opusModel: 'MiniMax-M2.7',
         );
       case AiProvider.opencode:
         return AiConfig(
           id: now,
           provider: provider,
           apiFormat: ApiFormat.openAiChatCompletions,
-          providerName: 'OpenCode',
+          providerName: 'OpenCode Go',
+          officialUrl: 'https://opencode.ai',
           baseUrl: 'https://opencode.ai/zen/go/v1',
-          apiKey: 'public',
-          model: 'deepseek-v4.1-flash',
+          apiKey: '',
+          mainModel: 'deepseek-v4.1-flash',
+          haikuModel: 'deepseek-v4.1-flash',
+          sonnetModel: 'deepseek-v4.1-flash',
+          opusModel: 'deepseek-v4.1-flash',
         );
       case AiProvider.custom:
         return AiConfig(
@@ -131,17 +193,20 @@ class AiConfig {
           providerName: '',
           baseUrl: '',
           apiKey: '',
-          model: '',
+          mainModel: '',
         );
     }
   }
+}
+
+extension on String {
+  bool isNotBlankSafe() => trim().isNotEmpty;
 }
 
 /// 多配置持久化：configs(JSON 数组) + activeConfigId
 class AiConfigStore {
   static const _kConfigs = 'ai_configs';
   static const _kActiveId = 'ai_active_config_id';
-  // 旧单配置键
   static const _kBaseUrl = 'ai_base_url';
   static const _kApiKey = 'ai_api_key';
   static const _kModel = 'ai_model';
@@ -162,7 +227,6 @@ class AiConfigStore {
         // ignore corrupt json
       }
     }
-    // 迁移旧单配置
     final legacyBase = prefs.getString(_kBaseUrl) ?? '';
     final legacyKey = prefs.getString(_kApiKey) ?? '';
     final legacyModel = prefs.getString(_kModel) ?? '';
@@ -174,7 +238,7 @@ class AiConfigStore {
         providerName: '自定义',
         baseUrl: legacyBase,
         apiKey: legacyKey,
-        model: legacyModel,
+        mainModel: legacyModel,
       );
       await _saveAll([migrated]);
       await prefs.setString(_kActiveId, migrated.id);
@@ -208,6 +272,11 @@ class AiConfigStore {
     await prefs.setString(_kActiveId, config.id);
   }
 
+  Future<void> setActive(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kActiveId, id);
+  }
+
   Future<void> remove(String id) async {
     final prefs = await SharedPreferences.getInstance();
     final configs = await loadAll();
@@ -221,11 +290,6 @@ class AiConfigStore {
         await prefs.remove(_kActiveId);
       }
     }
-  }
-
-  Future<void> setActive(String id) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_kActiveId, id);
   }
 
   Future<void> _saveAll(List<AiConfig> configs) async {
