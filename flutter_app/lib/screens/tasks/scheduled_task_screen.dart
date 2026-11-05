@@ -101,34 +101,92 @@ class _ScheduledTaskScreenState extends State<ScheduledTaskScreen> {
           ? const Center(child: CircularProgressIndicator())
           : _tasks.isEmpty
               ? Center(child: Text(AppStrings.of(context).t('emptyTasks')))
-              : ListView.separated(
+              : ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
                   itemCount: _tasks.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1),
                   itemBuilder: (context, index) {
                     final task = _tasks[index];
-                    return ListTile(
-                      title: Text(task.title),
-                      subtitle: Text(
-                        task.schedule.isEmpty ? AppStrings.of(context).t('noSchedule') : task.schedule,
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Switch(
-                            value: task.enabled,
-                            onChanged: (value) async {
-                              await _repository.setEnabled(task.id, value);
-                              await _load();
-                            },
+                    final scheme = Theme.of(context).colorScheme;
+                    final time = DateTime.fromMillisecondsSinceEpoch(task.createdAt);
+                    final timeText =
+                        '${time.year}-${time.month.toString().padLeft(2, '0')}-${time.day.toString().padLeft(2, '0')} '
+                        '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+                    final statusColor =
+                        task.enabled ? const Color(0xFF1E8E5A) : scheme.onSurfaceVariant;
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      child: InkWell(
+                        onLongPress: () async {
+                          await _repository.delete(task.id);
+                          await _load();
+                        },
+                        onTap: () async {
+                          await _repository.setEnabled(task.id, !task.enabled);
+                          await _load();
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: scheme.surfaceContainer,
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline),
-                            onPressed: () async {
-                              await _repository.delete(task.id);
-                              await _load();
-                            },
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      task.title,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: scheme.onSurface,
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    task.enabled ? '已启用' : '已停用',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: statusColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Text(
+                                  timeText,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: scheme.onSurface,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 6),
+                                child: Text(
+                                  task.prompt.isEmpty
+                                      ? (task.schedule.isEmpty
+                                          ? AppStrings.of(context).t('noSchedule')
+                                          : task.schedule)
+                                      : task.prompt,
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: scheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     );
                   },
