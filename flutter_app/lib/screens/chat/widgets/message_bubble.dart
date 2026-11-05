@@ -3,7 +3,12 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 
 import 'dart:convert';
 
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../ai/sherpa_tts.dart';
+import '../../../widgets/app_toast.dart';
+import '../chat_provider.dart';
 import '../../../models/chat_message.dart';
 
 class UserMessageBubble extends StatelessWidget {
@@ -59,16 +64,18 @@ class UserMessageBubble extends StatelessWidget {
   }
 }
 
-class AssistantMessageView extends StatefulWidget {
+class AssistantMessageView extends ConsumerStatefulWidget {
   const AssistantMessageView({super.key, required this.message});
 
   final ChatMessage message;
 
   @override
-  State<AssistantMessageView> createState() => _AssistantMessageViewState();
+  ConsumerState<AssistantMessageView> createState() =>
+      _AssistantMessageViewState();
 }
 
-class _AssistantMessageViewState extends State<AssistantMessageView> {
+class _AssistantMessageViewState
+    extends ConsumerState<AssistantMessageView> {
   bool _reasoningExpanded = false;
   bool _toolExpanded = false;
 
@@ -81,15 +88,15 @@ class _AssistantMessageViewState extends State<AssistantMessageView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (message.reasoning != null && message.reasoning!.isNotEmpty)
+          if (widget.message.reasoning != null && widget.message.reasoning!.isNotEmpty)
             _ReasoningCard(
-              reasoning: message.reasoning!,
-              seconds: message.reasoningSeconds,
+              reasoning: widget.message.reasoning!,
+              seconds: widget.message.reasoningSeconds,
               expanded: _reasoningExpanded,
               onToggle: () =>
                   setState(() => _reasoningExpanded = !_reasoningExpanded),
             ),
-          for (final tool in message.toolCalls)
+          for (final tool in widget.message.toolCalls)
             _ToolCallCard(
               tool: tool,
               expanded: _toolExpanded,
@@ -97,7 +104,7 @@ class _AssistantMessageViewState extends State<AssistantMessageView> {
             ),
           if (message.content.isNotEmpty)
             MarkdownBody(
-              data: message.content,
+              data: widget.message.content,
               styleSheet: MarkdownStyleSheet(
                 p: TextStyle(fontSize: 15, height: 1.7, color: scheme.onSurface),
                 code: TextStyle(
@@ -107,7 +114,7 @@ class _AssistantMessageViewState extends State<AssistantMessageView> {
                 ),
               ),
             ),
-          if (message.isLoading && message.content.isEmpty)
+          if (widget.message.isLoading && message.content.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 8),
               child: Text('AI思考中…', style: TextStyle(fontSize: 13)),
@@ -116,7 +123,13 @@ class _AssistantMessageViewState extends State<AssistantMessageView> {
           Row(
             children: [
               IconButton(
-                onPressed: () => SherpaTts.speak(message.content),
+                onPressed: () async {
+                  try {
+                    await SherpaTts.speak(message.content);
+                  } catch (_) {
+                    if (mounted) showToast(context, '朗读失败，请检查语音模型');
+                  }
+                },
                 icon: Icon(Icons.volume_up_outlined, size: 20, color: scheme.outline),
                 visualDensity: VisualDensity.compact,
                 padding: EdgeInsets.zero,
@@ -124,7 +137,10 @@ class _AssistantMessageViewState extends State<AssistantMessageView> {
               ),
               const SizedBox(width: 8),
               IconButton(
-                onPressed: () {},
+                onPressed: () async {
+                  await Clipboard.setData(ClipboardData(text: message.content));
+                  if (mounted) showToast(context, '已复制');
+                },
                 icon: Icon(Icons.copy_outlined, size: 20, color: scheme.outline),
                 visualDensity: VisualDensity.compact,
                 padding: EdgeInsets.zero,
@@ -132,7 +148,9 @@ class _AssistantMessageViewState extends State<AssistantMessageView> {
               ),
               const SizedBox(width: 8),
               IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  ref.read(chatProvider.notifier).retryLastMessage();
+                },
                 icon: Icon(Icons.refresh, size: 20, color: scheme.outline),
                 visualDensity: VisualDensity.compact,
                 padding: EdgeInsets.zero,

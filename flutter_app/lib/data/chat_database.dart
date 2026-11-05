@@ -117,6 +117,22 @@ class ChatDatabase {
     );
   }
 
+  /// 保留前 keepCount 条消息，删除其余（重试用）
+  Future<void> clearMessagesAfter(String sessionId, int keepCount) async {
+    final db = await _open();
+    final rows = await db.query(
+      'messages',
+      where: 'session_id = ?',
+      whereArgs: [sessionId],
+      orderBy: 'id ASC',
+    );
+    if (rows.length <= keepCount) return;
+    final ids = rows.skip(keepCount).map((r) => r['id'] as int).toList();
+    if (ids.isEmpty) return;
+    final placeholders = List.filled(ids.length, '?').join(',');
+    await db.delete('messages', where: 'id IN ($placeholders)', whereArgs: ids);
+  }
+
   Future<List<ChatMessage>> messagesOf(String sessionId) async {
     final db = await _open();
     final rows = await db.query(

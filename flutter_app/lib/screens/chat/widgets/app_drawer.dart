@@ -165,7 +165,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                   const Spacer(),
                   IconButton(
                     tooltip: '搜索',
-                    icon: Icon(Icons.search, color: scheme.primary),
+                    icon: Icon(Icons.search, color: scheme.onSurfaceVariant),
                     onPressed: () {
                       setState(() => _searching = !_searching);
                       if (!_searching) {
@@ -176,7 +176,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                   ),
                   IconButton(
                     tooltip: AppStrings.of(context).settings,
-                    icon: Icon(Icons.settings, color: scheme.primary),
+                    icon: Icon(Icons.settings, color: scheme.onSurfaceVariant),
                     onPressed: widget.onOpenSettings,
                   ),
                   const SizedBox(width: 8),

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_strings.dart';
 import '../../models/chat_message.dart';
+import '../../widgets/app_toast.dart';
 import '../../quick_actions_handler.dart';
 import '../settings/settings_screen.dart';
 import 'chat_provider.dart';
@@ -141,12 +142,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           IconButton(
             onPressed: () {
               ref.read(chatProvider.notifier).toggleAutoRead();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.autoRead ? '已关闭自动朗读' : '已开启自动朗读'),
-                  duration: const Duration(seconds: 1),
-                ),
-              );
+              showToast(context, state.autoRead ? '已关闭自动朗读' : '已开启自动朗读');
             },
             icon: Icon(
               state.autoRead ? Icons.volume_up : Icons.volume_off,
@@ -156,12 +152,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           IconButton(
             onPressed: () {
               if (state.messages.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('已经在新对话中'),
-                    duration: Duration(seconds: 1),
-                  ),
-                );
+                showToast(context, '已经在新对话中');
                 return;
               }
               ref.read(chatProvider.notifier).startNewChat();

@@ -55,7 +55,7 @@ class ChatApi {
     }
 
     final response = await _dio.post<ResponseBody>(
-      '${config.baseUrl.replaceAll(RegExp(r'/+$'), '')}/chat/completions',
+      '${_normalizeBaseUrl(config.baseUrl)}/v1/chat/completions',
       data: body,
       options: Options(
         responseType: ResponseType.stream,
@@ -90,6 +90,18 @@ class ChatApi {
         ..clear()
         ..write(text);
     }
+  }
+
+  /// 与原生 ApiEndpoint.normalizeBaseUrl 一致：统一视为根地址
+  static String _normalizeBaseUrl(String raw) {
+    var url = raw.trim().replaceAll(RegExp(r'/+$'), '');
+    for (final suffix in ['/v1/messages', '/v1/chat/completions', '/v1']) {
+      if (url.endsWith(suffix)) {
+        url = url.substring(0, url.length - suffix.length);
+        url = url.replaceAll(RegExp(r'/+$'), '');
+      }
+    }
+    return url;
   }
 
   Map<String, dynamic> _encodeMessage(ChatMessage message) {

@@ -273,6 +273,24 @@ class ChatController extends StateNotifier<ChatState> {
     state = state.copyWith(clearPending: true);
   }
 
+  Future<void> retryLastMessage() async {
+    if (state.isLoading) return;
+    final messages = List<ChatMessage>.from(state.messages);
+    final lastUserIndex = messages.lastIndexWhere(
+      (m) => m.role == ChatRole.user && m.content.trim().isNotEmpty,
+    );
+    if (lastUserIndex < 0) return;
+    final lastUser = messages[lastUserIndex];
+    // 移除该 user 之后的所有消息，然后重新发送
+    final removed = messages.sublist(lastUserIndex);
+    messages.removeRange(lastUserIndex, messages.length);
+    state = state.copyWith(messages: messages);
+    // 同步删除数据库里对应的消息（简单做法：重新插入会话）
+    await _database.clearMessagesAfter(_sessionId!, lastUserIndex);
+    await send(lastUser.content, images: lastUser.images);
+    if (removed.isEmpty) return;
+  }
+
   Future<void> startNewChat() async {
     _sessionId = 'session_${DateTime.now().millisecondsSinceEpoch}';
     await _database.ensureSession(_sessionId!, 'hello');

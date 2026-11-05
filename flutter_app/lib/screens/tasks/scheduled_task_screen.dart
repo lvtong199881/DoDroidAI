@@ -35,41 +35,44 @@ class _ScheduledTaskScreenState extends State<ScheduledTaskScreen> {
     final titleController = TextEditingController();
     final promptController = TextEditingController();
     final scheduleController = TextEditingController();
+    final strings = AppStrings.of(context);
     final saved = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(AppStrings.of(context).t('newTask')),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: titleController,
-              decoration: InputDecoration(labelText: AppStrings.of(context).t('name')),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: promptController,
-              maxLines: 3,
-              decoration: InputDecoration(labelText: AppStrings.of(context).t('prompt')),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: scheduleController,
-              decoration: InputDecoration(
-                labelText: AppStrings.of(context).t('schedule'),
-                hintText: AppStrings.of(context).t('scheduleHint'),
+        title: Text(strings.t('newTask')),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: InputDecoration(labelText: strings.t('name')),
               ),
-            ),
-          ],
+              const SizedBox(height: 8),
+              TextField(
+                controller: promptController,
+                maxLines: 3,
+                decoration: InputDecoration(labelText: strings.t('prompt')),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: scheduleController,
+                decoration: InputDecoration(
+                  labelText: strings.t('schedule'),
+                  hintText: strings.t('scheduleHint'),
+                ),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(AppStrings.of(context).t('cancel')),
+            child: Text(strings.t('cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(AppStrings.of(context).save),
+            child: Text(strings.save),
           ),
         ],
       ),
