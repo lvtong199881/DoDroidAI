@@ -1,4 +1,6 @@
+
 import 'package:flutter/material.dart';
+
 
 
 class ChatInputBox extends StatefulWidget {
@@ -22,7 +24,7 @@ class _ChatInputBoxState extends State<ChatInputBox> {
   bool _webSearch = false;
 
   Future<void> _toggleMic() async {
-    // 纯 Flutter ASR 迁移中（sherpa_onnx OfflineRecognizer + record）
+    // 纯 Flutter 录音方案迁移中（record 包 Linux 实现编译冲突，待替换）
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('语音输入正在迁移为纯 Flutter 实现'),

@@ -1,8 +1,10 @@
 import 'dart:convert';
 
-import 'tool_channel.dart';
+import 'package:android_intent_plus/android_intent.dart';
+import 'package:battery_plus/battery_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-/// Flutter 侧的工具注册与执行
+/// Flutter 侧工具注册与执行（纯 Flutter，无原生桥接）
 class ToolRegistry {
   static const List<Map<String, dynamic>> definitions = [
     {
@@ -30,23 +32,8 @@ class ToolRegistry {
     {
       'type': 'function',
       'function': {
-        'name': 'send_sms',
-        'description': '向指定手机号发送短信（高风险，需要用户确认）',
-        'parameters': {
-          'type': 'object',
-          'properties': {
-            'number': {'type': 'string', 'description': '手机号'},
-            'message': {'type': 'string', 'description': '短信内容'},
-          },
-          'required': ['number', 'message'],
-        },
-      },
-    },
-    {
-      'type': 'function',
-      'function': {
         'name': 'set_alarm',
-        'description': '在设备上设置闹钟',
+        'description': '在设备上设置闹钟（打开系统闹钟设置）',
         'parameters': {
           'type': 'object',
           'properties': {
@@ -55,6 +42,21 @@ class ToolRegistry {
             'label': {'type': 'string', 'description': '闹钟标签'},
           },
           'required': ['hour', 'minute'],
+        },
+      },
+    },
+    {
+      'type': 'function',
+      'function': {
+        'name': 'send_sms',
+        'description': '打开发短信界面并预填内容（需用户手动确认发送）',
+        'parameters': {
+          'type': 'object',
+          'properties': {
+            'number': {'type': 'string', 'description': '手机号'},
+            'message': {'type': 'string', 'description': '短信内容'},
+          },
+          'required': ['number', 'message'],
         },
       },
     },
@@ -68,27 +70,48 @@ class ToolRegistry {
   static bool isHighRisk(String name) => highRiskTools.contains(name);
 
   static Future<String> execute(String name, String argumentsJson) async {
+    final args = _decode(argumentsJson);
     switch (name) {
       case 'get_current_time':
         return DateTime.now().toIso8601String();
       case 'get_battery_level':
-        return ToolChannel.getBattery();
-      case 'send_sms':
-        final smsArgs = _decode(argumentsJson);
-        return ToolChannel.sendSms(
-          number: (smsArgs['number'] as String?) ?? '',
-          message: (smsArgs['message'] as String?) ?? '',
-        );
+        final level = await Battery().batteryLevel;
+        return '$level%';
       case 'set_alarm':
-        final args = _decode(argumentsJson);
-        return ToolChannel.setAlarm(
-          hour: (args['hour'] as num?)?.toInt() ?? 8,
-          minute: (args['minute'] as num?)?.toInt() ?? 0,
-          label: args['label'] as String?,
-        );
+        return _setAlarm(args);
+      case 'send_sms':
+        return _sendSms(args);
       default:
         return '未知工具: $name';
     }
+  }
+
+  static Future<String> _setAlarm(Map<String, dynamic> args) async {
+    final hour = (args['hour'] as num?)?.toInt() ?? 8;
+    final minute = (args['minute'] as num?)?.toInt() ?? 0;
+    final label = args['label'] as String? ?? 'DoDroidAI 闹钟';
+    final intent = AndroidIntent(
+      action: 'android.intent.action.SET_ALARM',
+      arguments: {
+        'android.intent.extra.alarm.HOUR': hour,
+        'android.intent.extra.alarm.MINUTES': minute,
+        'android.intent.extra.alarm.MESSAGE': label,
+        'android.intent.extra.alarm.SKIP_UI': true,
+      },
+    );
+    await intent.launch();
+    return '已设置闹钟 ${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
+  }
+
+  static Future<String> _sendSms(Map<String, dynamic> args) async {
+    final number = args['number'] as String? ?? '';
+    final message = args['message'] as String? ?? '';
+    if (number.isEmpty || message.isEmpty) {
+      return '手机号或短信内容为空';
+    }
+    final uri = Uri.parse('sms:$number?body=${Uri.encodeComponent(message)}');
+    final ok = await launchUrl(uri);
+    return ok ? '已打开发短信界面（请手动确认发送）' : '无法打开短信应用';
   }
 
   static Map<String, dynamic> _decode(String json) {
