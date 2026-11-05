@@ -14,11 +14,8 @@ class ChatWidgetProviderWide : HomeWidgetProvider() {
         widgetData: SharedPreferences
     ) {
         for (widgetId in appWidgetIds) {
-            val title = widgetData.getString("widget_title", null) ?: "DoDroidAI"
-            val body = widgetData.getString("widget_body", null) ?: "打开应用开始对话"
             val views = RemoteViews(context.packageName, R.layout.widget_chat_wide)
-            views.setTextViewText(R.id.widget_title, title)
-            views.setTextViewText(R.id.widget_body, body)
+            views.setTextViewText(R.id.widget_body, "搜索对话")
             appWidgetManager.updateAppWidget(widgetId, views)
         }
     }

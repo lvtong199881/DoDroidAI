@@ -2,29 +2,25 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/widget_bg"
+    android:gravity="center"
     android:orientation="vertical"
-    android:padding="12dp"
-    android:background="@drawable/widget_bg">
+    android:padding="12dp">
 
     <TextView
         android:id="@+id/widget_title"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="DoDroidAI"
-        android:textStyle="bold"
-        android:textSize="14sp"
-        android:maxLines="2"
-        android:ellipsize="end"
-        android:textColor="#1F1F1F" />
+        android:text="开始对话"
+        android:textColor="#171A1F"
+        android:textSize="14sp" />
 
     <TextView
         android:id="@+id/widget_body"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:text="打开应用开始对话"
-        android:textSize="12sp"
-        android:maxLines="4"
-        android:ellipsize="end"
-        android:textColor="#666666" />
+        android:layout_marginTop="4dp"
+        android:text="点按打开 DoDroidAI"
+        android:textColor="#5B6270"
+        android:textSize="12sp" />
 </LinearLayout>
