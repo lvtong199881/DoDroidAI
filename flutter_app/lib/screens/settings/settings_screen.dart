@@ -8,7 +8,8 @@ import '../memory/memory_screen.dart';
 import '../notes/note_list_screen.dart';
 import '../tasks/scheduled_task_screen.dart';
 import 'chat_settings_screen.dart';
-import 'voice_model_settings_screen.dart';
+import 'stt_settings_screen.dart';
+import 'tts_settings_screen.dart';
 import 'diagnostics_screen.dart';
 import 'web_search_settings.dart';
 import 'api_config_screen.dart';
@@ -105,17 +106,13 @@ class SettingsScreen extends ConsumerWidget {
             _SettingsItem(
               title: '语音输入',
               onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const VoiceModelSettingsScreen(kind: 'stt'),
-                ),
+                MaterialPageRoute(builder: (_) => const SttSettingsScreen()),
               ),
             ),
             _SettingsItem(
               title: '语音输出',
               onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const VoiceModelSettingsScreen(kind: 'tts'),
-                ),
+                MaterialPageRoute(builder: (_) => const TtsSettingsScreen()),
               ),
             ),
             _SettingsItem(
