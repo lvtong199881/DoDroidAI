@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../ai/asr_channel.dart';
 
 class ChatInputBox extends StatefulWidget {
   const ChatInputBox({
@@ -21,32 +20,15 @@ class ChatInputBox extends StatefulWidget {
 class _ChatInputBoxState extends State<ChatInputBox> {
   bool _deepThink = false;
   bool _webSearch = false;
-  bool _recording = false;
 
   Future<void> _toggleMic() async {
-    if (_recording) {
-      setState(() => _recording = false);
-      final text = await AsrChannel.stop();
-      if (!mounted) return;
-      if (text != null && text.trim().isNotEmpty) {
-        widget.controller.text = text.trim();
-        widget.controller.selection =
-            TextSelection.collapsed(offset: widget.controller.text.length);
-      }
-      return;
-    }
-    final ok = await AsrChannel.start();
-    if (!mounted) return;
-    if (ok) {
-      setState(() => _recording = true);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('无法开始录音，请检查麦克风权限'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
+    // 纯 Flutter ASR 迁移中（sherpa_onnx OfflineRecognizer + record）
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('语音输入正在迁移为纯 Flutter 实现'),
+        duration: Duration(seconds: 1),
+      ),
+    );
   }
 
   @override
@@ -88,10 +70,7 @@ class _ChatInputBoxState extends State<ChatInputBox> {
               ),
               IconButton(
                 onPressed: _toggleMic,
-                icon: Icon(
-                  _recording ? Icons.mic : Icons.mic_none,
-                  color: _recording ? scheme.error : scheme.onSurfaceVariant,
-                ),
+                icon: Icon(Icons.mic_none, color: scheme.onSurfaceVariant),
                 visualDensity: VisualDensity.compact,
               ),
               const SizedBox(width: 4),

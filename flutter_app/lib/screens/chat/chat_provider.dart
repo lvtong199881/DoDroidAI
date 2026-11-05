@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../ai/ai_config.dart';
 import '../../ai/chat_api.dart';
 import '../../ai/tools.dart';
+import 'dart:async';
 import '../../data/chat_database.dart';
 import '../../models/chat_message.dart';
 
@@ -14,6 +15,7 @@ class ChatState {
     this.isLoading = false,
     this.autoRead = false,
     this.error,
+    this.pendingConfirmation,
   })  : messages = messages ?? [],
         sessions = sessions ?? [];
 
@@ -23,6 +25,7 @@ class ChatState {
   final bool isLoading;
   final bool autoRead;
   final String? error;
+  final ToolCallInfo? pendingConfirmation;
 
   ChatState copyWith({
     List<ChatMessage>? messages,
@@ -31,6 +34,8 @@ class ChatState {
     bool? isLoading,
     bool? autoRead,
     String? error,
+    ToolCallInfo? pendingConfirmation,
+    bool clearPending = false,
   }) {
     return ChatState(
       messages: messages ?? this.messages,
@@ -39,6 +44,8 @@ class ChatState {
       isLoading: isLoading ?? this.isLoading,
       autoRead: autoRead ?? this.autoRead,
       error: error,
+      pendingConfirmation:
+          clearPending ? null : (pendingConfirmation ?? this.pendingConfirmation),
     );
   }
 
@@ -67,6 +74,7 @@ class ChatController extends StateNotifier<ChatState> {
   AiConfig? _config;
   String? _sessionId;
   bool _ready = false;
+  Completer<bool>? _confirmationCompleter;
 
   Future<void> ensureReady() async {
     if (_ready) return;
@@ -195,6 +203,20 @@ class ChatController extends StateNotifier<ChatState> {
           toolCalls: calls,
         ));
         for (final call in calls) {
+          if (ToolRegistry.isHighRisk(call.name)) {
+            final approved = await _confirmTool(call);
+            if (!approved) {
+              call.isRunning = false;
+              call.isSuccess = false;
+              call.resultSummary = '用户取消执行';
+              history.add(ChatMessage(
+                role: ChatRole.tool,
+                content: '用户取消执行',
+                toolCallId: call.id,
+              ));
+              continue;
+            }
+          }
           final output = await ToolRegistry.execute(call.name, call.arguments);
           call.isRunning = false;
           call.isSuccess = true;
@@ -220,6 +242,19 @@ class ChatController extends StateNotifier<ChatState> {
       state = state.copyWith(isLoading: false, sessions: sessions);
       await _database.insertMessage(_sessionId!, assistant);
     }
+  }
+
+  Future<bool> _confirmTool(ToolCallInfo call) {
+    final completer = Completer<bool>();
+    _confirmationCompleter = completer;
+    state = state.copyWith(pendingConfirmation: call);
+    return completer.future;
+  }
+
+  void resolveConfirmation(bool approved) {
+    _confirmationCompleter?.complete(approved);
+    _confirmationCompleter = null;
+    state = state.copyWith(clearPending: true);
   }
 
   Future<void> startNewChat() async {

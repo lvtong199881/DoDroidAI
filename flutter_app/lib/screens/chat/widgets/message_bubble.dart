@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
-import '../../../ai/speech_channel.dart';
+import '../../../ai/sherpa_tts.dart';
 import '../../../models/chat_message.dart';
 
 class UserMessageBubble extends StatelessWidget {
@@ -87,7 +87,7 @@ class _AssistantMessageViewState extends State<AssistantMessageView> {
           Row(
             children: [
               IconButton(
-                onPressed: () => SpeechChannel.speak(message.content),
+                onPressed: () => SherpaTts.speak(message.content),
                 icon: Icon(Icons.volume_up_outlined, size: 20, color: scheme.outline),
                 visualDensity: VisualDensity.compact,
                 padding: EdgeInsets.zero,

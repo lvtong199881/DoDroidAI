@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../ai/asr_channel.dart';
 import '../../models/chat_message.dart';
 import '../settings/settings_screen.dart';
 import 'chat_provider.dart';
@@ -25,8 +24,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void initState() {
     super.initState();
     Future.microtask(() => ref.read(chatProvider.notifier).ensureReady());
-    // 预热 ASR 引擎
-    Future.microtask(() => AsrChannel.init());
   }
 
   @override
@@ -44,6 +41,38 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     _scrollToBottom();
   }
 
+  Future<void> _showToolConfirmDialog(ToolCallInfo call) async {
+    final approved = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('确认执行工具'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('工具：${call.name}'),
+            const SizedBox(height: 8),
+            Text(
+              '参数：${call.arguments.isEmpty ? '无' : call.arguments}',
+              style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('执行'),
+          ),
+        ],
+      ),
+    );
+    ref.read(chatProvider.notifier).resolveConfirmation(approved == true);
+  }
+
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scrollController.hasClients) return;
@@ -59,7 +88,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(chatProvider);
     final scheme = Theme.of(context).colorScheme;
-    ref.listen<ChatState>(chatProvider, (_, next) {
+    ref.listen<ChatState>(chatProvider, (previous, next) {
       _scrollToBottom();
       final error = next.error;
       if (error != null) {
@@ -67,6 +96,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           SnackBar(content: Text(error), duration: const Duration(seconds: 2)),
         );
         ref.read(chatProvider.notifier).clearError();
+      }
+      final pending = next.pendingConfirmation;
+      if (pending != null && previous?.pendingConfirmation == null) {
+        _showToolConfirmDialog(pending);
       }
     });
 

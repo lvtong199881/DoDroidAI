@@ -26,6 +26,7 @@ class ToolPlugin(private val context: Context) : MethodChannel.MethodCallHandler
         when (call.method) {
             "get_battery" -> getBattery(result)
             "set_alarm" -> setAlarm(call, result)
+            "send_sms" -> sendSms(call, result)
             else -> result.notImplemented()
         }
     }
@@ -37,6 +38,27 @@ class ToolPlugin(private val context: Context) : MethodChannel.MethodCallHandler
             result.success(level)
         } catch (e: Exception) {
             result.error("battery", e.message, null)
+        }
+    }
+
+    private fun sendSms(call: MethodCall, result: MethodChannel.Result) {
+        try {
+            val number = call.argument<String>("number") ?: ""
+            val message = call.argument<String>("message") ?: ""
+            if (number.isEmpty() || message.isEmpty()) {
+                result.error("sms", "手机号或内容为空", null)
+                return
+            }
+            val smsManager = if (android.os.Build.VERSION.SDK_INT >= 31) {
+                context.getSystemService(android.telephony.SmsManager::class.java)
+            } else {
+                @Suppress("DEPRECATION")
+                android.telephony.SmsManager.getDefault()
+            }
+            smsManager?.sendTextMessage(number, null, message, null, null)
+            result.success("短信已发送给 $number")
+        } catch (e: Exception) {
+            result.error("sms", e.message, null)
         }
     }
 

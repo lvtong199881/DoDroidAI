@@ -30,6 +30,21 @@ class ToolRegistry {
     {
       'type': 'function',
       'function': {
+        'name': 'send_sms',
+        'description': '向指定手机号发送短信（高风险，需要用户确认）',
+        'parameters': {
+          'type': 'object',
+          'properties': {
+            'number': {'type': 'string', 'description': '手机号'},
+            'message': {'type': 'string', 'description': '短信内容'},
+          },
+          'required': ['number', 'message'],
+        },
+      },
+    },
+    {
+      'type': 'function',
+      'function': {
         'name': 'set_alarm',
         'description': '在设备上设置闹钟',
         'parameters': {
@@ -45,8 +60,12 @@ class ToolRegistry {
     },
   ];
 
+  static const Set<String> highRiskTools = {'send_sms', 'add_note'};
+
   static bool isKnown(String name) =>
       definitions.any((d) => d['function']['name'] == name);
+
+  static bool isHighRisk(String name) => highRiskTools.contains(name);
 
   static Future<String> execute(String name, String argumentsJson) async {
     switch (name) {
@@ -54,6 +73,12 @@ class ToolRegistry {
         return DateTime.now().toIso8601String();
       case 'get_battery_level':
         return ToolChannel.getBattery();
+      case 'send_sms':
+        final smsArgs = _decode(argumentsJson);
+        return ToolChannel.sendSms(
+          number: (smsArgs['number'] as String?) ?? '',
+          message: (smsArgs['message'] as String?) ?? '',
+        );
       case 'set_alarm':
         final args = _decode(argumentsJson);
         return ToolChannel.setAlarm(

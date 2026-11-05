@@ -13,6 +13,21 @@ class ToolChannel {
     }
   }
 
+  static Future<String> sendSms({required String number, required String message}) async {
+    if (number.isEmpty || message.isEmpty) {
+      return '手机号或短信内容为空';
+    }
+    try {
+      final result = await _channel.invokeMethod<String>('send_sms', {
+        'number': number,
+        'message': message,
+      });
+      return result ?? '短信已发送';
+    } on PlatformException catch (e) {
+      return '发送短信失败: ${e.message}';
+    }
+  }
+
   static Future<String> setAlarm({
     required int hour,
     required int minute,
