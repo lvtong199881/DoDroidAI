@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../ai/ai_config.dart';
 import '../../l10n/app_strings.dart';
 import '../../settings/app_settings.dart';
 import '../../theme/app_theme.dart';
@@ -14,6 +15,10 @@ import 'diagnostics_screen.dart';
 import 'web_search_settings.dart';
 import 'api_config_screen.dart';
 import 'tool_audit_screen.dart';
+
+final aiConfigProvider = FutureProvider<AiConfig?>((ref) async {
+  return AiConfigStore().loadActive();
+});
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -54,10 +59,24 @@ class SettingsScreen extends ConsumerWidget {
           _SettingsCard(children: [
             _SettingsItem(
               title: strings.apiConfig,
-              value: '自定义',
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const ApiConfigScreen()),
-              ),
+              value: ref.watch(aiConfigProvider).when(
+                    data: (config) =>
+                        (config?.providerName.isNotEmpty ?? false)
+                            ? config!.providerName
+                            : '未配置',
+                    loading: () => '…',
+                    error: (_, __) => '未配置',
+                  ),
+              onTap: () async {
+                final config = await ref.read(aiConfigProvider.future);
+                if (!context.mounted) return;
+                await Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => ApiConfigScreen(config: config),
+                  ),
+                );
+                ref.invalidate(aiConfigProvider);
+              },
             ),
           ]),
           const SizedBox(height: 16),
