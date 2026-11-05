@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
+import '../../../ai/speech_channel.dart';
 import '../../../models/chat_message.dart';
 
 class UserMessageBubble extends StatelessWidget {
@@ -85,11 +86,29 @@ class _AssistantMessageViewState extends State<AssistantMessageView> {
           const SizedBox(height: 4),
           Row(
             children: [
-              Icon(Icons.volume_up_outlined, size: 20, color: scheme.outline),
-              const SizedBox(width: 16),
-              Icon(Icons.copy_outlined, size: 20, color: scheme.outline),
-              const SizedBox(width: 16),
-              Icon(Icons.refresh, size: 20, color: scheme.outline),
+              IconButton(
+                onPressed: () => SpeechChannel.speak(message.content),
+                icon: Icon(Icons.volume_up_outlined, size: 20, color: scheme.outline),
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                onPressed: () {},
+                icon: Icon(Icons.copy_outlined, size: 20, color: scheme.outline),
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                onPressed: () {},
+                icon: Icon(Icons.refresh, size: 20, color: scheme.outline),
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              ),
             ],
           ),
         ],
