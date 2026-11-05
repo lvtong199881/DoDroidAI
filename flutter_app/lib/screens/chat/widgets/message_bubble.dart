@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
+import 'dart:convert';
+
 import '../../../ai/sherpa_tts.dart';
 import '../../../models/chat_message.dart';
 
@@ -21,9 +23,36 @@ class UserMessageBubble extends StatelessWidget {
           color: scheme.primaryContainer,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Text(
-          message.content,
-          style: TextStyle(color: scheme.onPrimaryContainer, fontSize: 15),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (message.images.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    for (final image in message.images)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.memory(
+                          base64Decode(image.split(',').last),
+                          width: 120,
+                          height: 120,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            if (message.content.isNotEmpty)
+              Text(
+                message.content,
+                style: TextStyle(color: scheme.onPrimaryContainer, fontSize: 15),
+              ),
+          ],
         ),
       ),
     );
