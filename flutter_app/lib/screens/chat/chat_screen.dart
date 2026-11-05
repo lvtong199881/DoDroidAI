@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_strings.dart';
 import '../../models/chat_message.dart';
+import '../../quick_actions_handler.dart';
 import '../settings/settings_screen.dart';
 import 'chat_provider.dart';
 import 'widgets/app_drawer.dart';
@@ -25,13 +26,28 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void initState() {
     super.initState();
     Future.microtask(() => ref.read(chatProvider.notifier).ensureReady());
+    pendingShortcut.addListener(_handleShortcut);
   }
 
   @override
   void dispose() {
+    pendingShortcut.removeListener(_handleShortcut);
     _controller.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _handleShortcut() {
+    final type = pendingShortcut.value;
+    if (type == null) return;
+    pendingShortcut.value = null;
+    if (type == 'new_chat') {
+      ref.read(chatProvider.notifier).startNewChat();
+    } else if (type == 'settings') {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const SettingsScreen()),
+      );
+    }
   }
 
 
