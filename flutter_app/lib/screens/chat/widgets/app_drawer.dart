@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AppDrawer extends StatelessWidget {
-  const AppDrawer({super.key, required this.onNewChat, required this.onOpenSettings});
+import '../chat_provider.dart';
+
+class AppDrawer extends ConsumerWidget {
+  const AppDrawer({
+    super.key,
+    required this.onNewChat,
+    required this.onOpenSettings,
+  });
 
   final VoidCallback onNewChat;
   final VoidCallback onOpenSettings;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
+    final state = ref.watch(chatProvider);
     return Drawer(
       child: SafeArea(
         child: Column(
@@ -24,7 +32,8 @@ class AppDrawer extends StatelessWidget {
                     child: Icon(Icons.smart_toy_outlined, color: scheme.primary),
                   ),
                   const SizedBox(width: 12),
-                  const Text('DoDroidAI', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+                  const Text('DoDroidAI',
+                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
                 ],
               ),
             ),
@@ -41,17 +50,43 @@ class AppDrawer extends StatelessWidget {
               padding: EdgeInsets.fromLTRB(16, 12, 16, 4),
               child: Text('最近对话', style: TextStyle(fontSize: 12)),
             ),
-            ListTile(
-              dense: true,
-              title: const Text('hello'),
-              onTap: () => Navigator.of(context).pop(),
+            Expanded(
+              child: state.sessions.isEmpty
+                  ? const Center(
+                      child: Text('暂无对话', style: TextStyle(fontSize: 12)),
+                    )
+                  : ListView.builder(
+                      itemCount: state.sessions.length,
+                      itemBuilder: (context, index) {
+                        final session = state.sessions[index];
+                        final selected = session.id == state.currentSessionId;
+                        return ListTile(
+                          dense: true,
+                          selected: selected,
+                          title: Text(
+                            session.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: selected ? scheme.primary : scheme.onSurface,
+                            ),
+                          ),
+                          trailing: IconButton(
+                            icon: Icon(Icons.delete_outline,
+                                size: 18, color: scheme.outline),
+                            onPressed: () => ref
+                                .read(chatProvider.notifier)
+                                .deleteSession(session.id),
+                          ),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            ref.read(chatProvider.notifier).loadSession(session.id);
+                          },
+                        );
+                      },
+                    ),
             ),
-            ListTile(
-              dense: true,
-              title: const Text('what time is it'),
-              onTap: () => Navigator.of(context).pop(),
-            ),
-            const Spacer(),
             ListTile(
               leading: const Icon(Icons.settings_outlined),
               title: const Text('设置'),

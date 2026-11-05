@@ -70,7 +70,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     return Scaffold(
       key: _scaffoldKey,
       drawer: AppDrawer(
-        onNewChat: () => ref.read(chatProvider.notifier).startNewChat(),
+        onNewChat: () {
+          ref.read(chatProvider.notifier).startNewChat();
+        },
         onOpenSettings: () {
           Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const SettingsScreen()),
@@ -83,7 +85,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           onPressed: () => _scaffoldKey.currentState?.openDrawer(),
         ),
         title: Text(
-          state.messages.isEmpty ? '' : 'hello',
+          state.currentSession?.name ?? '',
           style: const TextStyle(fontSize: 20),
         ),
         actions: [

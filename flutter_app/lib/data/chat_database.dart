@@ -68,6 +68,12 @@ class ChatDatabase {
         .toList();
   }
 
+  Future<void> renameSession(String sessionId, String name) async {
+    final db = await _open();
+    await db.update('sessions', {'name': name},
+        where: 'id = ?', whereArgs: [sessionId]);
+  }
+
   Future<void> deleteSession(String sessionId) async {
     final db = await _open();
     await db.delete('messages', where: 'session_id = ?', whereArgs: [sessionId]);

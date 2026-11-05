@@ -8,28 +8,44 @@ import '../../models/chat_message.dart';
 class ChatState {
   ChatState({
     List<ChatMessage>? messages,
+    List<ChatSession>? sessions,
+    this.currentSessionId,
     this.isLoading = false,
     this.autoRead = false,
     this.error,
-  }) : messages = messages ?? [];
+  })  : messages = messages ?? [],
+        sessions = sessions ?? [];
 
   final List<ChatMessage> messages;
+  final List<ChatSession> sessions;
+  final String? currentSessionId;
   final bool isLoading;
   final bool autoRead;
   final String? error;
 
   ChatState copyWith({
     List<ChatMessage>? messages,
+    List<ChatSession>? sessions,
+    String? currentSessionId,
     bool? isLoading,
     bool? autoRead,
     String? error,
   }) {
     return ChatState(
       messages: messages ?? this.messages,
+      sessions: sessions ?? this.sessions,
+      currentSessionId: currentSessionId ?? this.currentSessionId,
       isLoading: isLoading ?? this.isLoading,
       autoRead: autoRead ?? this.autoRead,
       error: error,
     );
+  }
+
+  ChatSession? get currentSession {
+    for (final session in sessions) {
+      if (session.id == currentSessionId) return session;
+    }
+    return null;
   }
 }
 
@@ -57,10 +73,39 @@ class ChatController extends StateNotifier<ChatState> {
     _config = await _configStore.load();
     _sessionId = 'session_${DateTime.now().millisecondsSinceEpoch}';
     await _database.ensureSession(_sessionId!, 'hello');
+    final sessions = await _database.sessions();
     final history = await _database.messagesOf(_sessionId!);
-    if (history.isNotEmpty) {
-      state = state.copyWith(messages: history);
+    state = state.copyWith(
+      messages: history,
+      sessions: sessions,
+      currentSessionId: _sessionId,
+    );
+  }
+
+  Future<void> loadSession(String sessionId) async {
+    if (state.isLoading) return;
+    _sessionId = sessionId;
+    final history = await _database.messagesOf(sessionId);
+    state = state.copyWith(messages: history, currentSessionId: sessionId);
+  }
+
+  Future<void> deleteSession(String sessionId) async {
+    await _database.deleteSession(sessionId);
+    final sessions = await _database.sessions();
+    if (_sessionId == sessionId) {
+      _sessionId = sessions.isNotEmpty ? sessions.first.id : 'session_${DateTime.now().millisecondsSinceEpoch}';
+      if (sessions.isEmpty) {
+        await _database.ensureSession(_sessionId!, 'hello');
+      }
+      final history = await _database.messagesOf(_sessionId!);
+      state = state.copyWith(
+        messages: history,
+        sessions: await _database.sessions(),
+        currentSessionId: _sessionId,
+      );
+      return;
     }
+    state = state.copyWith(sessions: sessions);
   }
 
   Future<void> reloadConfig() async {
@@ -86,6 +131,15 @@ class ChatController extends StateNotifier<ChatState> {
     );
     await _database.insertMessage(_sessionId!, user);
 
+    // 首条消息作为会话标题
+    final current = state.currentSession;
+    if (current == null || current.name == 'hello' || current.name == '新对话') {
+      final raw = text.trim().replaceAll('\n', ' ');
+      final title = raw.length > 20 ? raw.substring(0, 20) : raw;
+      await _database.renameSession(_sessionId!, title);
+      state = state.copyWith(sessions: await _database.sessions());
+    }
+
     final history = state.messages.where((m) => m.content.isNotEmpty).toList();
     try {
       await for (final delta in _api.stream(config, history)) {
@@ -100,15 +154,21 @@ class ChatController extends StateNotifier<ChatState> {
       assistant.content = '请求失败：$e';
     } finally {
       assistant.isLoading = false;
-      state = state.copyWith(isLoading: false);
+      final sessions = await _database.sessions();
+      state = state.copyWith(isLoading: false, sessions: sessions);
       await _database.insertMessage(_sessionId!, assistant);
     }
   }
 
-  void startNewChat() {
+  Future<void> startNewChat() async {
     _sessionId = 'session_${DateTime.now().millisecondsSinceEpoch}';
-    _database.ensureSession(_sessionId!, 'hello');
-    state = ChatState(autoRead: state.autoRead);
+    await _database.ensureSession(_sessionId!, 'hello');
+    final sessions = await _database.sessions();
+    state = ChatState(
+      sessions: sessions,
+      currentSessionId: _sessionId,
+      autoRead: state.autoRead,
+    );
   }
 
   void toggleAutoRead() {
