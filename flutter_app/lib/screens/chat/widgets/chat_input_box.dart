@@ -261,7 +261,7 @@ class _ChatInputBoxState extends State<ChatInputBox> {
       side: BorderSide(color: selected ? scheme.primary : scheme.outlineVariant),
       backgroundColor: selected
           ? scheme.primary.withValues(alpha: 0.15)
-          : Colors.transparent,
+          : scheme.surface,
       selectedColor: scheme.primary.withValues(alpha: 0.15),
       labelStyle: TextStyle(
         fontSize: 12,

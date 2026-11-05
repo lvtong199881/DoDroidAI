@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_strings.dart';
 import '../../settings/app_settings.dart';
+import '../../theme/app_theme.dart';
 import '../memory/memory_screen.dart';
 import '../notes/note_list_screen.dart';
 import '../tasks/scheduled_task_screen.dart';
@@ -28,7 +29,12 @@ class SettingsScreen extends ConsumerWidget {
       _ => strings.followSystem,
     };
 
+    final brightness = Theme.of(context).brightness;
+    final background = brightness == Brightness.dark
+        ? AppColors.dark['background']!
+        : AppColors.light['background']!;
     return Scaffold(
+      backgroundColor: background,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, size: 18),
