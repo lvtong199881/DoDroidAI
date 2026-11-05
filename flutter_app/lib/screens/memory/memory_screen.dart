@@ -75,19 +75,50 @@ class _MemoryScreenState extends State<MemoryScreen> {
           ? const Center(child: CircularProgressIndicator())
           : _facts.isEmpty
               ? Center(child: Text(AppStrings.of(context).t('emptyMemory')))
-              : ListView.separated(
+              : ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
                   itemCount: _facts.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1),
                   itemBuilder: (context, index) {
                     final fact = _facts[index];
-                    return ListTile(
-                      title: Text(fact.content),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete_outline),
-                        onPressed: () async {
+                    final scheme = Theme.of(context).colorScheme;
+                    final time = DateTime.fromMillisecondsSinceEpoch(fact.createdAt);
+                    final timeText =
+                        '${time.year}-${time.month.toString().padLeft(2, '0')}-${time.day.toString().padLeft(2, '0')} '
+                        '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      child: InkWell(
+                        onLongPress: () async {
                           await _repository.delete(fact.id);
                           await _load();
                         },
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: scheme.surfaceContainer,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                fact.content,
+                                style: TextStyle(fontSize: 15, color: scheme.onSurface),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Text(
+                                  timeText,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: scheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     );
                   },
