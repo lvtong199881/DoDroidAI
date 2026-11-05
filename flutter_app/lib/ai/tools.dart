@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'tool_channel.dart';
+
 /// Flutter 侧的工具注册与执行
 class ToolRegistry {
   static const List<Map<String, dynamic>> definitions = [
@@ -23,6 +27,22 @@ class ToolRegistry {
         },
       },
     },
+    {
+      'type': 'function',
+      'function': {
+        'name': 'set_alarm',
+        'description': '在设备上设置闹钟',
+        'parameters': {
+          'type': 'object',
+          'properties': {
+            'hour': {'type': 'integer', 'description': '小时（0-23）'},
+            'minute': {'type': 'integer', 'description': '分钟（0-59）'},
+            'label': {'type': 'string', 'description': '闹钟标签'},
+          },
+          'required': ['hour', 'minute'],
+        },
+      },
+    },
   ];
 
   static bool isKnown(String name) =>
@@ -33,9 +53,27 @@ class ToolRegistry {
       case 'get_current_time':
         return DateTime.now().toIso8601String();
       case 'get_battery_level':
-        return '电池信息需要在原生侧读取';
+        return ToolChannel.getBattery();
+      case 'set_alarm':
+        final args = _decode(argumentsJson);
+        return ToolChannel.setAlarm(
+          hour: (args['hour'] as num?)?.toInt() ?? 8,
+          minute: (args['minute'] as num?)?.toInt() ?? 0,
+          label: args['label'] as String?,
+        );
       default:
         return '未知工具: $name';
     }
+  }
+
+  static Map<String, dynamic> _decode(String json) {
+    if (json.trim().isEmpty) return const {};
+    try {
+      final decoded = jsonDecode(json);
+      if (decoded is Map<String, dynamic>) return decoded;
+    } catch (_) {
+      // ignore invalid args
+    }
+    return const {};
   }
 }

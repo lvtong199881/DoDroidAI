@@ -8,5 +8,6 @@ class MainActivity : FlutterActivity() {
         super.configureFlutterEngine(flutterEngine)
         SpeechPlugin(applicationContext).register(flutterEngine.dartExecutor.binaryMessenger)
         AsrPlugin(applicationContext).register(flutterEngine.dartExecutor.binaryMessenger)
+        ToolPlugin(applicationContext).register(flutterEngine.dartExecutor.binaryMessenger)
     }
 }
