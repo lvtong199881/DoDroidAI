@@ -6,6 +6,7 @@ import 'package:workmanager/workmanager.dart';
 
 import 'app.dart';
 import 'app_worker.dart';
+import 'ai/sherpa_tts.dart';
 import 'notifications.dart';
 import 'quick_actions_handler.dart';
 
@@ -30,6 +31,12 @@ Future<void> _initBackgroundServices() async {
     await initQuickActions().timeout(const Duration(seconds: 6));
   } catch (e) {
     debugPrint('initQuickActions failed: $e');
+  }
+
+  try {
+    await SherpaTts.warmUp().timeout(const Duration(seconds: 30));
+  } catch (e) {
+    debugPrint('tts warmup failed: $e');
   }
 
   try {

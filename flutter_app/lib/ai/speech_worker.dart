@@ -72,6 +72,15 @@ class SpeechWorker {
     return result as String;
   }
 
+  /// 预加载 TTS 模型，避免首次朗读等待
+  static Future<void> warmUpTts(String modelDir) async {
+    try {
+      await _call('tts-warmup', {'modelDir': modelDir});
+    } catch (e) {
+      // 预热失败不影响使用
+    }
+  }
+
   /// 识别 16k 单声道 PCM
   static Future<String> transcribe({
     required String modelDir,
@@ -126,7 +135,7 @@ void _workerEntry(SendPort mainPort) async {
                     lexicon: '$modelDir/lexicon.txt',
                     dictDir: '$modelDir/dict',
                   ),
-                  numThreads: 2,
+                  numThreads: 4,
                 ),
                 ruleFsts:
                     ['date.fst', 'new_heteronym.fst', 'number.fst', 'phone.fst']
@@ -139,6 +148,31 @@ void _workerEntry(SendPort mainPort) async {
           final audio = tts.generate(text: text);
           _writeWav(outPath, audio.samples, audio.sampleRate);
           mainPort.send({'id': id, 'result': outPath});
+          break;
+
+        case 'tts-warmup':
+          final modelDir = args['modelDir'] as String;
+          if (tts == null || ttsDir != modelDir) {
+            tts = sherpa.OfflineTts(
+              sherpa.OfflineTtsConfig(
+                model: sherpa.OfflineTtsModelConfig(
+                  vits: sherpa.OfflineTtsVitsModelConfig(
+                    model: '$modelDir/model.int8.onnx',
+                    tokens: '$modelDir/tokens.txt',
+                    lexicon: '$modelDir/lexicon.txt',
+                    dictDir: '$modelDir/dict',
+                  ),
+                  numThreads: 4,
+                ),
+                ruleFsts:
+                    ['date.fst', 'new_heteronym.fst', 'number.fst', 'phone.fst']
+                        .map((f) => '$modelDir/$f')
+                        .join(','),
+              ),
+            );
+            ttsDir = modelDir;
+          }
+          mainPort.send({'id': id, 'result': true});
           break;
 
         case 'asr':
@@ -156,7 +190,7 @@ void _workerEntry(SendPort mainPort) async {
                     model: '$modelDir/model.int8.onnx',
                   ),
                   tokens: '$modelDir/tokens.txt',
-                  numThreads: 2,
+                  numThreads: 4,
                 ),
               ),
             );
