@@ -8,6 +8,7 @@ import '../memory/memory_screen.dart';
 import '../notes/note_list_screen.dart';
 import '../tasks/scheduled_task_screen.dart';
 import 'chat_settings_screen.dart';
+import 'voice_model_settings_screen.dart';
 import 'diagnostics_screen.dart';
 import 'web_search_settings.dart';
 import 'api_config_screen.dart';
@@ -103,11 +104,19 @@ class SettingsScreen extends ConsumerWidget {
             ),
             _SettingsItem(
               title: '语音输入',
-              onTap: () => _showPlaceholder(context, '语音输入'),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const VoiceModelSettingsScreen(kind: 'stt'),
+                ),
+              ),
             ),
             _SettingsItem(
               title: '语音输出',
-              onTap: () => _showPlaceholder(context, '语音输出'),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const VoiceModelSettingsScreen(kind: 'tts'),
+                ),
+              ),
             ),
             _SettingsItem(
               title: '诊断',
@@ -198,21 +207,7 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _showPlaceholder(BuildContext context, String title) async {
-    await showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(title),
-        content: const Text('该设置项正在迁移中。'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('知道了'),
-          ),
-        ],
-      ),
-    );
-  }
+
 }
 
 class _SectionHeader extends StatelessWidget {
