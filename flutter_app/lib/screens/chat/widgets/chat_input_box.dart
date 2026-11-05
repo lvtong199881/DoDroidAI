@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../ai/asr_channel.dart';
+
 class ChatInputBox extends StatefulWidget {
   const ChatInputBox({
     super.key,
@@ -19,6 +21,33 @@ class ChatInputBox extends StatefulWidget {
 class _ChatInputBoxState extends State<ChatInputBox> {
   bool _deepThink = false;
   bool _webSearch = false;
+  bool _recording = false;
+
+  Future<void> _toggleMic() async {
+    if (_recording) {
+      setState(() => _recording = false);
+      final text = await AsrChannel.stop();
+      if (!mounted) return;
+      if (text != null && text.trim().isNotEmpty) {
+        widget.controller.text = text.trim();
+        widget.controller.selection =
+            TextSelection.collapsed(offset: widget.controller.text.length);
+      }
+      return;
+    }
+    final ok = await AsrChannel.start();
+    if (!mounted) return;
+    if (ok) {
+      setState(() => _recording = true);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('无法开始录音，请检查麦克风权限'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,8 +87,11 @@ class _ChatInputBoxState extends State<ChatInputBox> {
                 visualDensity: VisualDensity.compact,
               ),
               IconButton(
-                onPressed: () {},
-                icon: Icon(Icons.mic_none, color: scheme.onSurfaceVariant),
+                onPressed: _toggleMic,
+                icon: Icon(
+                  _recording ? Icons.mic : Icons.mic_none,
+                  color: _recording ? scheme.error : scheme.onSurfaceVariant,
+                ),
                 visualDensity: VisualDensity.compact,
               ),
               const SizedBox(width: 4),
