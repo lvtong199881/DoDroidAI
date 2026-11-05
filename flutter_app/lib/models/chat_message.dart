@@ -28,9 +28,10 @@ class ChatMessage {
     this.reasoningSeconds = 0,
     this.toolCalls = const [],
     this.toolCallId,
+    List<String>? images,
     this.isLoading = false,
     this.isError = false,
-  });
+  }) : images = images ?? [];
 
   final ChatRole role;
   String content;
@@ -38,6 +39,7 @@ class ChatMessage {
   int reasoningSeconds;
   List<ToolCallInfo> toolCalls;
   String? toolCallId;
+  List<String> images;
   bool isLoading;
   bool isError;
 }

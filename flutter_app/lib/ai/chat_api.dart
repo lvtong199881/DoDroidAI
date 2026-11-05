@@ -104,6 +104,13 @@ class ChatApi {
       'role': message.role.name,
       'content': message.content,
     };
+    if (message.images.isNotEmpty) {
+      map['content'] = [
+        {'type': 'text', 'text': message.content},
+        for (final image in message.images)
+          {'type': 'image_url', 'image_url': {'url': image}},
+      ];
+    }
     if (message.toolCalls.isNotEmpty) {
       map['tool_calls'] = message.toolCalls
           .map((call) => {

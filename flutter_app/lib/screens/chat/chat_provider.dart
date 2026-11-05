@@ -121,7 +121,7 @@ class ChatController extends StateNotifier<ChatState> {
     _config = await _configStore.load();
   }
 
-  Future<void> send(String text) async {
+  Future<void> send(String text, {List<String> images = const []}) async {
     if (text.trim().isEmpty || state.isLoading) return;
 
     final config = _config;
@@ -130,7 +130,11 @@ class ChatController extends StateNotifier<ChatState> {
       return;
     }
 
-    final user = ChatMessage(role: ChatRole.user, content: text.trim());
+    final user = ChatMessage(
+      role: ChatRole.user,
+      content: text.trim(),
+      images: images,
+    );
     final assistant =
         ChatMessage(role: ChatRole.assistant, content: '', isLoading: true);
     state = state.copyWith(

@@ -1,8 +1,10 @@
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:record/record.dart';
 
 import '../../../ai/sherpa_asr.dart';
@@ -18,8 +20,8 @@ class ChatInputBox extends StatefulWidget {
   });
 
   final TextEditingController controller;
-  final VoidCallback onSend;
   final VoidCallback onNewChat;
+  final void Function(String text, List<String> images) onSend;
 
   @override
   State<ChatInputBox> createState() => _ChatInputBoxState();
@@ -32,6 +34,30 @@ class _ChatInputBoxState extends State<ChatInputBox> {
   final AudioRecorder _recorder = AudioRecorder();
   StreamSubscription<Uint8List>? _micSub;
   final List<int> _pcmBuffer = [];
+  final List<String> _images = [];
+
+  Future<void> _pickImage() async {
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1568,
+      imageQuality: 85,
+    );
+    if (picked == null) return;
+    final bytes = await picked.readAsBytes();
+    final isPng = picked.path.toLowerCase().endsWith('.png');
+    final dataUrl =
+        'data:image/${isPng ? 'png' : 'jpeg'};base64,${base64Encode(bytes)}';
+    if (!mounted) return;
+    setState(() => _images.add(dataUrl));
+  }
+
+  void _send() {
+    final text = widget.controller.text.trim();
+    if (text.isEmpty && _images.isEmpty) return;
+    widget.onSend(text, List.of(_images));
+    widget.controller.clear();
+    setState(() => _images.clear());
+  }
 
   Future<void> _toggleMic() async {
     if (_recording) {
@@ -104,7 +130,7 @@ class _ChatInputBoxState extends State<ChatInputBox> {
             minLines: 1,
             maxLines: 5,
             textInputAction: TextInputAction.send,
-            onSubmitted: (_) => widget.onSend(),
+            onSubmitted: (_) => _send(),
             decoration: const InputDecoration(
               hintText: '输入消息...',
               border: InputBorder.none,
@@ -120,7 +146,7 @@ class _ChatInputBoxState extends State<ChatInputBox> {
               _toggleChip('智能搜索', _webSearch, (v) => setState(() => _webSearch = v)),
               const Spacer(),
               IconButton(
-                onPressed: widget.onNewChat,
+                onPressed: _pickImage,
                 icon: Icon(Icons.add, color: scheme.onSurfaceVariant),
                 visualDensity: VisualDensity.compact,
               ),
@@ -134,7 +160,7 @@ class _ChatInputBoxState extends State<ChatInputBox> {
               ),
               const SizedBox(width: 4),
               IconButton.filled(
-                onPressed: widget.onSend,
+                onPressed: _send,
                 icon: const Icon(Icons.arrow_upward, size: 18),
                 visualDensity: VisualDensity.compact,
                 style: IconButton.styleFrom(

@@ -34,13 +34,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     super.dispose();
   }
 
-  void _send() {
-    final text = _controller.text.trim();
-    if (text.isEmpty) return;
-    ref.read(chatProvider.notifier).send(text);
-    _controller.clear();
-    _scrollToBottom();
-  }
 
   Future<void> _showToolConfirmDialog(ToolCallInfo call) async {
     final strings = AppStrings.of(context);
@@ -189,7 +182,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             padding: const EdgeInsets.all(12),
             child: ChatInputBox(
               controller: _controller,
-              onSend: _send,
+              onSend: (text, images) =>
+                  ref.read(chatProvider.notifier).send(text, images: images),
               onNewChat: () => ref.read(chatProvider.notifier).startNewChat(),
             ),
           ),
