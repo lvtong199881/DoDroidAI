@@ -134,7 +134,11 @@ class ChatController extends StateNotifier<ChatState> {
     _config = await _configStore.loadActive();
   }
 
-  Future<void> send(String text, {List<String> images = const []}) async {
+  Future<void> send(
+    String text, {
+    List<String> images = const [],
+    bool deepThink = false,
+  }) async {
     if (text.trim().isEmpty || state.isLoading) return;
 
     _cancelled = false;
@@ -189,6 +193,7 @@ class ChatController extends StateNotifier<ChatState> {
           config,
           history,
           tools: ToolRegistry.definitions,
+          deepThink: deepThink,
         )) {
           if (_cancelled) break;
           final tc = event.toolCall;

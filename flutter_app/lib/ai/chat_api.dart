@@ -46,15 +46,21 @@ class ChatApi {
     AiConfig config,
     List<ChatMessage> messages, {
     List<Map<String, dynamic>>? tools,
+    bool deepThink = false,
   }) async* {
     if (config.apiFormat == ApiFormat.anthropicMessages) {
-      yield* _streamAnthropic(config, messages);
+      yield* _streamAnthropic(config, messages, deepThink: deepThink);
       return;
     }
-    final body = {
+    final body = <String, dynamic>{
       'model': config.model,
       'stream': true,
       'messages': messages.map((m) => _encodeMessage(m)).toList(),
+      // 深度思考开关：关闭时显式禁用推理，避免模型仍然输出思考内容
+      if (deepThink)
+        'reasoning_effort': 'high'
+      else
+        'reasoning_effort': 'none',
     };
     if (tools != null && tools.isNotEmpty) {
       body['tools'] = tools;
@@ -133,12 +139,16 @@ class ChatApi {
   /// Anthropic Messages 协议（/v1/messages + x-api-key）
   Stream<ChatEvent> _streamAnthropic(
     AiConfig config,
-    List<ChatMessage> messages,
-  ) async* {
-    final body = {
+    List<ChatMessage> messages, {
+    bool deepThink = false,
+  }) async* {
+    final body = <String, dynamic>{
       'model': config.model,
       'max_tokens': 4096,
       'stream': true,
+      // 深度思考开关：关闭时禁用 extended thinking
+      if (deepThink)
+        'thinking': {'type': 'enabled', 'budget_tokens': 1024},
       'messages': [
         for (final m in messages)
           {

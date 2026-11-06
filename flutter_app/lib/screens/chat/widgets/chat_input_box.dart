@@ -29,7 +29,7 @@ class ChatInputBox extends StatefulWidget {
 
   final TextEditingController controller;
   final VoidCallback onNewChat;
-  final void Function(String text, List<String> images) onSend;
+  final void Function(String text, List<String> images, bool deepThink) onSend;
   final bool isLoading;
   final VoidCallback? onStop;
 
@@ -133,7 +133,7 @@ class _ChatInputBoxState extends State<ChatInputBox> {
         ? text
         : '$text\n\n附件内容：\n$_fileText';
     if (withFile.isEmpty && _images.isEmpty) return;
-    widget.onSend(withFile.trim(), List.of(_images));
+    widget.onSend(withFile.trim(), List.of(_images), _deepThink);
     widget.controller.clear();
     setState(() {
       _images.clear();

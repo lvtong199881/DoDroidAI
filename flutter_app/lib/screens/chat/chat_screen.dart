@@ -209,8 +209,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             padding: const EdgeInsets.all(12),
             child: ChatInputBox(
               controller: _controller,
-              onSend: (text, images) =>
-                  ref.read(chatProvider.notifier).send(text, images: images),
+              onSend: (text, images, deepThink) => ref
+                  .read(chatProvider.notifier)
+                  .send(text, images: images, deepThink: deepThink),
               onNewChat: () => ref.read(chatProvider.notifier).startNewChat(),
               isLoading: state.isLoading,
               onStop: () => ref.read(chatProvider.notifier).stopGeneration(),
