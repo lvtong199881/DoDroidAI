@@ -212,6 +212,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               onSend: (text, images) =>
                   ref.read(chatProvider.notifier).send(text, images: images),
               onNewChat: () => ref.read(chatProvider.notifier).startNewChat(),
+              isLoading: state.isLoading,
+              onStop: () => ref.read(chatProvider.notifier).stopGeneration(),
             ),
           ),
         ],

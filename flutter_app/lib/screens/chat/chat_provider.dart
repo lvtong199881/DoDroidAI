@@ -76,6 +76,7 @@ class ChatController extends StateNotifier<ChatState> {
   AiConfig? _config;
   String? _sessionId;
   bool _ready = false;
+  bool _cancelled = false;
   Completer<bool>? _confirmationCompleter;
 
   Future<void> ensureReady() async {
@@ -136,6 +137,7 @@ class ChatController extends StateNotifier<ChatState> {
   Future<void> send(String text, {List<String> images = const []}) async {
     if (text.trim().isEmpty || state.isLoading) return;
 
+    _cancelled = false;
     final config = _config;
     if (config == null || !config.isConfigured) {
       state = state.copyWith(error: '请先在设置中配置 API 地址、Key 和模型');
@@ -180,6 +182,7 @@ class ChatController extends StateNotifier<ChatState> {
     var iteration = 0;
     try {
       while (iteration < 5) {
+        if (_cancelled) break;
         iteration++;
         final builders = <int, _ToolCallBuilder>{};
         await for (final event in _api.stream(
@@ -187,6 +190,7 @@ class ChatController extends StateNotifier<ChatState> {
           history,
           tools: ToolRegistry.definitions,
         )) {
+          if (_cancelled) break;
           final tc = event.toolCall;
           if (tc != null) {
             final builder = builders.putIfAbsent(tc.index, () => _ToolCallBuilder());
@@ -320,6 +324,13 @@ class ChatController extends StateNotifier<ChatState> {
       currentSessionId: _sessionId,
       autoRead: state.autoRead,
     );
+  }
+
+  /// 停止生成：保留已生成内容
+  void stopGeneration() {
+    if (!state.isLoading) return;
+    _cancelled = true;
+    state = state.copyWith(isLoading: false);
   }
 
   void toggleAutoRead() {

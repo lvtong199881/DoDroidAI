@@ -23,11 +23,15 @@ class ChatInputBox extends StatefulWidget {
     required this.controller,
     required this.onSend,
     required this.onNewChat,
+    this.isLoading = false,
+    this.onStop,
   });
 
   final TextEditingController controller;
   final VoidCallback onNewChat;
   final void Function(String text, List<String> images) onSend;
+  final bool isLoading;
+  final VoidCallback? onStop;
 
   @override
   State<ChatInputBox> createState() => _ChatInputBoxState();
@@ -303,10 +307,20 @@ class _ChatInputBoxState extends State<ChatInputBox> {
                 constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
               ),
               const SizedBox(width: 4),
+              if (widget.isLoading)
+                IconButton.filled(
+                  onPressed: widget.onStop,
+                  icon: const Icon(Icons.stop, size: 18),
+                  visualDensity: VisualDensity.compact,
+                  style: IconButton.styleFrom(
+                    minimumSize: const Size(32, 32),
+                    padding: EdgeInsets.zero,
+                  ),
+                ),
               ValueListenableBuilder<TextEditingValue>(
                 valueListenable: widget.controller,
                 builder: (context, value, _) {
-                  if (value.text.trim().isEmpty) {
+                  if (widget.isLoading || value.text.trim().isEmpty) {
                     return const SizedBox.shrink();
                   }
                   return IconButton.filled(
