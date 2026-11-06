@@ -76,8 +76,7 @@ class AssistantMessageView extends ConsumerStatefulWidget {
 
 class _AssistantMessageViewState
     extends ConsumerState<AssistantMessageView> {
-  bool _reasoningExpanded = false;
-  bool _toolExpanded = false;
+  final Map<int, bool> _expanded = {};
   bool _speaking = false;
 
   @override
@@ -89,32 +88,8 @@ class _AssistantMessageViewState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (widget.message.reasoning != null && widget.message.reasoning!.isNotEmpty)
-            _ReasoningCard(
-              reasoning: widget.message.reasoning!,
-              seconds: widget.message.reasoningSeconds,
-              expanded: _reasoningExpanded,
-              onToggle: () =>
-                  setState(() => _reasoningExpanded = !_reasoningExpanded),
-            ),
-          for (final tool in widget.message.toolCalls)
-            _ToolCallCard(
-              tool: tool,
-              expanded: _toolExpanded,
-              onToggle: () => setState(() => _toolExpanded = !_toolExpanded),
-            ),
-          if (message.content.isNotEmpty)
-            MarkdownBody(
-              data: widget.message.content,
-              styleSheet: MarkdownStyleSheet(
-                p: TextStyle(fontSize: 15, height: 1.7, color: scheme.onSurface),
-                code: TextStyle(
-                  fontFamily: 'monospace',
-                  backgroundColor: scheme.surfaceContainerHighest,
-                  fontSize: 13,
-                ),
-              ),
-            ),
+          for (var i = 0; i < message.blocks.length; i++)
+            _buildBlock(context, scheme, i, message.blocks[i]),
           if (widget.message.isLoading && message.content.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 8),
@@ -174,20 +149,86 @@ class _AssistantMessageViewState
       ),
     );
   }
+
+  Widget _buildBlock(
+    BuildContext context,
+    ColorScheme scheme,
+    int index,
+    MessageBlock block,
+  ) {
+    final expanded = _expanded[index] ?? false;
+    void toggle() => setState(() => _expanded[index] = !expanded);
+
+    switch (block.kind) {
+      case MessageBlockKind.reasoning:
+        return _CollapsibleBlock(
+          title: block.seconds > 0
+              ? '已深度思考（用时 ${block.seconds} 秒）'
+              : '已深度思考',
+          expanded: expanded,
+          onToggle: toggle,
+          child: Text(
+            block.text,
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.6,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+        );
+      case MessageBlockKind.toolCall:
+        final tool = block.tool!;
+        return _CollapsibleBlock(
+          title: tool.name,
+          statusTag: _statusTagFor(scheme, tool),
+          expanded: expanded,
+          onToggle: toggle,
+          child: _ToolDetail(tool: tool),
+        );
+      case MessageBlockKind.text:
+        return MarkdownBody(
+          data: block.text,
+          styleSheet: MarkdownStyleSheet(
+            p: TextStyle(fontSize: 15, height: 1.7, color: scheme.onSurface),
+            code: TextStyle(
+              fontFamily: 'monospace',
+              backgroundColor: scheme.surfaceContainerHighest,
+              fontSize: 13,
+            ),
+          ),
+        );
+    }
+  }
+
+  Widget? _statusTagFor(ColorScheme scheme, ToolCallInfo tool) {
+    if (tool.isRunning) {
+      return _StatusTag(text: '执行中', color: scheme.primary);
+    }
+    if (tool.isSuccess == true) {
+      return const _StatusTag(text: '成功', color: Color(0xFF1E8E5A));
+    }
+    if (tool.isSuccess == false) {
+      return _StatusTag(text: '失败', color: scheme.error);
+    }
+    return const _StatusTag(text: '已取消', color: Color(0xFF5A5F6B));
+  }
 }
 
-class _ReasoningCard extends StatelessWidget {
-  const _ReasoningCard({
-    required this.reasoning,
-    required this.seconds,
+/// 统一折叠块：箭头 + 标题（+ 可选状态 tag）+ 可折叠内容
+class _CollapsibleBlock extends StatelessWidget {
+  const _CollapsibleBlock({
+    required this.title,
     required this.expanded,
     required this.onToggle,
+    required this.child,
+    this.statusTag,
   });
 
-  final String reasoning;
-  final int seconds;
+  final String title;
   final bool expanded;
   final VoidCallback onToggle;
+  final Widget child;
+  final Widget? statusTag;
 
   @override
   Widget build(BuildContext context) {
@@ -202,104 +243,121 @@ class _ReasoningCard extends StatelessWidget {
               AnimatedRotation(
                 turns: expanded ? 0.25 : 0,
                 duration: const Duration(milliseconds: 160),
-                child: Icon(Icons.chevron_right, size: 18, color: scheme.outline),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                seconds > 0 ? '已深度思考（用时 $seconds 秒）' : '已深度思考',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: scheme.onSurfaceVariant.withValues(alpha: 0.78),
+                child: Icon(
+                  Icons.chevron_right,
+                  size: 18,
+                  color: scheme.outline,
                 ),
               ),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: scheme.onSurfaceVariant.withValues(alpha: 0.85),
+                  ),
+                ),
+              ),
+              if (statusTag != null) ...[
+                const SizedBox(width: 8),
+                statusTag!,
+              ],
             ],
           ),
         ),
         if (expanded)
           Padding(
-            padding: const EdgeInsets.only(left: 24, top: 6),
-            child: Text(
-              reasoning,
-              style: TextStyle(
-                fontSize: 14,
-                height: 1.5,
-                color: scheme.onSurfaceVariant.withValues(alpha: 0.78),
-              ),
-            ),
+            padding: const EdgeInsets.only(left: 24, top: 6, bottom: 4),
+            child: child,
           ),
       ],
     );
   }
 }
 
-class _ToolCallCard extends StatelessWidget {
-  const _ToolCallCard({
-    required this.tool,
-    required this.expanded,
-    required this.onToggle,
-  });
+/// 工具状态 tag
+class _StatusTag extends StatelessWidget {
+  const _StatusTag({required this.text, required this.color});
+
+  final String text;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: color,
+        ),
+      ),
+    );
+  }
+}
+
+
+/// 工具块展开内容：参数 + 执行结果
+class _ToolDetail extends StatelessWidget {
+  const _ToolDetail({required this.tool});
 
   final ToolCallInfo tool;
-  final bool expanded;
-  final VoidCallback onToggle;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final status = tool.isRunning
-        ? '执行中…'
-        : tool.isSuccess == true
-            ? '成功'
-            : tool.isSuccess == false
-                ? '失败'
-                : '';
-    return Padding(
-      padding: const EdgeInsets.only(top: 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          InkWell(
-            onTap: onToggle,
-            child: Row(
-              children: [
-                const Text('🔧', style: TextStyle(fontSize: 14)),
-                const SizedBox(width: 6),
-                Text(
-                  tool.name,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: scheme.primary,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    status,
-                    style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
-                  ),
-                ),
-                AnimatedRotation(
-                  turns: expanded ? 0.25 : 0,
-                  duration: const Duration(milliseconds: 160),
-                  child: Icon(Icons.chevron_right, size: 16, color: scheme.outline),
-                ),
-              ],
+    final monoStyle = TextStyle(
+      fontFamily: 'monospace',
+      fontSize: 12,
+      height: 1.5,
+      color: scheme.onSurface,
+    );
+    final labelStyle = TextStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.w600,
+      color: scheme.onSurfaceVariant,
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (tool.arguments.isNotEmpty) ...[
+          Text('参数', style: labelStyle),
+          const SizedBox(height: 2),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(8),
             ),
+            child: SelectableText(tool.arguments, style: monoStyle),
           ),
-          if (expanded) ...[
-            const SizedBox(height: 4),
-            Text('参数', style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
-            Text(tool.argsSummary,
-                style: const TextStyle(fontFamily: 'monospace', fontSize: 12)),
-            const SizedBox(height: 4),
-            Text('结果', style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
-            Text(tool.resultSummary ?? '无结果',
-                style: const TextStyle(fontFamily: 'monospace', fontSize: 12)),
-          ],
         ],
-      ),
+        if (tool.resultSummary != null && tool.resultSummary!.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Text('结果', style: labelStyle),
+          const SizedBox(height: 2),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: SelectableText(tool.resultSummary!, style: monoStyle),
+          ),
+        ],
+      ],
     );
   }
 }

@@ -25,20 +25,26 @@ class ChatDatabase {
     final dir = await getDatabasesPath();
     _db = await openDatabase(
       p.join(dir, 'dodroidai_flutter.db'),
-      version: 2,
+      version: 4,
       onCreate: (db, version) async {
         await db.execute(
           'CREATE TABLE sessions (id TEXT PRIMARY KEY, name TEXT, updated_at INTEGER)',
         );
         await db.execute(
           'CREATE TABLE messages (id INTEGER PRIMARY KEY AUTOINCREMENT, '
-          'session_id TEXT, role TEXT, content TEXT, reasoning TEXT, '
-          'tool_calls TEXT, images TEXT, created_at INTEGER)',
+          'session_id TEXT, role TEXT, content TEXT, blocks TEXT, '
+          'tool_call_id TEXT, images TEXT, created_at INTEGER)',
         );
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
           await db.execute('ALTER TABLE messages ADD COLUMN images TEXT');
+        }
+        if (oldVersion < 3) {
+          await db.execute('ALTER TABLE messages ADD COLUMN blocks TEXT');
+        }
+        if (oldVersion < 4) {
+          await db.execute('ALTER TABLE messages ADD COLUMN tool_call_id TEXT');
         }
       },
     );
@@ -104,8 +110,8 @@ class ChatDatabase {
       'session_id': sessionId,
       'role': message.role.name,
       'content': message.content,
-      'reasoning': message.reasoning,
-      'tool_calls': jsonEncode(const []),
+      'blocks': message.blocksToJson(),
+      'tool_call_id': message.toolCallId,
       'images': jsonEncode(message.images),
       'created_at': DateTime.now().millisecondsSinceEpoch,
     });
@@ -145,7 +151,8 @@ class ChatDatabase {
       return ChatMessage(
         role: (r['role'] as String?) == 'user' ? ChatRole.user : ChatRole.assistant,
         content: r['content'] as String? ?? '',
-        reasoning: r['reasoning'] as String?,
+        blocks: ChatMessage.blocksFromJson(r['blocks'] as String?),
+        toolCallId: r['tool_call_id'] as String?,
         images: _decodeImages(r['images'] as String?),
       );
     }).toList();

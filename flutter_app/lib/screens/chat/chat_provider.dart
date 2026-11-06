@@ -189,6 +189,8 @@ class ChatController extends StateNotifier<ChatState> {
         if (_cancelled) break;
         iteration++;
         final builders = <int, _ToolCallBuilder>{};
+        // 本轮内的"当前块"：思考或正文增量连续到达时复用同一块
+        MessageBlock? currentBlock;
         await for (final event in _api.stream(
           config,
           history,
@@ -205,13 +207,22 @@ class ChatController extends StateNotifier<ChatState> {
             continue;
           }
           final content = event.content;
-          if (content != null) {
+          if (content != null && content.isNotEmpty) {
+            if (currentBlock?.kind != MessageBlockKind.text) {
+              currentBlock = MessageBlock.text();
+              assistant.blocks.add(currentBlock);
+            }
+            currentBlock!.text += content;
             assistant.content += content;
             state = state.copyWith();
           }
           final reasoning = event.reasoning;
-          if (reasoning != null) {
-            assistant.reasoning = (assistant.reasoning ?? '') + reasoning;
+          if (reasoning != null && reasoning.isNotEmpty) {
+            if (currentBlock?.kind != MessageBlockKind.reasoning) {
+              currentBlock = MessageBlock.reasoning();
+              assistant.blocks.add(currentBlock);
+            }
+            currentBlock!.text += reasoning;
             state = state.copyWith();
           }
         }
@@ -227,13 +238,15 @@ class ChatController extends StateNotifier<ChatState> {
                   isRunning: true,
                 ))
             .toList();
-        assistant.toolCalls = [...assistant.toolCalls, ...calls];
+        for (final call in calls) {
+          assistant.blocks.add(MessageBlock.tool(call));
+        }
         state = state.copyWith();
 
         history.add(ChatMessage(
           role: ChatRole.assistant,
           content: assistant.content,
-          toolCalls: calls,
+          blocks: [for (final call in calls) MessageBlock.tool(call)],
         ));
         for (final call in calls) {
           if (ToolRegistry.isHighRisk(call.name)) {
