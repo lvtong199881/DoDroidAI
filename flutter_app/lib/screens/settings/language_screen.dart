@@ -23,27 +23,25 @@ class LanguageScreen extends ConsumerWidget {
         ),
         title: const Text('语言', style: TextStyle(fontSize: 20)),
       ),
-      body: ListView(
-        children: [
-          RadioListTile<String?>(
-            title: const Text('English'),
-            value: 'en',
-            groupValue: current,
-            onChanged: (_) => _select(ref, const Locale('en')),
-          ),
-          RadioListTile<String?>(
-            title: const Text('简体中文'),
-            value: 'zh',
-            groupValue: current,
-            onChanged: (_) => _select(ref, const Locale('zh')),
-          ),
-          RadioListTile<String?>(
-            title: const Text('繁體中文'),
-            value: 'zh_TW',
-            groupValue: current,
-            onChanged: (_) => _select(ref, const Locale('zh', 'TW')),
-          ),
-        ],
+      body: RadioGroup<String?>(
+        groupValue: current,
+        onChanged: (value) {
+          switch (value) {
+            case 'en':
+              _select(ref, const Locale('en'));
+            case 'zh':
+              _select(ref, const Locale('zh'));
+            case 'zh_TW':
+              _select(ref, const Locale('zh', 'TW'));
+          }
+        },
+        child: ListView(
+          children: const [
+            RadioListTile<String?>(title: Text('English'), value: 'en'),
+            RadioListTile<String?>(title: Text('简体中文'), value: 'zh'),
+            RadioListTile<String?>(title: Text('繁體中文'), value: 'zh_TW'),
+          ],
+        ),
       ),
     );
   }

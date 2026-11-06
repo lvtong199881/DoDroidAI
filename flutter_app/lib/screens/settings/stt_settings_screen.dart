@@ -262,11 +262,13 @@ class _SourceRadio extends StatelessWidget {
             SizedBox(
               width: 24,
               height: 24,
-              child: Radio<bool>(
-                value: true,
-                groupValue: selected ? true : null,
+              child: RadioGroup<bool>(
+                groupValue: selected,
                 onChanged: (_) => onTap(),
-                visualDensity: VisualDensity.compact,
+                child: Radio<bool>(
+                  value: true,
+                  visualDensity: VisualDensity.compact,
+                ),
               ),
             ),
             const SizedBox(width: 12),
