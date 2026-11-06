@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/chat_database.dart';
+import '../../../models/chat_message.dart';
+import '../../../widgets/app_toast.dart';
 import '../../../l10n/app_strings.dart';
 import '../chat_provider.dart';
 
@@ -88,7 +90,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
 
   /// 以 Markdown 导出会话内容到剪贴板
   Future<void> _exportSession(ChatSession session) async {
-    final messages = await ChatDatabase().messagesOf(session.id);
+    final messages = await ChatDatabase.instance.messagesOf(session.id);
     if (messages.isEmpty) {
       if (mounted) showToast(context, '会话为空');
       return;

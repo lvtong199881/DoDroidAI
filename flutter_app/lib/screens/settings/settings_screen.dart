@@ -87,7 +87,9 @@ class SettingsScreen extends ConsumerWidget {
             _SettingsItem(
               title: strings.language,
               value: localeValue,
-              onTap: () => _pickLocale(context, ref),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const LanguageScreen()),
+              ),
             ),
             _SettingsItem(
               title: strings.appearance,
@@ -156,49 +158,6 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ]),
         ],
-      ),
-    );
-  }
-
-  Future<void> _pickLocale(BuildContext context, WidgetRef ref) async {
-    await showModalBottomSheet<void>(
-      context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: const Text('跟随系统'),
-              trailing: ref.read(localeProvider) == null
-                  ? const Icon(Icons.check)
-                  : null,
-              onTap: () {
-                ref.read(localeProvider.notifier).setLocale(null);
-                Navigator.of(ctx).pop();
-              },
-            ),
-            ListTile(
-              title: const Text('简体中文'),
-              trailing: ref.read(localeProvider)?.languageCode == 'zh'
-                  ? const Icon(Icons.check)
-                  : null,
-              onTap: () {
-                ref.read(localeProvider.notifier).setLocale(const Locale('zh'));
-                Navigator.of(ctx).pop();
-              },
-            ),
-            ListTile(
-              title: const Text('English'),
-              trailing: ref.read(localeProvider)?.languageCode == 'en'
-                  ? const Icon(Icons.check)
-                  : null,
-              onTap: () {
-                ref.read(localeProvider.notifier).setLocale(const Locale('en'));
-                Navigator.of(ctx).pop();
-              },
-            ),
-          ],
-        ),
       ),
     );
   }

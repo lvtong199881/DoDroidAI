@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../app.dart';
+import '../../settings/app_settings.dart';
 
 /// 语言设置页（对齐原生 LanguageSettingFragment：三个单选）
 class LanguageScreen extends ConsumerWidget {
