@@ -38,7 +38,7 @@ class _ChatInputBoxState extends State<ChatInputBox> {
   bool _webSearch = false;
   bool _recording = false;
   bool _voiceMode = false;
-  final AudioRecorder _recorder = AudioRecorder();
+  AudioRecorder? _recorder;
   StreamSubscription<Uint8List>? _micSub;
   StreamSubscription<Amplitude>? _ampSub;
   final List<int> _pcmBuffer = [];
@@ -127,7 +127,12 @@ class _ChatInputBoxState extends State<ChatInputBox> {
         showToast(context, '麦克风权限已被拒绝，请在系统设置中开启');
         return;
       }
-      final hasPerm = await _recorder.hasPermission();
+      // 每次录音用全新实例，避免复用状态导致第二次 startStream 失败
+      await _recorder?.dispose();
+      final recorder = AudioRecorder();
+      _recorder = recorder;
+
+      final hasPerm = await recorder.hasPermission();
       if (!mounted) return;
       if (!hasPerm) {
         await policy.setDenied('microphone');
@@ -137,13 +142,13 @@ class _ChatInputBoxState extends State<ChatInputBox> {
       }
 
       _pcmBuffer.clear();
-      final stream = await _recorder.startStream(const RecordConfig(
+      final stream = await recorder.startStream(const RecordConfig(
         encoder: AudioEncoder.pcm16bits,
         sampleRate: 16000,
         numChannels: 1,
       ));
       _micSub = stream.listen((data) => _pcmBuffer.addAll(data));
-      _ampSub = _recorder
+      _ampSub = recorder
           .onAmplitudeChanged(const Duration(milliseconds: 80))
           .listen((amp) {
         final normalized = ((amp.current + 60) / 60).clamp(0.0, 1.0);
@@ -154,7 +159,9 @@ class _ChatInputBoxState extends State<ChatInputBox> {
       VoiceInputOverlay.show(context);
     } catch (e) {
       debugPrint('MIC start failed: $e');
-      if (mounted) showToast(context, '语音输入暂不可用');
+      await _recorder?.dispose();
+      _recorder = null;
+      if (mounted) showToast(context, '语音输入暂不可用：$e');
     }
   }
 
@@ -167,8 +174,13 @@ class _ChatInputBoxState extends State<ChatInputBox> {
       _ampSub = null;
       await _micSub?.cancel();
       _micSub = null;
-      await _recorder.stop();
-    } catch (_) {}
+      await _recorder?.stop();
+      await _recorder?.dispose();
+    } catch (e) {
+      debugPrint('MIC stop failed: $e');
+    } finally {
+      _recorder = null;
+    }
     if (_pcmBuffer.isEmpty) return;
 
     final samples = Float32List(_pcmBuffer.length ~/ 2);
@@ -183,9 +195,9 @@ class _ChatInputBoxState extends State<ChatInputBox> {
     final text = await SherpaAsr.transcribe(samples);
     if (!mounted) return;
     if (text.isNotEmpty) {
+      // 语音输入后直接发送
       widget.controller.text = text;
-      widget.controller.selection =
-          TextSelection.collapsed(offset: text.length);
+      _send();
     } else {
       showToast(context, '未识别到语音');
     }
