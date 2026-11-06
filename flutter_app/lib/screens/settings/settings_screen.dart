@@ -9,6 +9,7 @@ import '../memory/memory_screen.dart';
 import '../notes/note_list_screen.dart';
 import '../tasks/scheduled_task_screen.dart';
 import 'about_screen.dart';
+import 'ai_config_list_screen.dart';
 import 'chat_settings_screen.dart';
 import 'language_screen.dart';
 import 'stt_settings_screen.dart';
@@ -62,23 +63,17 @@ class SettingsScreen extends ConsumerWidget {
             _SettingsItem(
               title: strings.apiConfig,
               value: ref.watch(aiConfigProvider).when(
-                    data: (config) =>
-                        (config?.providerName.isNotEmpty ?? false)
-                            ? config!.providerName
-                            : '未配置',
+                    data: (config) => (config?.providerName.isNotEmpty ?? false)
+                        ? config!.providerName
+                        : '未配置',
                     loading: () => '…',
                     error: (_, __) => '未配置',
                   ),
-              onTap: () async {
-                final config = await ref.read(aiConfigProvider.future);
-                if (!context.mounted) return;
-                await Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => ApiConfigScreen(config: config),
-                  ),
-                );
-                ref.invalidate(aiConfigProvider);
-              },
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const AiConfigListScreen(),
+                ),
+              ),
             ),
           ]),
           const SizedBox(height: 16),
