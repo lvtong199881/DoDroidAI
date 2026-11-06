@@ -204,7 +204,7 @@ class ToolRegistry {
       case 'search_contacts':
         return [Permission.contacts];
       case 'add_calendar_event':
-        return [Permission.calendarFull];
+        return [Permission.calendarFullAccess];
       default:
         return const [];
     }
