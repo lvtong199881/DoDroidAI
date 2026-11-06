@@ -37,6 +37,16 @@ void main() {
     await tester.pump(const Duration(seconds: 3));
   });
 
+  testWidgets('启动时不创建空会话', (tester) async {
+    await _pumpApp(tester);
+
+    await tester.tap(find.byIcon(Icons.menu).first);
+    await tester.pumpAndSettle();
+
+    // 全新安装下不应存在任何会话（原逻辑会立刻落库一条 hello）
+    expect(find.text('hello'), findsNothing);
+  });
+
   testWidgets('深度思考 chip 可点击并切换选中状态', (tester) async {
     await _pumpApp(tester);
 

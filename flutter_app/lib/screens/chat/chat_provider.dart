@@ -82,15 +82,23 @@ class ChatController extends StateNotifier<ChatState> {
     if (_ready) return;
     _ready = true;
     _config = await _configStore.loadActive();
-    _sessionId = 'session_${DateTime.now().millisecondsSinceEpoch}';
-    await _database.ensureSession(_sessionId!, 'hello');
     final sessions = await _database.sessions();
-    final history = await _database.messagesOf(_sessionId!);
+    // 与原生一致：新会话在发出第一条消息时才创建，启动时不落库
     state = state.copyWith(
-      messages: history,
+      messages: const [],
       sessions: sessions,
-      currentSessionId: _sessionId,
+      currentSessionId: null,
     );
+  }
+
+  /// 懒创建会话：仅在真正要写入消息时调用
+  Future<String> _ensureSessionId() async {
+    final existing = _sessionId;
+    if (existing != null) return existing;
+    final id = 'session_${DateTime.now().millisecondsSinceEpoch}';
+    _sessionId = id;
+    await _database.ensureSession(id, 'hello');
+    return id;
   }
 
   Future<void> loadSession(String sessionId) async {
@@ -104,10 +112,12 @@ class ChatController extends StateNotifier<ChatState> {
     await _database.deleteSession(sessionId);
     final sessions = await _database.sessions();
     if (_sessionId == sessionId) {
-      _sessionId = sessions.isNotEmpty ? sessions.first.id : 'session_${DateTime.now().millisecondsSinceEpoch}';
       if (sessions.isEmpty) {
-        await _database.ensureSession(_sessionId!, 'hello');
+        _sessionId = null;
+        state = state.copyWith(messages: const [], currentSessionId: null);
+        return;
       }
+      _sessionId = sessions.first.id;
       final history = await _database.messagesOf(_sessionId!);
       state = state.copyWith(
         messages: history,
@@ -144,14 +154,15 @@ class ChatController extends StateNotifier<ChatState> {
       isLoading: true,
       error: null,
     );
-    await _database.insertMessage(_sessionId!, user);
+    final sessionId = await _ensureSessionId();
+    await _database.insertMessage(sessionId, user);
 
     // 首条消息作为会话标题
     final current = state.currentSession;
     if (current == null || current.name == 'hello' || current.name == '新对话') {
       final raw = text.trim().replaceAll('\n', ' ');
       final title = raw.length > 20 ? raw.substring(0, 20) : raw;
-      await _database.renameSession(_sessionId!, title);
+      await _database.renameSession(sessionId, title);
       state = state.copyWith(sessions: await _database.sessions());
     }
 
@@ -252,7 +263,7 @@ class ChatController extends StateNotifier<ChatState> {
       assistant.isLoading = false;
       final sessions = await _database.sessions();
       state = state.copyWith(isLoading: false, sessions: sessions);
-      await _database.insertMessage(_sessionId!, assistant);
+      await _database.insertMessage(sessionId, assistant);
       ChatWidgets.update(
         title: state.currentSession?.name ?? 'DoDroidAI',
         body: assistant.content,
@@ -286,14 +297,16 @@ class ChatController extends StateNotifier<ChatState> {
     messages.removeRange(lastUserIndex, messages.length);
     state = state.copyWith(messages: messages);
     // 同步删除数据库里对应的消息（简单做法：重新插入会话）
-    await _database.clearMessagesAfter(_sessionId!, lastUserIndex);
+    final sid = _sessionId;
+    if (sid != null) {
+      await _database.clearMessagesAfter(sid, lastUserIndex);
+    }
     await send(lastUser.content, images: lastUser.images);
     if (removed.isEmpty) return;
   }
 
   Future<void> startNewChat() async {
-    _sessionId = 'session_${DateTime.now().millisecondsSinceEpoch}';
-    await _database.ensureSession(_sessionId!, 'hello');
+    _sessionId = null;
     final sessions = await _database.sessions();
     state = ChatState(
       sessions: sessions,
