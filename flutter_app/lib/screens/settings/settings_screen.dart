@@ -10,6 +10,7 @@ import '../notes/note_list_screen.dart';
 import '../tasks/scheduled_task_screen.dart';
 import 'about_screen.dart';
 import 'ai_config_list_screen.dart';
+import 'request_trace_screen.dart';
 import 'chat_settings_screen.dart';
 import 'language_screen.dart';
 import 'stt_settings_screen.dart';
@@ -136,6 +137,12 @@ class SettingsScreen extends ConsumerWidget {
               title: '诊断',
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const DiagnosticsScreen()),
+              ),
+            ),
+            _SettingsItem(
+              title: '请求追踪',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const RequestTraceScreen()),
               ),
             ),
             _SettingsItem(

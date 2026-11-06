@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 
 import '../models/chat_message.dart';
 import 'ai_config.dart';
+import 'request_trace.dart';
 
 /// 流式事件：正文 / 思考 / 工具调用增量
 class ChatEvent {
@@ -70,6 +71,7 @@ class ChatApi {
       headers['x-opencode-session'] = _opencodeSessionIdFor(config.id);
     }
 
+    final stopwatch = Stopwatch()..start();
     final response = await _dio.post<ResponseBody>(
       '$baseUrl/v1/chat/completions',
       data: body,
@@ -77,6 +79,17 @@ class ChatApi {
         responseType: ResponseType.stream,
         headers: headers,
         validateStatus: (code) => code != null && code >= 200 && code < 300,
+      ),
+    );
+    stopwatch.stop();
+    RequestTraceStore.instance.add(
+      RequestTrace(
+        url: '$baseUrl/v1/chat/completions',
+        model: config.mainModel,
+        statusCode: response.statusCode ?? 0,
+        durationMs: stopwatch.elapsedMilliseconds,
+        success: true,
+        at: DateTime.now(),
       ),
     );
 
