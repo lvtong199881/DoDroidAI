@@ -31,7 +31,9 @@ class ChatMessage {
     List<String>? images,
     this.isLoading = false,
     this.isError = false,
-  }) : images = images ?? [];
+    DateTime? createdAt,
+  })  : images = images ?? [],
+        createdAt = createdAt ?? DateTime.now();
 
   final ChatRole role;
   String content;
@@ -42,4 +44,5 @@ class ChatMessage {
   List<String> images;
   bool isLoading;
   bool isError;
+  final DateTime createdAt;
 }

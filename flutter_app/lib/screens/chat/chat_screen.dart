@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_strings.dart';
+import '../../ai/sherpa_tts.dart';
 import '../../models/chat_message.dart';
 import '../../widgets/app_toast.dart';
 import '../../quick_actions_handler.dart';
@@ -23,6 +24,7 @@ class ChatScreen extends ConsumerStatefulWidget {
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  String? _lastAutoReadKey;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -101,6 +103,25 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(chatProvider);
+
+    // 自动朗读：助手回复完成后朗读一次（对齐原生 maybeAutoRead）
+    ref.listen<ChatState>(chatProvider, (previous, next) {
+      if (!next.autoRead) return;
+      ChatMessage? last;
+      for (final message in next.messages.reversed) {
+        if (message.role == ChatRole.assistant && !message.isLoading) {
+          last = message;
+          break;
+        }
+      }
+      if (last == null) return;
+      final content = last.content.trim();
+      if (content.isEmpty || last.isError) return;
+      final key = last.createdAt.microsecondsSinceEpoch.toString();
+      if (key == _lastAutoReadKey) return;
+      _lastAutoReadKey = key;
+      SherpaTts.speak(content);
+    });
     final scheme = Theme.of(context).colorScheme;
     ref.listen<ChatState>(chatProvider, (previous, next) {
       _scrollToBottom();
