@@ -8,7 +8,9 @@ import '../../theme/app_theme.dart';
 import '../memory/memory_screen.dart';
 import '../notes/note_list_screen.dart';
 import '../tasks/scheduled_task_screen.dart';
+import 'about_screen.dart';
 import 'chat_settings_screen.dart';
+import 'language_screen.dart';
 import 'stt_settings_screen.dart';
 import 'tts_settings_screen.dart';
 import 'diagnostics_screen.dart';
@@ -138,6 +140,12 @@ class SettingsScreen extends ConsumerWidget {
               title: '诊断',
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const DiagnosticsScreen()),
+              ),
+            ),
+            _SettingsItem(
+              title: '关于',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const AboutScreen()),
               ),
             ),
             _SettingsItem(

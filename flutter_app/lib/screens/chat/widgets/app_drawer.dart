@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/chat_database.dart';
@@ -53,6 +54,55 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
       }
     }
     return result;
+  }
+
+  /// 长按会话：导出 / 删除（对齐原生会话列表长按菜单）
+  Future<void> _showSessionMenu(ChatSession session) async {
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.copy_all_outlined),
+              title: const Text('导出到剪贴板'),
+              onTap: () => Navigator.of(ctx).pop('export'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_outline),
+              title: const Text('删除'),
+              onTap: () => Navigator.of(ctx).pop('delete'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted || action == null) return;
+    if (action == 'export') {
+      await _exportSession(session);
+    } else if (action == 'delete') {
+      await _confirmDelete(session);
+    }
+  }
+
+  /// 以 Markdown 导出会话内容到剪贴板
+  Future<void> _exportSession(ChatSession session) async {
+    final messages = await ChatDatabase().messagesOf(session.id);
+    if (messages.isEmpty) {
+      if (mounted) showToast(context, '会话为空');
+      return;
+    }
+    final buffer = StringBuffer()
+      ..writeln('# ${session.name}')
+      ..writeln();
+    for (final message in messages) {
+      final role = message.role == ChatRole.user ? '用户' : 'AI';
+      buffer.writeln('**$role**：${message.content}');
+      buffer.writeln();
+    }
+    await Clipboard.setData(ClipboardData(text: buffer.toString()));
+    if (mounted) showToast(context, '已复制到剪贴板');
   }
 
   Future<void> _confirmDelete(ChatSession session) async {
@@ -143,7 +193,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                                     .loadSession(session.id);
                                 Navigator.of(context).pop();
                               },
-                              onLongPress: () => _confirmDelete(session),
+                              onLongPress: () => _showSessionMenu(session),
                             ),
                         ],
                       ],
