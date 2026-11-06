@@ -54,7 +54,7 @@ class MainActivity : FlutterActivity() {
                 out.add(
                     mapOf(
                         "name" to (cursor.getString(nameIdx) ?: ""),
-                        "number" to (cursor.getString(numIdx) ?: "")
+                        "number" to (cursor.getString(numberIdx) ?: "")
                     )
                 )
             }

@@ -204,12 +204,12 @@ class ToolRegistry {
       case 'add_note':
         final title = (args['title'] as String?) ?? '';
         final content = (args['content'] as String?) ?? '';
-        await NoteDatabase().insert(title, content);
+        await NoteRepository.instance.insert(title, content);
         return '已保存笔记：$title';
       case 'remember_fact':
         final key = (args['key'] as String?) ?? '';
         final value = (args['value'] as String?) ?? '';
-        await MemoryDatabase().insert('$key: $value');
+        await MemoryRepository.instance.insert('$key: $value');
         return '已记住：$key = $value';
       case 'schedule_task':
         final prompt = (args['prompt'] as String?) ?? '';
@@ -220,7 +220,7 @@ class ToolRegistry {
         final runAt = DateTime.now().add(Duration(minutes: delay));
         final timeText =
             '${runAt.hour.toString().padLeft(2, '0')}:${runAt.minute.toString().padLeft(2, '0')}';
-        await ScheduledTaskDatabase().insert(
+        await ScheduledTaskRepository.instance.insert(
           title: prompt,
           prompt: prompt,
           schedule: timeText,
