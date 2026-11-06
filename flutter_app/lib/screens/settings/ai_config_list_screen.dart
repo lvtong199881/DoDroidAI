@@ -213,3 +213,40 @@ class _AiConfigListScreenState extends ConsumerState<AiConfigListScreen> {
     );
   }
 }
+
+/// 服务商首字徽章（替代原生 provider logo）
+class _ProviderBadge extends StatelessWidget {
+  const _ProviderBadge({required this.name});
+
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = name.isEmpty ? '?' : name.substring(0, 1).toUpperCase();
+    final lower = name.toLowerCase();
+    final color = lower.contains('openai')
+        ? const Color(0xFF10A37F)
+        : lower.contains('deepseek')
+            ? const Color(0xFF4D6BFE)
+            : lower.contains('minimax')
+                ? const Color(0xFFE86A17)
+                : const Color(0xFF5A5F6B);
+    return Container(
+      width: 34,
+      height: 34,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
