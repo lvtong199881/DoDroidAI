@@ -166,8 +166,15 @@ class ChatController extends StateNotifier<ChatState> {
       state = state.copyWith(sessions: await _database.sessions());
     }
 
+    // 与原生一致：上下文窗口只取最近 20 条
+    const maxContextMessages = 20;
+    final allMessages = state.messages.where((m) => !m.isLoading).toList();
     final history = <ChatMessage>[
-      ...state.messages.where((m) => !m.isLoading),
+      ...allMessages.skip(
+        allMessages.length > maxContextMessages
+            ? allMessages.length - maxContextMessages
+            : 0,
+      ),
     ];
 
     var iteration = 0;
