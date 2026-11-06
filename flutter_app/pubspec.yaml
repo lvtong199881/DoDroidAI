@@ -9,7 +9,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.8
   flutter_riverpod: ^2.6.1
   go_router: ^14.6.2
   flutter_markdown: ^0.7.5
@@ -33,7 +32,6 @@ dependencies:
   flutter_local_notifications: ^17.2.2
   home_widget: ^0.10.0
   quick_actions: ^1.1.1
-  just_audio: ^0.10.6
   package_info_plus: ^10.2.2
   permission_handler: ^13.0.2
 dependency_overrides:

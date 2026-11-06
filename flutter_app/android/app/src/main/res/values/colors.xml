@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 与 App 浅色主题 surface 一致，避免启动时闪黑/闪白 -->
+    <color name="launch_bg">#FFFFFFFF</color>
+</resources>
