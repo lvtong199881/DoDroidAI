@@ -83,21 +83,35 @@ class ModelManager {
     ));
     var done = 0;
     final total = model.totalBytes;
-    for (final file in model.files) {
-      final url = downloadUrl(source, model.repo, file.name);
-      final path = '$dir/${file.name}';
-      final parent = Directory(File(path).parent.path);
-      if (!parent.existsSync()) parent.createSync(recursive: true);
-      await dio.download(
-        url,
-        path,
-        cancelToken: cancelToken,
-        onReceiveProgress: (received, fileTotal) {
-          onProgress?.call(done + received, total);
-        },
-      );
-      done += file.sizeBytes;
-      onProgress?.call(done, total);
+    try {
+      for (final file in model.files) {
+        final url = downloadUrl(source, model.repo, file.name);
+        final path = '$dir/${file.name}';
+        final parent = Directory(File(path).parent.path);
+        if (!parent.existsSync()) parent.createSync(recursive: true);
+        await dio.download(
+          url,
+          path,
+          cancelToken: cancelToken,
+          onReceiveProgress: (received, fileTotal) {
+            onProgress?.call(done + received, total);
+          },
+        );
+        // 校验大小，避免半截文件被当成完成
+        final expected = file.sizeBytes;
+        final actual = File(path).lengthSync();
+        if (expected > 0 && actual != expected) {
+          throw StateError('文件不完整: ${file.name} ($actual/$expected)');
+        }
+        done += file.sizeBytes;
+        onProgress?.call(done, total);
+      }
+    } catch (e) {
+      // 失败或取消时清理半成品，避免下次下载被残留文件干扰
+      try {
+        if (target.existsSync()) target.deleteSync(recursive: true);
+      } catch (_) {}
+      rethrow;
     }
   }
 }

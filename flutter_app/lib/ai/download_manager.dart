@@ -60,7 +60,15 @@ class DownloadManager {
           tasks.value = {...tasks.value};
         },
       );
-      await manager.setActive(model);
+      // 仅当当前没有可用激活模型时才自动启用，避免下载第二个模型把在用的换掉
+      final activeId = await manager.activeModelId();
+      final activeModel = kind == 'tts'
+          ? TtsModels.byId(activeId)
+          : SttModels.byId(activeId);
+      final hasActive = await manager.isDownloaded(activeModel);
+      if (!hasActive) {
+        await manager.setActive(model);
+      }
       task
         ..running = false
         ..success = true
