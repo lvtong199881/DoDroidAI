@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../ai/request_trace.dart';
 
@@ -11,6 +12,24 @@ class RequestTraceScreen extends StatefulWidget {
 }
 
 class _RequestTraceScreenState extends State<RequestTraceScreen> {
+  /// 导出全部请求记录到剪贴板
+  Future<void> _export() async {
+    final entries = RequestTraceStore.instance.entries;
+    if (entries.isEmpty) return;
+    final buffer = StringBuffer('# 请求追踪\n\n');
+    for (final trace in entries) {
+      buffer.writeln(
+        '- ${trace.timeText} | ${trace.model} | ${trace.statusCode} | '
+        '${trace.durationMs}ms | ${trace.url}',
+      );
+    }
+    await Clipboard.setData(ClipboardData(text: buffer.toString()));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('已导出到剪贴板')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -23,6 +42,11 @@ class _RequestTraceScreenState extends State<RequestTraceScreen> {
         ),
         title: const Text('请求追踪', style: TextStyle(fontSize: 20)),
         actions: [
+          IconButton(
+            tooltip: '导出',
+            icon: const Icon(Icons.ios_share),
+            onPressed: entries.isEmpty ? null : _export,
+          ),
           TextButton(
             onPressed: entries.isEmpty
                 ? null

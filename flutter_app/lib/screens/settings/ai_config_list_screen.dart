@@ -144,6 +144,8 @@ class _AiConfigListScreenState extends ConsumerState<AiConfigListScreen> {
                         children: [
                           Row(
                             children: [
+                              _ProviderBadge(name: config.providerName),
+                              const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
                                   config.providerName.isEmpty
