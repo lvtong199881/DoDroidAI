@@ -13,8 +13,8 @@ import 'ai_config_list_screen.dart';
 import 'request_trace_screen.dart';
 import 'chat_settings_screen.dart';
 import 'language_screen.dart';
-import 'stt_settings_screen.dart';
-import 'tts_settings_screen.dart';
+import 'voice_settings_screen.dart';
+
 import 'diagnostics_screen.dart';
 import 'web_search_settings.dart';
 import 'tool_audit_screen.dart';
@@ -122,15 +122,9 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
             _SettingsItem(
-              title: '语音输入',
+              title: '语音',
               onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SttSettingsScreen()),
-              ),
-            ),
-            _SettingsItem(
-              title: '语音输出',
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const TtsSettingsScreen()),
+                MaterialPageRoute(builder: (_) => const VoiceSettingsScreen()),
               ),
             ),
             _SettingsItem(
