@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:battery_plus/battery_plus.dart';
 import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../data/memory_database.dart';
@@ -194,6 +195,35 @@ class ToolRegistry {
       definitions.any((d) => d['function']['name'] == name);
 
   static bool isHighRisk(String name) => highRiskTools.contains(name);
+
+  /// 工具所需的运行时权限（与原生 requiredPermissions 对齐）
+  static List<Permission> permissionsFor(String name) {
+    switch (name) {
+      case 'send_sms':
+        return [Permission.sms];
+      case 'search_contacts':
+        return [Permission.contacts];
+      case 'add_calendar_event':
+        return [Permission.calendarFull];
+      default:
+        return const [];
+    }
+  }
+
+  /// 确保权限已授予；返回 null 表示通过，否则返回错误文案
+  static Future<String?> ensurePermissions(String name) async {
+    final permissions = permissionsFor(name);
+    if (permissions.isEmpty) return null;
+    for (final permission in permissions) {
+      final status = await permission.status;
+      if (status.isGranted) continue;
+      final result = await permission.request();
+      if (!result.isGranted) {
+        return '缺少权限：${permission.toString().split('.').last}，请在系统设置中授予';
+      }
+    }
+    return null;
+  }
 
   static Future<String> execute(String name, String argumentsJson) async {
     final args = _decode(argumentsJson);

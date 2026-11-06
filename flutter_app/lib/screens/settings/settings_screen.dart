@@ -16,7 +16,6 @@ import 'stt_settings_screen.dart';
 import 'tts_settings_screen.dart';
 import 'diagnostics_screen.dart';
 import 'web_search_settings.dart';
-import 'api_config_screen.dart';
 import 'tool_audit_screen.dart';
 
 final aiConfigProvider = FutureProvider<AiConfig?>((ref) async {

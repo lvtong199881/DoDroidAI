@@ -245,7 +245,9 @@ class ChatController extends StateNotifier<ChatState> {
               continue;
             }
           }
-          final output = await ToolRegistry.execute(call.name, call.arguments);
+          final permissionError = await ToolRegistry.ensurePermissions(call.name);
+          final output = permissionError ??
+              await ToolRegistry.execute(call.name, call.arguments);
           call.isRunning = false;
           call.isSuccess = true;
           call.resultSummary = output;
