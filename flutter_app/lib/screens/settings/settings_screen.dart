@@ -5,9 +5,6 @@ import '../../ai/ai_config.dart';
 import '../../l10n/app_strings.dart';
 import '../../settings/app_settings.dart';
 import '../../theme/app_theme.dart';
-import '../memory/memory_screen.dart';
-import '../notes/note_list_screen.dart';
-import '../tasks/scheduled_task_screen.dart';
 import 'about_screen.dart';
 import 'ai_config_list_screen.dart';
 import 'request_trace_screen.dart';
@@ -98,27 +95,9 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
             _SettingsItem(
-              title: strings.notes,
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const NoteListScreen()),
-              ),
-            ),
-            _SettingsItem(
               title: '工具审计',
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const ToolAuditScreen()),
-              ),
-            ),
-            _SettingsItem(
-              title: strings.memory,
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const MemoryScreen()),
-              ),
-            ),
-            _SettingsItem(
-              title: '定时任务',
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const ScheduledTaskScreen()),
               ),
             ),
             _SettingsItem(

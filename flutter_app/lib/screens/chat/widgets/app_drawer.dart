@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/chat_database.dart';
 import '../../../models/chat_message.dart';
+import '../../notes/note_list_screen.dart';
+import '../../memory/memory_screen.dart';
+import '../../tasks/scheduled_task_screen.dart';
 import '../../../widgets/app_toast.dart';
 import '../../../l10n/app_strings.dart';
 import '../chat_provider.dart';
@@ -202,6 +205,54 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                     ),
             ),
             const Divider(height: 1),
+            // 笔记 / 记忆 / 定时任务：两列网格，仅文字
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+              child: GridView.count(
+                crossAxisCount: 2,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+                childAspectRatio: 2.6,
+                children: [
+                  _QuickEntry(
+                    label: '笔记',
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const NoteListScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _QuickEntry(
+                    label: '记忆',
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const MemoryScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _QuickEntry(
+                    label: '定时任务',
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const ScheduledTaskScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
             SizedBox(
               height: 56,
               child: Row(
@@ -236,6 +287,34 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 侧边栏快捷入口（纯文字网格卡片）
+class _QuickEntry extends StatelessWidget {
+  const _QuickEntry({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(fontSize: 15, color: scheme.onSurface),
         ),
       ),
     );
