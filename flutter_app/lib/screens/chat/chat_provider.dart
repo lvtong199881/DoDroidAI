@@ -276,7 +276,7 @@ class ChatController extends StateNotifier<ChatState> {
       }
     } catch (e) {
       assistant.isError = true;
-      assistant.content = '请求失败：$e';
+      assistant.content = _friendlyError(e);
     } finally {
       assistant.isLoading = false;
       final sessions = await _database.sessions();
@@ -338,6 +338,42 @@ class ChatController extends StateNotifier<ChatState> {
     if (!state.isLoading) return;
     _cancelled = true;
     state = state.copyWith(isLoading: false);
+  }
+
+  /// 把底层异常转成用户能看懂的提示
+  String _friendlyError(Object error) {
+    final text = error.toString();
+    final lower = text.toLowerCase();
+    if (lower.contains('failed host lookup') ||
+        lower.contains('connection error') ||
+        lower.contains('socketexception') ||
+        lower.contains('network is unreachable')) {
+      return '网络连接失败，请检查网络后重试';
+    }
+    if (lower.contains('timeout') || lower.contains('timed out')) {
+      return '请求超时，请稍后重试';
+    }
+    if (lower.contains('401') || lower.contains('unauthorized')) {
+      return 'API Key 无效或已过期，请检查配置';
+    }
+    if (lower.contains('403')) {
+      return '无权限访问该模型，请检查 API Key 权限';
+    }
+    if (lower.contains('404')) {
+      return '接口地址不正确，请检查 Base URL';
+    }
+    if (lower.contains('429')) {
+      return '请求过于频繁或额度不足，请稍后重试';
+    }
+    if (lower.contains('500') || lower.contains('502') || lower.contains('503')) {
+      return '服务端暂时不可用，请稍后重试';
+    }
+    if (lower.contains('insufficient') || lower.contains('balance')) {
+      return '账户余额不足或额度已用完';
+    }
+    // 其余情况保留简短原文，避免完全无法定位
+    final brief = text.length > 200 ? '${text.substring(0, 200)}…' : text;
+    return '请求失败：$brief';
   }
 
   void toggleAutoRead() {
