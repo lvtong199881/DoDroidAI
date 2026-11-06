@@ -13,9 +13,11 @@ class VoiceInputOverlay {
     _amplitudes.value = <double>[];
     final overlay = Overlay.of(context, rootOverlay: true);
     final screenHeight = MediaQuery.of(context).size.height;
-    final scheme = Theme.of(context).colorScheme;
     _entry = OverlayEntry(
-      builder: (ctx) => Positioned(
+      builder: (ctx) {
+        // 在 overlay 内部取主题，避免拿到外部 context 的旧主题
+        final scheme = Theme.of(ctx).colorScheme;
+        return Positioned(
         left: 0,
         right: 0,
         bottom: 0,
@@ -39,7 +41,8 @@ class VoiceInputOverlay {
             ),
           ),
         ),
-      ),
+        );
+      },
     );
     overlay.insert(_entry!);
   }
