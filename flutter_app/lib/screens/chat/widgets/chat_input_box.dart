@@ -40,10 +40,30 @@ class _ChatInputBoxState extends State<ChatInputBox> {
   bool _voiceMode = false;
   AudioRecorder? _recorder;
   StreamSubscription<Uint8List>? _micSub;
-  StreamSubscription<Amplitude>? _ampSub;
+  Timer? _ampTimer;
+  bool _ampBusy = false;
   final List<int> _pcmBuffer = [];
   final List<String> _images = [];
   String _fileText = '';
+
+  @override
+  void initState() {
+    super.initState();
+    // TEMP: dart-define=VOICE_LOOP_TEST 时自动跑两轮录音，验证可重复录音
+    if (const bool.fromEnvironment('VOICE_LOOP_TEST')) {
+      Future.delayed(const Duration(seconds: 3), () async {
+        for (var i = 0; i < 2; i++) {
+          debugPrint('VOICE_LOOP start#$i');
+          await _startVoice();
+          await Future<void>.delayed(const Duration(milliseconds: 1200));
+          await _stopVoice();
+          debugPrint('VOICE_LOOP stop#$i recorderNull=${_recorder == null}');
+          await Future<void>.delayed(const Duration(milliseconds: 800));
+        }
+        debugPrint('VOICE_LOOP done');
+      });
+    }
+  }
 
   Future<void> _showAttachMenu() async {
     final choice = await showModalBottomSheet<String>(
@@ -148,11 +168,21 @@ class _ChatInputBoxState extends State<ChatInputBox> {
         numChannels: 1,
       ));
       _micSub = stream.listen((data) => _pcmBuffer.addAll(data));
-      _ampSub = recorder
-          .onAmplitudeChanged(const Duration(milliseconds: 80))
-          .listen((amp) {
-        final normalized = ((amp.current + 60) / 60).clamp(0.0, 1.0);
-        VoiceInputOverlay.update(normalized);
+      // onAmplitudeChanged 是单订阅流，第二次录音会抛 "Stream has already been listened to"，
+      // 这里改为定时轮询 getAmplitude（每次调用独立）。
+      _ampTimer?.cancel();
+      _ampTimer = Timer.periodic(const Duration(milliseconds: 80), (_) async {
+        if (_ampBusy) return;
+        _ampBusy = true;
+        try {
+          final amp = await recorder.getAmplitude();
+          final normalized = ((amp.current + 60) / 60).clamp(0.0, 1.0);
+          VoiceInputOverlay.update(normalized);
+        } catch (_) {
+          // 录音停止瞬间可能失败，忽略
+        } finally {
+          _ampBusy = false;
+        }
       });
       if (!mounted) return;
       setState(() => _recording = true);
@@ -161,6 +191,8 @@ class _ChatInputBoxState extends State<ChatInputBox> {
       debugPrint('MIC start failed: $e');
       await _recorder?.dispose();
       _recorder = null;
+      _ampTimer?.cancel();
+      _ampTimer = null;
       if (mounted) showToast(context, '语音输入暂不可用：$e');
     }
   }
@@ -170,8 +202,8 @@ class _ChatInputBoxState extends State<ChatInputBox> {
     setState(() => _recording = false);
     VoiceInputOverlay.dismiss();
     try {
-      await _ampSub?.cancel();
-      _ampSub = null;
+      _ampTimer?.cancel();
+      _ampTimer = null;
       await _micSub?.cancel();
       _micSub = null;
       await _recorder?.stop();
