@@ -183,3 +183,4 @@ Don't：
 - 本文件是工程约定的唯一来源；`CLAUDE.md` 通过 `@AGENTS.md` 引用，避免两份漂移
 - 用户向文档是 `README.md` / `README_zh.md`；功能、命令、结构变化时同步更新
 - `docs/FLUTTER_MIGRATION.md` 记录迁移过程，`docs/ui-compare/` 是 UI 对照素材
+- `plan/` 是历史设计文档，`TodoTasks.md` 是开发任务清单；两者保留供追溯，内容可能落后于实现
