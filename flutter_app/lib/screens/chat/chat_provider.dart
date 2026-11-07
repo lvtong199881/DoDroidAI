@@ -191,6 +191,21 @@ class ChatController extends StateNotifier<ChatState> {
         final builders = <int, _ToolCallBuilder>{};
         // 本轮内的"当前块"：思考或正文增量连续到达时复用同一块
         MessageBlock? currentBlock;
+        // 当前思考块的起止时间，用于展示思考耗时
+        DateTime? reasoningStartedAt;
+        DateTime? reasoningEndedAt;
+
+        /// 结束当前思考块的计时
+        void closeReasoningTimer() {
+          if (currentBlock?.kind == MessageBlockKind.reasoning &&
+              reasoningStartedAt != null) {
+            final end = reasoningEndedAt ?? DateTime.now();
+            currentBlock!.seconds =
+                end.difference(reasoningStartedAt!).inSeconds.clamp(0, 3600);
+          }
+          reasoningStartedAt = null;
+          reasoningEndedAt = null;
+        }
         await for (final event in _api.stream(
           config,
           history,
@@ -209,6 +224,7 @@ class ChatController extends StateNotifier<ChatState> {
           final content = event.content;
           if (content != null && content.isNotEmpty) {
             if (currentBlock?.kind != MessageBlockKind.text) {
+              closeReasoningTimer();
               currentBlock = MessageBlock.text();
               assistant.blocks.add(currentBlock);
             }
@@ -219,14 +235,18 @@ class ChatController extends StateNotifier<ChatState> {
           final reasoning = event.reasoning;
           if (reasoning != null && reasoning.isNotEmpty) {
             if (currentBlock?.kind != MessageBlockKind.reasoning) {
+              closeReasoningTimer();
               currentBlock = MessageBlock.reasoning();
               assistant.blocks.add(currentBlock);
+              reasoningStartedAt = DateTime.now();
             }
+            reasoningEndedAt = DateTime.now();
             currentBlock!.text += reasoning;
             state = state.copyWith();
           }
         }
 
+        closeReasoningTimer();
         if (builders.isEmpty) break;
 
         final calls = builders.values
