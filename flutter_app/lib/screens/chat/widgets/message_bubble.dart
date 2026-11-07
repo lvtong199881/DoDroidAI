@@ -313,6 +313,12 @@ class _ToolDetail extends StatelessWidget {
 
   final ToolCallInfo tool;
 
+  Future<void> _copy(BuildContext context, String text, String label) async {
+    await Clipboard.setData(ClipboardData(text: text));
+    if (!context.mounted) return;
+    showToast(context, '$label已复制');
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -333,28 +339,35 @@ class _ToolDetail extends StatelessWidget {
         if (tool.arguments.isNotEmpty) ...[
           Text('参数', style: labelStyle),
           const SizedBox(height: 2),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: scheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(8),
+          GestureDetector(
+            onLongPress: () => _copy(context, tool.arguments, '参数'),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: SelectableText(tool.arguments, style: monoStyle),
             ),
-            child: SelectableText(tool.arguments, style: monoStyle),
           ),
         ],
         if (tool.resultSummary != null && tool.resultSummary!.isNotEmpty) ...[
           const SizedBox(height: 8),
           Text('结果', style: labelStyle),
           const SizedBox(height: 2),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: scheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(8),
+          GestureDetector(
+            onLongPress: () =>
+                _copy(context, tool.resultSummary!, '执行结果'),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: SelectableText(tool.resultSummary!, style: monoStyle),
             ),
-            child: SelectableText(tool.resultSummary!, style: monoStyle),
           ),
         ],
       ],

@@ -5,6 +5,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:record/record.dart';
@@ -53,20 +54,19 @@ class _ChatInputBoxState extends State<ChatInputBox> {
   @override
   void initState() {
     super.initState();
-    // TEMP: dart-define=VOICE_LOOP_TEST 时自动跑两轮录音，验证可重复录音
-    if (const bool.fromEnvironment('VOICE_LOOP_TEST')) {
-      Future.delayed(const Duration(seconds: 3), () async {
-        for (var i = 0; i < 2; i++) {
-          debugPrint('VOICE_LOOP start#$i');
-          await _startVoice();
-          await Future<void>.delayed(const Duration(milliseconds: 1200));
-          await _stopVoice();
-          debugPrint('VOICE_LOOP stop#$i recorderNull=${_recorder == null}');
-          await Future<void>.delayed(const Duration(milliseconds: 800));
-        }
-        debugPrint('VOICE_LOOP done');
-      });
-    }
+    _loadDeepThink();
+  }
+
+  Future<void> _loadDeepThink() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() => _deepThink = prefs.getBool('chat_deep_think') ?? false);
+  }
+
+  Future<void> _setDeepThink(bool value) async {
+    setState(() => _deepThink = value);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('chat_deep_think', value);
   }
 
   Future<void> _showAttachMenu() async {
@@ -287,7 +287,7 @@ class _ChatInputBoxState extends State<ChatInputBox> {
           const SizedBox(height: 8),
           Row(
             children: [
-              _toggleChip('深度思考', _deepThink, (v) => setState(() => _deepThink = v)),
+              _toggleChip('深度思考', _deepThink, _setDeepThink),
               const SizedBox(width: 8),
               _toggleChip('智能搜索', _webSearch, (v) => setState(() => _webSearch = v)),
               const Spacer(),

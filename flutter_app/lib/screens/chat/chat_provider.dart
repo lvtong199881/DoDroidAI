@@ -77,6 +77,17 @@ class ChatController extends StateNotifier<ChatState> {
   String? _sessionId;
   bool _ready = false;
   bool _cancelled = false;
+  DateTime? _lastStreamNotify;
+
+  /// 流式增量节流：50ms 内最多刷新一次 UI，减少重建压力
+  void _notifyStream() {
+    final now = DateTime.now();
+    if (_lastStreamNotify == null ||
+        now.difference(_lastStreamNotify!) >= const Duration(milliseconds: 50)) {
+      _lastStreamNotify = now;
+      state = state.copyWith();
+    }
+  }
   Completer<bool>? _confirmationCompleter;
 
   Future<void> ensureReady() async {
@@ -230,7 +241,7 @@ class ChatController extends StateNotifier<ChatState> {
             }
             currentBlock!.text += content;
             assistant.content += content;
-            state = state.copyWith();
+            _notifyStream();
           }
           final reasoning = event.reasoning;
           if (reasoning != null && reasoning.isNotEmpty) {
@@ -242,11 +253,13 @@ class ChatController extends StateNotifier<ChatState> {
             }
             reasoningEndedAt = DateTime.now();
             currentBlock!.text += reasoning;
-            state = state.copyWith();
+            _notifyStream();
           }
         }
 
         closeReasoningTimer();
+        _lastStreamNotify = null;
+        state = state.copyWith();
         if (builders.isEmpty) break;
 
         final calls = builders.values

@@ -214,29 +214,58 @@ class _AiConfigListScreenState extends ConsumerState<AiConfigListScreen> {
   }
 }
 
-/// 服务商首字徽章（替代原生 provider logo）
+/// 服务商图标徽章：优先用原生同款 logo，缺失时回退首字母
 class _ProviderBadge extends StatelessWidget {
   const _ProviderBadge({required this.name});
 
   final String name;
 
+  String get _asset {
+    final lower = name.toLowerCase();
+    if (lower.contains('openai')) return 'assets/providers/ic_provider_openai.webp';
+    if (lower.contains('deepseek')) {
+      return 'assets/providers/ic_provider_deepseek.webp';
+    }
+    if (lower.contains('minimax')) {
+      return 'assets/providers/ic_provider_minimax.webp';
+    }
+    return '';
+  }
+
+  Color get _fallbackColor {
+    final lower = name.toLowerCase();
+    if (lower.contains('openai')) return const Color(0xFF10A37F);
+    if (lower.contains('deepseek')) return const Color(0xFF4D6BFE);
+    if (lower.contains('minimax')) return const Color(0xFFE86A17);
+    return const Color(0xFF5A5F6B);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final asset = _asset;
+    if (asset.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Image.asset(
+          asset,
+          width: 34,
+          height: 34,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _letter(),
+        ),
+      );
+    }
+    return _letter();
+  }
+
+  Widget _letter() {
     final label = name.isEmpty ? '?' : name.substring(0, 1).toUpperCase();
-    final lower = name.toLowerCase();
-    final color = lower.contains('openai')
-        ? const Color(0xFF10A37F)
-        : lower.contains('deepseek')
-            ? const Color(0xFF4D6BFE)
-            : lower.contains('minimax')
-                ? const Color(0xFFE86A17)
-                : const Color(0xFF5A5F6B);
     return Container(
       width: 34,
       height: 34,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: color,
+        color: _fallbackColor,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
