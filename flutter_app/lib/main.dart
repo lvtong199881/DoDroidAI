@@ -9,6 +9,7 @@ import 'app_worker.dart';
 import 'ai/sherpa_tts.dart';
 import 'notifications.dart';
 import 'quick_actions_handler.dart';
+import 'widget/home_widget_sync.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,6 +32,12 @@ Future<void> _initBackgroundServices() async {
     await initQuickActions().timeout(const Duration(seconds: 6));
   } catch (e) {
     debugPrint('initQuickActions failed: $e');
+  }
+
+  try {
+    await HomeWidgetSync.refresh().timeout(const Duration(seconds: 8));
+  } catch (e) {
+    debugPrint('home widget sync failed: $e');
   }
 
   try {

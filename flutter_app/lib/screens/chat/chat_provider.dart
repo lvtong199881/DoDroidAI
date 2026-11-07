@@ -4,6 +4,7 @@ import '../../ai/ai_config.dart';
 import '../../ai/chat_api.dart';
 import '../../ai/tools.dart';
 import '../../data/memory_database.dart';
+import '../../widget/home_widget_sync.dart';
 import '../../data/tool_audit_database.dart';
 import '../../home_widgets.dart';
 import 'dart:async';
@@ -333,6 +334,7 @@ class ChatController extends StateNotifier<ChatState> {
       final sessions = await _database.sessions();
       state = state.copyWith(isLoading: false, sessions: sessions);
       await _database.insertMessage(sessionId, assistant);
+      unawaited(HomeWidgetSync.refresh());
       ChatWidgets.update(
         title: state.currentSession?.name ?? 'DoDroidAI',
         body: assistant.content,

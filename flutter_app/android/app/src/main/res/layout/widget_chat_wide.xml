@@ -1,28 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/widget_bg"
     android:gravity="center_vertical"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:padding="12dp">
 
-    <ImageView
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:src="@android:drawable/ic_menu_search"
-        android:contentDescription="@null"
-        android:tint="#5B6270" />
+    <TextView
+        android:id="@+id/widget_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="开始对话"
+        android:textColor="#171A1F"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:maxLines="1"
+        android:ellipsize="end" />
 
     <TextView
-        android:id="@+id/widget_body"
-        android:layout_width="0dp"
+        android:id="@+id/widget_subtitle"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_marginStart="8dp"
-        android:text="搜索对话"
+        android:layout_marginTop="2dp"
+        android:text=""
         android:textColor="#5B6270"
-        android:textSize="14sp"
-        android:maxLines="1"
+        android:textSize="12sp"
+        android:maxLines="2"
         android:ellipsize="end" />
 </LinearLayout>
