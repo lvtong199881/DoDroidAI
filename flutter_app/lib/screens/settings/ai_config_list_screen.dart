@@ -229,6 +229,9 @@ class _ProviderBadge extends StatelessWidget {
     if (lower.contains('minimax')) {
       return 'assets/providers/ic_provider_minimax.webp';
     }
+    if (lower.contains('opencode')) {
+      return 'assets/providers/ic_provider_opencode.png';
+    }
     return '';
   }
 
@@ -259,7 +262,12 @@ class _ProviderBadge extends StatelessWidget {
   }
 
   Widget _letter() {
-    final label = name.isEmpty ? '?' : name.substring(0, 1).toUpperCase();
+    final isCustom = name.isEmpty ||
+        name.toLowerCase().contains('自定义') ||
+        name.toLowerCase() == 'custom';
+    final label = isCustom
+        ? ''
+        : (name.isEmpty ? '?' : name.substring(0, 1).toUpperCase());
     return Container(
       width: 34,
       height: 34,
@@ -268,14 +276,16 @@ class _ProviderBadge extends StatelessWidget {
         color: _fallbackColor,
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
+      child: isCustom
+          ? const Icon(Icons.tune, color: Colors.white, size: 18)
+          : Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
     );
   }
 }
