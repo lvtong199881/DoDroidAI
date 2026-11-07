@@ -47,15 +47,25 @@ class ChatApi {
     List<ChatMessage> messages, {
     List<Map<String, dynamic>>? tools,
     bool deepThink = false,
+    String? systemPrompt,
   }) async* {
     if (config.apiFormat == ApiFormat.anthropicMessages) {
-      yield* _streamAnthropic(config, messages, deepThink: deepThink);
+      yield* _streamAnthropic(
+        config,
+        messages,
+        deepThink: deepThink,
+        systemPrompt: systemPrompt,
+      );
       return;
     }
     final body = <String, dynamic>{
       'model': config.model,
       'stream': true,
-      'messages': messages.map((m) => _encodeMessage(m)).toList(),
+      'messages': [
+        if (systemPrompt != null && systemPrompt.isNotEmpty)
+          {'role': 'system', 'content': systemPrompt},
+        ...messages.map((m) => _encodeMessage(m)),
+      ],
       // 深度思考开关：关闭时显式禁用推理，避免模型仍然输出思考内容
       if (deepThink)
         'reasoning_effort': 'high'
@@ -141,11 +151,14 @@ class ChatApi {
     AiConfig config,
     List<ChatMessage> messages, {
     bool deepThink = false,
+    String? systemPrompt,
   }) async* {
     final body = <String, dynamic>{
       'model': config.model,
       'max_tokens': 4096,
       'stream': true,
+      if (systemPrompt != null && systemPrompt.isNotEmpty)
+        'system': systemPrompt,
       // 深度思考开关：关闭时禁用 extended thinking
       if (deepThink)
         'thinking': {'type': 'enabled', 'budget_tokens': 1024},

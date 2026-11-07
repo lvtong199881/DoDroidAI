@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../ai/ai_config.dart';
 import '../../ai/chat_api.dart';
 import '../../ai/tools.dart';
+import '../../data/memory_database.dart';
 import '../../data/tool_audit_database.dart';
 import '../../home_widgets.dart';
 import 'dart:async';
@@ -194,6 +195,9 @@ class ChatController extends StateNotifier<ChatState> {
       ),
     ];
 
+    // 把长期记忆注入 system prompt，让模型真正"记得"用户信息
+    final systemPrompt = await _buildSystemPrompt();
+
     var iteration = 0;
     try {
       while (iteration < 5) {
@@ -222,6 +226,7 @@ class ChatController extends StateNotifier<ChatState> {
           history,
           tools: ToolRegistry.definitions,
           deepThink: deepThink,
+          systemPrompt: systemPrompt,
         )) {
           if (_cancelled) break;
           final tc = event.toolCall;
@@ -384,6 +389,25 @@ class ChatController extends StateNotifier<ChatState> {
     if (!state.isLoading) return;
     _cancelled = true;
     state = state.copyWith(isLoading: false);
+  }
+
+  /// 拼装 system prompt：固定角色说明 + 长期记忆
+  Future<String?> _buildSystemPrompt() async {
+    final base =
+        '你是 DoDroidAI，一个运行在 Android 手机上的助手。'
+        '你可以调用工具操作手机（闹钟、日历、短信、笔记、通讯录、剪贴板、定时任务、联网搜索）。'
+        '需要操作手机时直接调用工具，不要只描述步骤；回答简洁准确。';
+    try {
+      final facts = await MemoryRepository.instance.list();
+      if (facts.isEmpty) return base;
+      final lines = facts
+          .take(50)
+          .map((f) => '- ${f.content}')
+          .join('\n');
+      return '$base\n\n你记住的关于用户的信息：\n$lines';
+    } catch (_) {
+      return base;
+    }
   }
 
   /// 把底层异常转成用户能看懂的提示
