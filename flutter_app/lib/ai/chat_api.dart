@@ -42,6 +42,44 @@ class ChatApi {
 
   final Dio _dio;
 
+  /// 拉取服务商可用模型列表（GET {base}/v1/models）
+  Future<List<String>> fetchModels(AiConfig config) async {
+    final baseUrl = _normalizeBaseUrl(config.baseUrl);
+    final isAnthropic = config.apiFormat == ApiFormat.anthropicMessages;
+    final headers = <String, String>{
+      if (isAnthropic) 'x-api-key': config.apiKey
+      else 'Authorization': 'Bearer ${config.apiKey}',
+      if (isAnthropic) 'anthropic-version': '2023-06-01',
+      'Accept': 'application/json',
+    };
+    // OpenCode Go 同样需要稳定会话标识
+    if (baseUrl.contains('opencode')) {
+      headers['x-opencode-session'] = _opencodeSessionIdFor(config.id);
+    }
+    final response = await _dio.get<dynamic>(
+      '$baseUrl/v1/models',
+      options: Options(
+        headers: headers,
+        receiveTimeout: const Duration(seconds: 20),
+        sendTimeout: const Duration(seconds: 20),
+      ),
+    );
+    final data = response.data;
+    final list = data is Map && data['data'] is List
+        ? data['data'] as List
+        : (data is List ? data : const []);
+    final ids = <String>[];
+    for (final item in list) {
+      if (item is Map) {
+        final id = item['id'] ?? item['name'] ?? item['model'];
+        if (id is String && id.isNotEmpty) ids.add(id);
+      } else if (item is String && item.isNotEmpty) {
+        ids.add(item);
+      }
+    }
+    return ids;
+  }
+
   Stream<ChatEvent> stream(
     AiConfig config,
     List<ChatMessage> messages, {

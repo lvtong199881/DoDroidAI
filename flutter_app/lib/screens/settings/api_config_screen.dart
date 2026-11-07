@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../ai/ai_config.dart';
+import '../../ai/chat_api.dart';
 import '../../l10n/app_strings.dart';
 import '../../widgets/app_toast.dart';
 import '../chat/chat_provider.dart';
@@ -23,6 +24,9 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
   late final TextEditingController _apiKeyController;
   late final TextEditingController _baseUrlController;
   late final TextEditingController _mainModelController;
+  List<String> _availableModels = const [];
+  bool _loadingModels = false;
+  String? _modelError;
   late final TextEditingController _haikuModelController;
   late final TextEditingController _sonnetModelController;
   late final TextEditingController _opusModelController;
@@ -88,6 +92,49 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
       _sonnetModelController.text = preset.sonnetModel;
       _opusModelController.text = preset.opusModel;
     });
+  }
+
+  /// 调用 {base}/v1/models 拉取可用模型
+  Future<void> _fetchModels() async {
+    debugPrint('FETCH_MODELS tapped');
+    final baseUrl = _baseUrlController.text.trim();
+    final apiKey = _apiKeyController.text.trim();
+    if (baseUrl.isEmpty || apiKey.isEmpty) {
+      setState(() => _modelError = '请先填写 Base URL 和 API Key');
+      return;
+    }
+    setState(() {
+      _loadingModels = true;
+      _modelError = null;
+    });
+    try {
+      final probe = AiConfig(
+        id: widget.config?.id ?? 'probe',
+        provider: _provider,
+        apiFormat: _apiFormat,
+        providerName: _providerNameController.text,
+        description: '',
+        officialUrl: '',
+        baseUrl: baseUrl,
+        apiKey: apiKey,
+        mainModel: '',
+        haikuModel: '',
+        sonnetModel: '',
+        opusModel: '',
+        supportsVision: false,
+      );
+      final models = await ChatApi().fetchModels(probe);
+      if (!mounted) return;
+      setState(() {
+        _availableModels = models;
+        _modelError = models.isEmpty ? '接口未返回模型' : null;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _modelError = '获取失败：${e.toString().split('\n').first}');
+    } finally {
+      if (mounted) setState(() => _loadingModels = false);
+    }
   }
 
   Future<void> _save() async {
@@ -341,14 +388,60 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
                 _groupTitle('模型配置'),
                 Padding(
                   padding: const EdgeInsets.only(left: 16, right: 16, top: 8),
-                  child: TextField(
-                    controller: _mainModelController,
-                    decoration: const InputDecoration(
-                      hintText: '主模型',
-                      border: OutlineInputBorder(),
-                    ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: DropdownMenu<String>(
+                          controller: _mainModelController,
+                          hintText: '主模型',
+                          width: double.infinity,
+                          requestFocusOnTap: true,
+                          menuHeight: 320,
+                          enableFilter: true,
+                          inputDecorationTheme: const InputDecorationTheme(
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          dropdownMenuEntries: _availableModels
+                              .map((m) => DropdownMenuEntry(value: m, label: m))
+                              .toList(),
+                          onSelected: (value) {
+                            if (value != null) {
+                              _mainModelController.text = value;
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: IconButton.filledTonal(
+                          tooltip: '获取模型列表',
+                          onPressed: _loadingModels ? null : _fetchModels,
+                          icon: _loadingModels
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.refresh, size: 20),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+                if (_modelError != null)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16, right: 16, top: 6),
+                    child: Text(
+                      _modelError!,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ),
                 _field(controller: _haikuModelController, hint: 'Haiku 默认模型'),
                 _field(controller: _sonnetModelController, hint: 'Sonnet 默认模型'),
                 _field(controller: _opusModelController, hint: 'Opus 默认模型'),
