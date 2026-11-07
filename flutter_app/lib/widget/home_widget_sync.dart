@@ -28,13 +28,37 @@ class HomeWidgetSync {
           : (messages.last.role.name == 'user'
               ? '你：${messages.last.content}'
               : messages.last.content);
-      await _write(
-        latest.name,
-        lastContent.replaceAll(RegExp(r'\s+'), ' ').trim(),
-      );
+      final t = _stripMarkdown(latest.name);
+      final st = _stripMarkdown(lastContent);
+      await _write(t, st);
     } catch (e) {
       debugPrint('HomeWidgetSync failed: $e');
     }
+  }
+
+  /// 去掉 Markdown 标记，小组件里只显示纯文本
+  static String _stripMarkdown(String input) {
+    var text = input;
+    // 代码块与行内代码
+    text = text.replaceAll(RegExp(r'```[\s\S]*?```'), ' ');
+    text = text.replaceAllMapped(RegExp(r'`([^`]*)`'), (m) => m.group(1) ?? '');
+    // 粗体 / 斜体 / 删除线
+    text = text.replaceAll('**', '');
+    text = text.replaceAll('__', '');
+    text = text.replaceAll('~~', '');
+    text = text.replaceAll('*', '');
+    // 标题井号、列表符号、引用符号
+    text = text.replaceAll(RegExp(r'^#+\s*', multiLine: true), '');
+    text = text.replaceAll(RegExp(r'^[-+]\s+', multiLine: true), '');
+    text = text.replaceAll(RegExp(r'^>\s*', multiLine: true), '');
+    // 链接 [text](url) -> text
+    text = text.replaceAllMapped(
+      RegExp(r'\[([^\]]*)\]\([^)]*\)'),
+      (m) => m.group(1) ?? '',
+    );
+    // 压缩空白
+    text = text.replaceAll(RegExp(r'\s+'), ' ').trim();
+    return text;
   }
 
   static Future<void> _write(String title, String subtitle) async {
