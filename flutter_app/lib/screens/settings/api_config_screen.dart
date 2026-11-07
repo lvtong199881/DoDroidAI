@@ -96,7 +96,6 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
 
   /// 调用 {base}/v1/models 拉取可用模型
   Future<void> _fetchModels() async {
-    debugPrint('FETCH_MODELS tapped');
     final baseUrl = _baseUrlController.text.trim();
     final apiKey = _apiKeyController.text.trim();
     if (baseUrl.isEmpty || apiKey.isEmpty) {
