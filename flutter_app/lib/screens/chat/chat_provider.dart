@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../ai/ai_config.dart';
@@ -185,16 +186,9 @@ class ChatController extends StateNotifier<ChatState> {
       state = state.copyWith(sessions: await _database.sessions());
     }
 
-    // 与原生一致：上下文窗口只取最近 20 条
-    const maxContextMessages = 20;
+    // 按模型上下文窗口压缩：超过 80% 时从最旧开始丢弃，降到 60% 以下
     final allMessages = state.messages.where((m) => !m.isLoading).toList();
-    final history = <ChatMessage>[
-      ...allMessages.skip(
-        allMessages.length > maxContextMessages
-            ? allMessages.length - maxContextMessages
-            : 0,
-      ),
-    ];
+    final history = _fitContext(allMessages, config.contextWindow);
 
     // 把长期记忆注入 system prompt，让模型真正"记得"用户信息
     final systemPrompt = await _buildSystemPrompt();
@@ -391,6 +385,48 @@ class ChatController extends StateNotifier<ChatState> {
     if (!state.isLoading) return;
     _cancelled = true;
     state = state.copyWith(isLoading: false);
+  }
+
+  /// 粗略估算 token 数：中英混合按 2 字符 ≈ 1 token
+  int _estimateTokens(List<ChatMessage> messages) {
+    var chars = 0;
+    for (final m in messages) {
+      chars += m.content.length;
+      for (final block in m.blocks) {
+        chars += block.text.length;
+        final tool = block.tool;
+        if (tool != null) {
+          chars += tool.arguments.length;
+          chars += tool.resultSummary?.length ?? 0;
+        }
+      }
+    }
+    return chars ~/ 2;
+  }
+
+  /// 上下文压缩：仅在超过窗口 80% 时触发，压到 60% 以下
+  List<ChatMessage> _fitContext(List<ChatMessage> all, int contextWindow) {
+    if (all.isEmpty) return all;
+    final window = contextWindow > 0 ? contextWindow : 200000;
+    final trigger = (window * 0.8).round();
+    if (_estimateTokens(all) <= trigger) return all;
+
+    final target = (window * 0.6).round();
+    var start = 0;
+    // 至少保留最近 2 条（当前用户消息 + 上一条助手回复）
+    while (start < all.length - 2 &&
+        _estimateTokens(all.sublist(start)) > target) {
+      start++;
+    }
+    if (start == 0) return all;
+    debugPrint('CONTEXT_COMPRESS dropped=$start tokens≈${_estimateTokens(all)}');
+    return [
+      ChatMessage(
+        role: ChatRole.user,
+        content: '[更早的 ${start} 条对话已省略以节省上下文]',
+      ),
+      ...all.sublist(start),
+    ];
   }
 
   /// 拼装 system prompt：固定角色说明 + 长期记忆

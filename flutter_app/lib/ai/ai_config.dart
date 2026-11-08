@@ -22,6 +22,7 @@ class AiConfig {
     this.sonnetModel = '',
     this.opusModel = '',
     this.supportsVision = true,
+    this.contextWindow = 200000,
   });
 
   final String id;
@@ -37,6 +38,9 @@ class AiConfig {
   final String sonnetModel;
   final String opusModel;
   final bool supportsVision;
+
+  /// 模型上下文窗口（token），用于判断何时压缩历史
+  final int contextWindow;
 
   /// 请求实际使用的模型
   String get model => mainModel;
@@ -60,6 +64,7 @@ class AiConfig {
     AiProvider? provider,
     ApiFormat? apiFormat,
     bool? supportsVision,
+    int? contextWindow,
   }) {
     return AiConfig(
       id: id,
@@ -75,6 +80,7 @@ class AiConfig {
       sonnetModel: sonnetModel ?? this.sonnetModel,
       opusModel: opusModel ?? this.opusModel,
       supportsVision: supportsVision ?? this.supportsVision,
+      contextWindow: contextWindow ?? this.contextWindow,
     );
   }
 
@@ -94,6 +100,7 @@ class AiConfig {
         'sonnetModel': sonnetModel,
         'opusModel': opusModel,
         'supportsVision': supportsVision,
+        'contextWindow': contextWindow,
       };
 
   factory AiConfig.fromJson(Map<String, dynamic> json) {
@@ -122,6 +129,7 @@ class AiConfig {
       sonnetModel: json['sonnetModel'] as String? ?? '',
       opusModel: json['opusModel'] as String? ?? '',
       supportsVision: (json['supportsVision'] as bool?) ?? true,
+      contextWindow: (json['contextWindow'] as num?)?.toInt() ?? 200000,
     );
   }
 

@@ -24,7 +24,8 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
   late final TextEditingController _apiKeyController;
   late final TextEditingController _baseUrlController;
   late final TextEditingController _mainModelController;
-  List<String> _availableModels = const [];
+  List<ModelInfo> _availableModels = const [];
+  bool _supportsLongContext = false;
   bool _loadingModels = false;
   String? _modelError;
   late final TextEditingController _haikuModelController;
@@ -34,6 +35,7 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
   AiProvider _provider = AiProvider.custom;
   ApiFormat _apiFormat = ApiFormat.anthropicMessages;
   bool _supportsVision = true;
+  int _contextWindow = 200000;
   bool _obscureKey = true;
 
   bool get _isEditing => widget.config != null;
@@ -45,6 +47,8 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
     _provider = config?.provider ?? AiProvider.custom;
     _apiFormat = config?.apiFormat ?? ApiFormat.anthropicMessages;
     _supportsVision = config?.supportsVision ?? true;
+    _contextWindow = config?.contextWindow ?? 200000;
+    _supportsLongContext = _contextWindow >= 1000000;
     _providerNameController =
         TextEditingController(text: config?.providerName ?? '');
     _descriptionController =
@@ -82,6 +86,8 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
       _provider = provider;
       _apiFormat = preset.apiFormat;
       _supportsVision = preset.supportsVision;
+      _contextWindow = preset.contextWindow;
+      _supportsLongContext = preset.contextWindow >= 1000000;
       _providerNameController.text = preset.providerName;
       _descriptionController.text = preset.description;
       _officialUrlController.text = preset.officialUrl;
@@ -121,6 +127,7 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
         sonnetModel: '',
         opusModel: '',
         supportsVision: false,
+        contextWindow: _effectiveContextWindow,
       );
       final models = await ChatApi().fetchModels(probe);
       if (!mounted) return;
@@ -134,6 +141,12 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
     } finally {
       if (mounted) setState(() => _loadingModels = false);
     }
+  }
+
+  /// 1M 开关打开时为 1000000，否则沿用已读取的模型上限（未知则 200000）
+  int get _effectiveContextWindow {
+    if (_supportsLongContext) return 1000000;
+    return _contextWindow > 0 ? _contextWindow : 200000;
   }
 
   Future<void> _save() async {
@@ -157,6 +170,7 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
       sonnetModel: _sonnetModelController.text.trim(),
       opusModel: _opusModelController.text.trim(),
       supportsVision: _supportsVision,
+      contextWindow: _effectiveContextWindow,
     );
     await AiConfigStore().saveActive(config);
     ref.read(chatProvider.notifier).reloadConfig();
@@ -403,11 +417,22 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
                             isDense: true,
                           ),
                           dropdownMenuEntries: _availableModels
-                              .map((m) => DropdownMenuEntry(value: m, label: m))
+                              .map((m) => DropdownMenuEntry(
+                                    value: m.id,
+                                    label: m.id,
+                                  ))
                               .toList(),
                           onSelected: (value) {
-                            if (value != null) {
-                              _mainModelController.text = value;
+                            if (value == null) return;
+                            _mainModelController.text = value;
+                            final info = _availableModels
+                                .where((m) => m.id == value)
+                                .firstOrNull;
+                            if (info != null && info.contextWindow > 0) {
+                              setState(() {
+                                _supportsLongContext =
+                                    info.contextWindow >= 1000000;
+                              });
                             }
                           },
                         ),
@@ -444,6 +469,15 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
                 _field(controller: _haikuModelController, hint: 'Haiku 默认模型'),
                 _field(controller: _sonnetModelController, hint: 'Sonnet 默认模型'),
                 _field(controller: _opusModelController, hint: 'Opus 默认模型'),
+                Padding(
+                  padding: const EdgeInsets.only(left: 8, right: 16, top: 8),
+                  child: SwitchListTile(
+                    value: _supportsLongContext,
+                    onChanged: (v) => setState(() => _supportsLongContext = v),
+                    title: const Text('支持 1M 上下文'),
+                    subtitle: const Text('按模型实际上限压缩历史，避免超限报错'),
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.only(left: 8, right: 16, top: 16),
                   child: SwitchListTile(

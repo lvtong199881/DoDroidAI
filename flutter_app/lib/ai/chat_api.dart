@@ -42,8 +42,8 @@ class ChatApi {
 
   final Dio _dio;
 
-  /// 拉取服务商可用模型列表（GET {base}/v1/models）
-  Future<List<String>> fetchModels(AiConfig config) async {
+  /// 模型信息：id + 上下文窗口
+  Future<List<ModelInfo>> fetchModels(AiConfig config) async {
     final baseUrl = _normalizeBaseUrl(config.baseUrl);
     final isAnthropic = config.apiFormat == ApiFormat.anthropicMessages;
     final headers = <String, String>{
@@ -68,16 +68,28 @@ class ChatApi {
     final list = data is Map && data['data'] is List
         ? data['data'] as List
         : (data is List ? data : const []);
-    final ids = <String>[];
+    final result = <ModelInfo>[];
     for (final item in list) {
       if (item is Map) {
         final id = item['id'] ?? item['name'] ?? item['model'];
-        if (id is String && id.isNotEmpty) ids.add(id);
+        if (id is String && id.isNotEmpty) {
+          // 上下文长度：limit.context 优先，其次常见字段名
+          final limit = item['limit'];
+          final context = (limit is Map ? limit['context'] : null) ??
+              item['context_length'] ??
+              item['context_window'] ??
+              item['max_context_length'] ??
+              item['max_tokens'];
+          result.add(ModelInfo(
+            id: id,
+            contextWindow: context is num ? context.toInt() : 0,
+          ));
+        }
       } else if (item is String && item.isNotEmpty) {
-        ids.add(item);
+        result.add(ModelInfo(id: item));
       }
     }
-    return ids;
+    return result;
   }
 
   Stream<ChatEvent> stream(
@@ -364,4 +376,13 @@ class ChatApi {
       return null;
     }
   }
+}
+
+
+/// 模型条目：id 与上下文窗口（未知时为 0）
+class ModelInfo {
+  const ModelInfo({required this.id, this.contextWindow = 0});
+
+  final String id;
+  final int contextWindow;
 }
