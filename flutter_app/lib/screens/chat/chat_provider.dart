@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../ai/ai_config.dart';
 import '../../ai/chat_api.dart';
+import '../../ai/token_counter.dart';
 import '../../ai/tools.dart';
 import '../../data/memory_database.dart';
 import '../../widget/home_widget_sync.dart';
@@ -188,7 +189,7 @@ class ChatController extends StateNotifier<ChatState> {
 
     // 按模型上下文窗口压缩：超过 80% 时从最旧开始丢弃，降到 60% 以下
     final allMessages = state.messages.where((m) => !m.isLoading).toList();
-    final history = _fitContext(allMessages, config.contextWindow);
+    final history = await _fitContextAsync(allMessages, config);
 
     // 把长期记忆注入 system prompt，让模型真正"记得"用户信息
     final systemPrompt = await _buildSystemPrompt();
@@ -387,46 +388,118 @@ class ChatController extends StateNotifier<ChatState> {
     state = state.copyWith(isLoading: false);
   }
 
-  /// 粗略估算 token 数：中英混合按 2 字符 ≈ 1 token
+  /// 用 tiktoken 精确统计消息 token（含思考与工具内容）
   int _estimateTokens(List<ChatMessage> messages) {
-    var chars = 0;
+    final counter = TokenCounter.instance;
+    var total = 0;
     for (final m in messages) {
-      chars += m.content.length;
+      total += counter.count(m.content);
       for (final block in m.blocks) {
-        chars += block.text.length;
+        total += counter.count(block.text);
         final tool = block.tool;
         if (tool != null) {
-          chars += tool.arguments.length;
-          chars += tool.resultSummary?.length ?? 0;
+          total += counter.count(tool.arguments);
+          total += counter.count(tool.resultSummary ?? '');
         }
       }
     }
-    return chars ~/ 2;
+    return total;
   }
 
-  /// 上下文压缩：仅在超过窗口 80% 时触发，压到 60% 以下
-  List<ChatMessage> _fitContext(List<ChatMessage> all, int contextWindow) {
+  /// 上下文压缩：超过窗口 80% 时把旧消息摘要成一条，保留最近对话
+  Future<List<ChatMessage>> _fitContextAsync(
+    List<ChatMessage> all,
+    AiConfig config,
+  ) async {
     if (all.isEmpty) return all;
-    final window = contextWindow > 0 ? contextWindow : 200000;
+    final window = config.contextWindow > 0 ? config.contextWindow : 200000;
     final trigger = (window * 0.8).round();
     if (_estimateTokens(all) <= trigger) return all;
 
-    final target = (window * 0.6).round();
+    // 保留最近一段（目标占用 <= 40%），其余交给摘要
+    final keepBudget = (window * 0.4).round();
     var start = 0;
-    // 至少保留最近 2 条（当前用户消息 + 上一条助手回复）
     while (start < all.length - 2 &&
-        _estimateTokens(all.sublist(start)) > target) {
+        _estimateTokens(all.sublist(start)) > keepBudget) {
       start++;
     }
     if (start == 0) return all;
-    debugPrint('CONTEXT_COMPRESS dropped=$start tokens≈${_estimateTokens(all)}');
+
+    final older = all.sublist(0, start);
+    final recent = all.sublist(start);
+    debugPrint(
+      'CONTEXT_COMPRESS summarizing ${older.length} msgs '
+      'tokens≈${_estimateTokens(all)} window=$window',
+    );
+
+    final summary = await _summarize(older, config);
+    if (summary == null || summary.trim().isEmpty) {
+      // 摘要失败时降级为保留最近对话，避免请求直接超限
+      return [
+        ChatMessage(
+          role: ChatRole.user,
+          content: '[更早的 ${older.length} 条对话因超出上下文已省略]',
+        ),
+        ...recent,
+      ];
+    }
     return [
       ChatMessage(
         role: ChatRole.user,
-        content: '[更早的 ${start} 条对话已省略以节省上下文]',
+        content: '[以下是更早对话的摘要，供你保持上下文连续性]\n$summary',
       ),
-      ...all.sublist(start),
+      ...recent,
     ];
+  }
+
+  /// 用当前模型把旧消息压缩成要点摘要
+  Future<String?> _summarize(
+    List<ChatMessage> messages,
+    AiConfig config,
+  ) async {
+    final buffer = StringBuffer();
+    for (final m in messages) {
+      final role = switch (m.role) {
+        ChatRole.user => '用户',
+        ChatRole.assistant => '助手',
+        ChatRole.tool => '工具',
+      };
+      if (m.content.trim().isNotEmpty) {
+        buffer.writeln('$role：${m.content.trim()}');
+      }
+      for (final block in m.blocks) {
+        if (block.kind == MessageBlockKind.toolCall && block.tool != null) {
+          buffer.writeln(
+            '工具 ${block.tool!.name}：${block.tool!.resultSummary ?? ''}',
+          );
+        }
+      }
+    }
+    final transcript = buffer.toString();
+    if (transcript.trim().isEmpty) return null;
+
+    final prompt = ChatMessage(
+      role: ChatRole.user,
+      content:
+          '请把下面这段历史对话压缩成要点摘要，保留：用户的关键诉求与偏好、'
+          '已完成的工具操作及其结果、未完成的事项。用简洁的中文条目输出，不要寒暄。\n\n'
+          '$transcript',
+    );
+    try {
+      final collected = StringBuffer();
+      await for (final event in _api.stream(
+        config,
+        [prompt],
+        systemPrompt: '你是对话摘要器，只输出精简摘要。',
+      )) {
+        final content = event.content;
+        if (content != null) collected.write(content);
+      }
+      return collected.toString();
+    } catch (e) {
+      debugPrint('CONTEXT_COMPRESS summarize failed: $e');
+      return null;
+    }
   }
 
   /// 拼装 system prompt：固定角色说明 + 长期记忆

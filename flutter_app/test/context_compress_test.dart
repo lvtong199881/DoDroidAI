@@ -1,59 +1,64 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:dodroidai/models/chat_message.dart';
+import 'package:dodroidai/ai/token_counter.dart';
 
-/// 与 ChatController 内部一致的分词估算和压缩策略（对外行为验证）
-int estimate(List<ChatMessage> messages) {
-  var chars = 0;
-  for (final m in messages) {
-    chars += m.content.length;
-  }
-  return chars ~/ 2;
+/// 与配置页一致的上下文选项规则（≥1M 给三档，500K~1M 给两档，其余一档）
+List<int> contextOptions(int modelContext) {
+  if (modelContext >= 1000000) return const [200000, 500000, 1000000];
+  if (modelContext >= 500000) return [200000, modelContext];
+  return [modelContext];
 }
-
-List<ChatMessage> fit(List<ChatMessage> all, int window) {
-  if (all.isEmpty) return all;
-  final trigger = (window * 0.8).round();
-  if (estimate(all) <= trigger) return all;
-  final target = (window * 0.6).round();
-  var start = 0;
-  while (start < all.length - 2 && estimate(all.sublist(start)) > target) {
-    start++;
-  }
-  if (start == 0) return all;
-  return [
-    ChatMessage(role: ChatRole.user, content: '[省略 $start 条]'),
-    ...all.sublist(start),
-  ];
-}
-
-ChatMessage _msg(String text) =>
-    ChatMessage(role: ChatRole.user, content: text);
 
 void main() {
-  test('低于 80% 窗口时不压缩', () {
-    final messages = List.generate(10, (_) => _msg('a' * 100));
-    // 1000 字符 ≈ 500 token，窗口 10000 → 未到 80%
-    expect(fit(messages, 10000).length, 10);
+  group('上下文选项', () {
+    test('1M 模型给 200K / 500K / 1M 三档', () {
+      expect(contextOptions(1000000), [200000, 500000, 1000000]);
+      expect(contextOptions(2000000), [200000, 500000, 1000000]);
+    });
+
+    test('500K~1M 给 200K 和模型上限', () {
+      expect(contextOptions(500000), [200000, 500000]);
+      expect(contextOptions(800000), [200000, 800000]);
+    });
+
+    test('小于 500K 只给模型上限', () {
+      expect(contextOptions(128000), [128000]);
+      expect(contextOptions(32000), [32000]);
+    });
+
+    test('默认选中最大档', () {
+      expect(contextOptions(1000000).last, 1000000);
+      expect(contextOptions(800000).last, 800000);
+      expect(contextOptions(128000).last, 128000);
+    });
   });
 
-  test('超过 80% 时丢弃最旧消息', () {
-    final messages = List.generate(100, (_) => _msg('a' * 200));
-    // 20000 字符 ≈ 10000 token，窗口 10000 → 触发压缩
-    final result = fit(messages, 10000);
-    expect(result.length, lessThan(messages.length));
-    expect(result.first.content, contains('省略'));
-  });
+  group('tiktoken 计数', () {
+    test('中文与英文分别计数', () {
+      final counter = TokenCounter.instance;
+      final zh = counter.count('你好世界');
+      final en = counter.count('hello world');
+      expect(zh, greaterThan(0));
+      expect(en, greaterThan(0));
+      expect(zh, lessThan(20));
+      expect(en, lessThan(10));
+    });
 
-  test('至少保留最近两条', () {
-    final messages = List.generate(5, (_) => _msg('a' * 5000));
-    final result = fit(messages, 1000);
-    // 最后两条必须保留
-    expect(result.length, greaterThanOrEqualTo(3));
-    expect(result.last.content, messages.last.content);
-  });
+    test('空字符串为 0', () {
+      expect(TokenCounter.instance.count(''), 0);
+    });
 
-  test('空列表安全', () {
-    expect(fit(const [], 1000), isEmpty);
+    test('长文本走采样不会卡死', () {
+      final text = 'a' * 100000;
+      final tokens = TokenCounter.instance.count(text);
+      expect(tokens, greaterThan(0));
+    });
+
+    test('相同文本命中缓存', () {
+      final counter = TokenCounter.instance;
+      final a = counter.count('缓存测试文本');
+      final b = counter.count('缓存测试文本');
+      expect(a, b);
+    });
   });
 }

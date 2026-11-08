@@ -25,7 +25,6 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
   late final TextEditingController _baseUrlController;
   late final TextEditingController _mainModelController;
   List<ModelInfo> _availableModels = const [];
-  bool _supportsLongContext = false;
   bool _loadingModels = false;
   String? _modelError;
   late final TextEditingController _haikuModelController;
@@ -36,6 +35,7 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
   ApiFormat _apiFormat = ApiFormat.anthropicMessages;
   bool _supportsVision = true;
   int _contextWindow = 200000;
+  int _detectedContext = 0;
   bool _obscureKey = true;
 
   bool get _isEditing => widget.config != null;
@@ -48,7 +48,8 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
     _apiFormat = config?.apiFormat ?? ApiFormat.anthropicMessages;
     _supportsVision = config?.supportsVision ?? true;
     _contextWindow = config?.contextWindow ?? 200000;
-    _supportsLongContext = _contextWindow >= 1000000;
+    // 旧配置没有检测值，用已保存的窗口兜底，避免下拉只剩 200K
+    _detectedContext = _contextWindow;
     _providerNameController =
         TextEditingController(text: config?.providerName ?? '');
     _descriptionController =
@@ -87,7 +88,7 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
       _apiFormat = preset.apiFormat;
       _supportsVision = preset.supportsVision;
       _contextWindow = preset.contextWindow;
-      _supportsLongContext = preset.contextWindow >= 1000000;
+      _detectedContext = preset.contextWindow;
       _providerNameController.text = preset.providerName;
       _descriptionController.text = preset.description;
       _officialUrlController.text = preset.officialUrl;
@@ -134,6 +135,14 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
       setState(() {
         _availableModels = models;
         _modelError = models.isEmpty ? '接口未返回模型' : null;
+        final current = _mainModelController.text.trim();
+        final match = models.where((m) => m.id == current).firstOrNull;
+        if (match != null && match.contextWindow > 0) {
+          _detectedContext = match.contextWindow;
+          if (_contextWindow <= 0 || _contextWindow > _modelContext) {
+            _contextWindow = _contextOptions.last;
+          }
+        }
       });
     } catch (e) {
       if (!mounted) return;
@@ -143,10 +152,28 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
     }
   }
 
-  /// 1M 开关打开时为 1000000，否则沿用已读取的模型上限（未知则 200000）
-  int get _effectiveContextWindow {
-    if (_supportsLongContext) return 1000000;
-    return _contextWindow > 0 ? _contextWindow : 200000;
+  /// 当前生效的上下文窗口
+  int get _effectiveContextWindow =>
+      _contextWindow > 0 ? _contextWindow : _modelContext;
+
+  /// 模型实际支持的上限（从 /models 读到，未知则 200000）
+  int get _modelContext => _detectedContext > 0 ? _detectedContext : 200000;
+
+  /// 可选窗口：
+  /// - ≥1M：200K / 500K / 1M
+  /// - 500K~1M：200K / 模型上限
+  /// - <500K：仅模型上限
+  List<int> get _contextOptions {
+    final limit = _modelContext;
+    if (limit >= 1000000) return const [200000, 500000, 1000000];
+    if (limit >= 500000) return [200000, limit];
+    return [limit];
+  }
+
+  String _formatContext(int value) {
+    if (value >= 1000000) return '1M';
+    if (value >= 1000) return '${(value / 1000).round()}K';
+    return '$value';
   }
 
   Future<void> _save() async {
@@ -430,8 +457,8 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
                                 .firstOrNull;
                             if (info != null && info.contextWindow > 0) {
                               setState(() {
-                                _supportsLongContext =
-                                    info.contextWindow >= 1000000;
+                                _detectedContext = info.contextWindow;
+                                _contextWindow = _contextOptions.last;
                               });
                             }
                           },
@@ -470,12 +497,30 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
                 _field(controller: _sonnetModelController, hint: 'Sonnet 默认模型'),
                 _field(controller: _opusModelController, hint: 'Opus 默认模型'),
                 Padding(
-                  padding: const EdgeInsets.only(left: 8, right: 16, top: 8),
-                  child: SwitchListTile(
-                    value: _supportsLongContext,
-                    onChanged: (v) => setState(() => _supportsLongContext = v),
-                    title: const Text('支持 1M 上下文'),
-                    subtitle: const Text('按模型实际上限压缩历史，避免超限报错'),
+                  padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
+                  child: DropdownButtonFormField<int>(
+                    initialValue: _contextOptions.contains(_effectiveContextWindow)
+                        ? _effectiveContextWindow
+                        : _contextOptions.last,
+                    decoration: const InputDecoration(
+                      labelText: '上下文窗口',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                    items: [
+                      for (final option in _contextOptions)
+                        DropdownMenuItem<int>(
+                          value: option,
+                          child: Text(_formatContext(option)),
+                        ),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          _contextWindow = value;
+                        });
+                      }
+                    },
                   ),
                 ),
                 Padding(

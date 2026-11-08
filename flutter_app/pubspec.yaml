@@ -34,6 +34,7 @@ dependencies:
   quick_actions: ^1.1.1
   package_info_plus: ^10.2.2
   permission_handler: ^13.0.2
+  tiktoken: ^1.0.3
 dependency_overrides:
   record_linux:
     path: third_party/record_linux_stub
