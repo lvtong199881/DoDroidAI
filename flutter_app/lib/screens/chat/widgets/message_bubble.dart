@@ -91,9 +91,12 @@ class _AssistantMessageViewState
           for (var i = 0; i < message.blocks.length; i++)
             _buildBlock(context, scheme, i, message.blocks[i]),
           if (widget.message.isLoading && message.content.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: Text('AI思考中…', style: TextStyle(fontSize: 13)),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                '...',
+                style: TextStyle(fontSize: 15, color: scheme.onSurfaceVariant),
+              ),
             ),
           const SizedBox(height: 4),
           Row(
