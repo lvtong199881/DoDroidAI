@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../ai/sherpa_tts.dart';
 import '../../../widgets/app_toast.dart';
+import '../../../widgets/typing_dots.dart';
 import '../chat_provider.dart';
 import '../../../models/chat_message.dart';
 
@@ -91,13 +92,7 @@ class _AssistantMessageViewState
           for (var i = 0; i < message.blocks.length; i++)
             _buildBlock(context, scheme, i, message.blocks[i]),
           if (widget.message.isLoading && message.content.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text(
-                '...',
-                style: TextStyle(fontSize: 15, color: scheme.onSurfaceVariant),
-              ),
-            ),
+            TypingDots(color: scheme.onSurfaceVariant),
           const SizedBox(height: 4),
           Row(
             children: [
