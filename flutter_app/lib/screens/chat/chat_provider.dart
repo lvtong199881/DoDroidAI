@@ -413,11 +413,17 @@ class ChatController extends StateNotifier<ChatState> {
   ) async {
     if (all.isEmpty) return all;
     final window = config.contextWindow > 0 ? config.contextWindow : 200000;
-    final trigger = (window * 0.8).round();
-    if (_estimateTokens(all) <= trigger) return all;
+    // TEMP: 调试用触发阈值，便于在少量对话下验证摘要链路
+    const debugTrigger = int.fromEnvironment('CTX_TRIGGER');
+    final trigger = debugTrigger > 0 ? debugTrigger : (window * 0.8).round();
+    final tokens = _estimateTokens(all);
+    if (tokens <= trigger) return all;
 
     // 保留最近一段（目标占用 <= 40%），其余交给摘要
-    final keepBudget = (window * 0.4).round();
+    // 调试阈值下按同比例缩放，便于小对话验证
+    final keepBudget = debugTrigger > 0
+        ? (debugTrigger * 0.5).round()
+        : (window * 0.4).round();
     var start = 0;
     while (start < all.length - 2 &&
         _estimateTokens(all.sublist(start)) > keepBudget) {
