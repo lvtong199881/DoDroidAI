@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:workmanager/workmanager.dart';
 
@@ -11,8 +12,10 @@ import 'notifications.dart';
 import 'quick_actions_handler.dart';
 import 'widget/home_widget_sync.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // targetSdk 36 起系统强制 edge-to-edge，显式开启让内容延伸到底部导航栏后方
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   // 先起 UI，避免插件初始化阻塞导致启动黑屏
   runApp(const ProviderScope(child: DoDroidApp()));
   unawaited(_initBackgroundServices());
