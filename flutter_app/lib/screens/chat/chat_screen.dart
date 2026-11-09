@@ -206,7 +206,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ),
           ),
           Padding(
-            padding: const EdgeInsets.all(12),
+            // 底部额外让出系统手势条高度，使输入框下方留白与左右一致
+            padding: EdgeInsets.fromLTRB(
+              12,
+              12,
+              12,
+              12 + MediaQuery.viewPaddingOf(context).bottom,
+            ),
             child: ChatInputBox(
               controller: _controller,
               onSend: (text, images, deepThink) => ref
