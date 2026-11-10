@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -15,8 +14,6 @@ import '../../../data/permission_policy_database.dart';
 import '../../../widgets/app_toast.dart';
 import 'voice_input_overlay.dart';
 import '../../../l10n/app_strings.dart';
-
-
 
 class ChatInputBox extends StatefulWidget {
   const ChatInputBox({
@@ -43,6 +40,7 @@ class _ChatInputBoxState extends State<ChatInputBox> {
   bool _webSearch = false;
   bool _recording = false;
   bool _voiceMode = false;
+  bool _showAddOptions = false;
   AudioRecorder? _recorder;
   StreamSubscription<Uint8List>? _micSub;
   Timer? _ampTimer;
@@ -69,32 +67,71 @@ class _ChatInputBoxState extends State<ChatInputBox> {
     await prefs.setBool('chat_deep_think', value);
   }
 
-  Future<void> _showAttachMenu() async {
-    final choice = await showModalBottomSheet<String>(
-      context: context,
-      builder: (ctx) => SafeArea(
+  /// 添加选项区域：拍照 / 相册 / 文件（内联展开，不弹窗）
+  Widget _buildAddOptions(ColorScheme scheme) {
+    return Row(
+      children: [
+        Expanded(
+          child: _addOption(
+            scheme: scheme,
+            icon: Icons.photo_camera_outlined,
+            label: '拍照',
+            onTap: () => _pickImage(source: ImageSource.camera),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _addOption(
+            scheme: scheme,
+            icon: Icons.photo_library_outlined,
+            label: '相册',
+            onTap: () => _pickImage(),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _addOption(
+            scheme: scheme,
+            icon: Icons.insert_drive_file_outlined,
+            label: '文件',
+            onTap: _pickFile,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _addOption({
+    required ColorScheme scheme,
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: () {
+        setState(() => _showAddOptions = false);
+        onTap();
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainer,
+          borderRadius: BorderRadius.circular(12),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(
-              leading: const Icon(Icons.image_outlined),
-              title: Text(AppStrings.of(context).t('attachImage')),
-              onTap: () => Navigator.of(ctx).pop('image'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.insert_drive_file_outlined),
-              title: Text(AppStrings.of(context).t('attachFile')),
-              onTap: () => Navigator.of(ctx).pop('file'),
+            Icon(icon, size: 24, color: scheme.onSurface),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(fontSize: 12, color: scheme.onSurface),
             ),
           ],
         ),
       ),
     );
-    if (choice == 'image') {
-      await _pickImage();
-    } else if (choice == 'file') {
-      await _pickFile();
-    }
   }
 
   Future<void> _pickFile() async {
@@ -109,12 +146,14 @@ class _ChatInputBoxState extends State<ChatInputBox> {
     final bytes = await File(path).readAsBytes();
     final text = utf8.decode(bytes, allowMalformed: true);
     if (!mounted) return;
-    setState(() => _fileText = text.length > 20000 ? text.substring(0, 20000) : text);
+    setState(
+      () => _fileText = text.length > 20000 ? text.substring(0, 20000) : text,
+    );
   }
 
-  Future<void> _pickImage() async {
+  Future<void> _pickImage({ImageSource source = ImageSource.gallery}) async {
     final picked = await ImagePicker().pickImage(
-      source: ImageSource.gallery,
+      source: source,
       maxWidth: 1568,
       imageQuality: 85,
     );
@@ -129,9 +168,7 @@ class _ChatInputBoxState extends State<ChatInputBox> {
 
   void _send() {
     final text = widget.controller.text.trim();
-    final withFile = _fileText.isEmpty
-        ? text
-        : '$text\n\n附件内容：\n$_fileText';
+    final withFile = _fileText.isEmpty ? text : '$text\n\n附件内容：\n$_fileText';
     if (withFile.isEmpty && _images.isEmpty) return;
     widget.onSend(withFile.trim(), List.of(_images), _deepThink);
     widget.controller.clear();
@@ -166,11 +203,13 @@ class _ChatInputBoxState extends State<ChatInputBox> {
       }
 
       _pcmBuffer.clear();
-      final stream = await recorder.startStream(const RecordConfig(
-        encoder: AudioEncoder.pcm16bits,
-        sampleRate: 16000,
-        numChannels: 1,
-      ));
+      final stream = await recorder.startStream(
+        const RecordConfig(
+          encoder: AudioEncoder.pcm16bits,
+          sampleRate: 16000,
+          numChannels: 1,
+        ),
+      );
       _micSub = stream.listen((data) => _pcmBuffer.addAll(data));
       // onAmplitudeChanged 是单订阅流，第二次录音会抛 "Stream has already been listened to"，
       // 这里改为定时轮询 getAmplitude（每次调用独立）。
@@ -242,113 +281,139 @@ class _ChatInputBoxState extends State<ChatInputBox> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (_voiceMode)
-            Listener(
-              onPointerDown: (_) => _startVoice(),
-              onPointerUp: (_) => _stopVoice(),
-              onPointerCancel: (_) => _stopVoice(),
-              child: Container(
-                height: 48,
-                width: double.infinity,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: scheme.surface,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  _recording ? '正在录音…' : '按住说话',
-                  style: const TextStyle(fontSize: 16),
-                ),
-              ),
-            )
-          else
-            TextField(
-              controller: widget.controller,
-              minLines: 1,
-              maxLines: 1,
-              textInputAction: TextInputAction.send,
-              onSubmitted: (_) => _send(),
-              decoration: InputDecoration(
-                hintText: AppStrings.of(context).inputHint,
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-            ),
-          const SizedBox(height: 8),
-          Row(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: scheme.surfaceContainer,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              _toggleChip('深度思考', _deepThink, _setDeepThink),
-              const SizedBox(width: 8),
-              _toggleChip('智能搜索', _webSearch, (v) => setState(() => _webSearch = v)),
-              const Spacer(),
-              IconButton(
-                onPressed: _showAttachMenu,
-                icon: Icon(Icons.add, color: scheme.onSurfaceVariant),
-                visualDensity: VisualDensity.compact,
-              ),
-              IconButton(
-                onPressed: () => setState(() => _voiceMode = !_voiceMode),
-                icon: Icon(
-                  _voiceMode ? Icons.keyboard : Icons.mic_none,
-                  size: 24,
-                  color: scheme.onSurfaceVariant,
-                ),
-                visualDensity: VisualDensity.compact,
-                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-              ),
-              const SizedBox(width: 4),
-              if (widget.isLoading)
-                IconButton.filled(
-                  onPressed: widget.onStop,
-                  icon: const Icon(Icons.stop, size: 18),
-                  visualDensity: VisualDensity.compact,
-                  style: IconButton.styleFrom(
-                    minimumSize: const Size(32, 32),
-                    padding: EdgeInsets.zero,
+              if (_voiceMode)
+                Listener(
+                  onPointerDown: (_) => _startVoice(),
+                  onPointerUp: (_) => _stopVoice(),
+                  onPointerCancel: (_) => _stopVoice(),
+                  child: Container(
+                    height: 48,
+                    width: double.infinity,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: scheme.surface,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      _recording ? '正在录音…' : '按住说话',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+                )
+              else
+                TextField(
+                  controller: widget.controller,
+                  minLines: 1,
+                  maxLines: 1,
+                  textInputAction: TextInputAction.send,
+                  onSubmitted: (_) => _send(),
+                  decoration: InputDecoration(
+                    hintText: AppStrings.of(context).inputHint,
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                 ),
-              ValueListenableBuilder<TextEditingValue>(
-                valueListenable: widget.controller,
-                builder: (context, value, _) {
-                  if (widget.isLoading || value.text.trim().isEmpty) {
-                    return const SizedBox.shrink();
-                  }
-                  return IconButton.filled(
-                    onPressed: _send,
-                    icon: const Icon(Icons.arrow_upward, size: 18),
-                    visualDensity: VisualDensity.compact,
-                    style: IconButton.styleFrom(
-                      minimumSize: const Size(32, 32),
-                      padding: EdgeInsets.zero,
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  _toggleChip('深度思考', _deepThink, _setDeepThink),
+                  const SizedBox(width: 8),
+                  _toggleChip(
+                    '智能搜索',
+                    _webSearch,
+                    (v) => setState(() => _webSearch = v),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () =>
+                        setState(() => _showAddOptions = !_showAddOptions),
+                    icon: Icon(
+                      _showAddOptions ? Icons.close : Icons.add,
+                      color: scheme.onSurfaceVariant,
                     ),
-                  );
-                },
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  IconButton(
+                    onPressed: () => setState(() => _voiceMode = !_voiceMode),
+                    icon: Icon(
+                      _voiceMode ? Icons.keyboard : Icons.mic_none,
+                      size: 24,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                    visualDensity: VisualDensity.compact,
+                    constraints: const BoxConstraints(
+                      minWidth: 40,
+                      minHeight: 40,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  if (widget.isLoading)
+                    IconButton.filled(
+                      onPressed: widget.onStop,
+                      icon: const Icon(Icons.stop, size: 18),
+                      visualDensity: VisualDensity.compact,
+                      style: IconButton.styleFrom(
+                        minimumSize: const Size(32, 32),
+                        padding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ValueListenableBuilder<TextEditingValue>(
+                    valueListenable: widget.controller,
+                    builder: (context, value, _) {
+                      if (widget.isLoading || value.text.trim().isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return IconButton.filled(
+                        onPressed: _send,
+                        icon: const Icon(Icons.arrow_upward, size: 18),
+                        visualDensity: VisualDensity.compact,
+                        style: IconButton.styleFrom(
+                          minimumSize: const Size(32, 32),
+                          padding: EdgeInsets.zero,
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
             ],
           ),
+        ),
+        if (_showAddOptions) ...[
+          const SizedBox(height: 8),
+          _buildAddOptions(scheme),
         ],
-      ),
+      ],
     );
   }
 
-  Widget _toggleChip(String label, bool selected, ValueChanged<bool> onChanged) {
+  Widget _toggleChip(
+    String label,
+    bool selected,
+    ValueChanged<bool> onChanged,
+  ) {
     final scheme = Theme.of(context).colorScheme;
     return FilterChip(
       label: Text(label, style: TextStyle(fontSize: 12)),
       selected: selected,
       onSelected: onChanged,
       showCheckmark: false,
-      side: BorderSide(color: selected ? scheme.primary : scheme.outlineVariant),
+      side: BorderSide(
+        color: selected ? scheme.primary : scheme.outlineVariant,
+      ),
       backgroundColor: selected
           ? scheme.primary.withValues(alpha: 0.15)
           : scheme.surface,
