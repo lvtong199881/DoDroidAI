@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 
+import '../models/ask_question.dart';
 import '../models/chat_message.dart';
 
 class ChatSession {
@@ -25,7 +26,7 @@ class ChatDatabase {
     final dir = await getDatabasesPath();
     _db = await openDatabase(
       p.join(dir, 'dodroidai_flutter.db'),
-      version: 4,
+      version: 5,
       onCreate: (db, version) async {
         await db.execute(
           'CREATE TABLE sessions (id TEXT PRIMARY KEY, name TEXT, updated_at INTEGER)',
@@ -34,6 +35,11 @@ class ChatDatabase {
           'CREATE TABLE messages (id INTEGER PRIMARY KEY AUTOINCREMENT, '
           'session_id TEXT, role TEXT, content TEXT, blocks TEXT, '
           'tool_call_id TEXT, images TEXT, created_at INTEGER)',
+        );
+        await db.execute(
+          'CREATE TABLE pending_questions (id TEXT PRIMARY KEY, '
+          'session_id TEXT, call_id TEXT, questions TEXT, '
+          'created_at INTEGER, answered_at INTEGER)',
         );
       },
       onUpgrade: (db, oldVersion, newVersion) async {
@@ -45,6 +51,13 @@ class ChatDatabase {
         }
         if (oldVersion < 4) {
           await db.execute('ALTER TABLE messages ADD COLUMN tool_call_id TEXT');
+        }
+        if (oldVersion < 5) {
+          await db.execute(
+            'CREATE TABLE pending_questions (id TEXT PRIMARY KEY, '
+            'session_id TEXT, call_id TEXT, questions TEXT, '
+            'created_at INTEGER, answered_at INTEGER)',
+          );
         }
       },
     );
@@ -101,7 +114,48 @@ class ChatDatabase {
   Future<void> deleteSession(String sessionId) async {
     final db = await _open();
     await db.delete('messages', where: 'session_id = ?', whereArgs: [sessionId]);
+    await db.delete('pending_questions',
+        where: 'session_id = ?', whereArgs: [sessionId]);
     await db.delete('sessions', where: 'id = ?', whereArgs: [sessionId]);
+  }
+
+  /// 超时未答的问题落库，支持重启后补答
+  Future<void> insertPendingQuestion(PendingQuestion pending) async {
+    final db = await _open();
+    await db.insert(
+      'pending_questions',
+      {
+        'id': pending.callId,
+        'session_id': pending.sessionId,
+        'call_id': pending.callId,
+        'questions': pending.questionsJson,
+        'created_at': pending.createdAt.millisecondsSinceEpoch,
+        'answered_at': null,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  /// 某个会话下所有未回答的问题
+  Future<List<PendingQuestion>> pendingQuestionsOf(String sessionId) async {
+    final db = await _open();
+    final rows = await db.query(
+      'pending_questions',
+      where: 'session_id = ? AND answered_at IS NULL',
+      whereArgs: [sessionId],
+      orderBy: 'created_at ASC',
+    );
+    return rows.map(PendingQuestion.fromRow).toList();
+  }
+
+  Future<void> markPendingAnswered(String id) async {
+    final db = await _open();
+    await db.update(
+      'pending_questions',
+      {'answered_at': DateTime.now().millisecondsSinceEpoch},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   Future<void> insertMessage(String sessionId, ChatMessage message) async {

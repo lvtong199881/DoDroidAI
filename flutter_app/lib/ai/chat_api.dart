@@ -162,24 +162,24 @@ class ChatApi {
     final respBody = response.data;
     if (respBody == null) return;
 
-    final buffer = StringBuffer();
+    // 按字节缓冲后整行解码：避免多字节字符被 chunk 边界切断而损坏 JSON
+    final pending = <int>[];
     await for (final chunk in respBody.stream) {
-      buffer.write(utf8.decode(chunk, allowMalformed: true));
-      var text = buffer.toString();
-      var newline = text.indexOf('\n');
-      while (newline >= 0) {
-        final line = text.substring(0, newline).trim();
-        text = text.substring(newline + 1);
-        newline = text.indexOf('\n');
+      pending.addAll(chunk);
+      var lineStart = 0;
+      for (var i = 0; i < pending.length; i++) {
+        if (pending[i] != 0x0A) continue;
+        final line = utf8
+            .decode(pending.sublist(lineStart, i), allowMalformed: true)
+            .trim();
+        lineStart = i + 1;
         if (line.isEmpty || !line.startsWith('data:')) continue;
         final data = line.substring(5).trim();
         if (data == '[DONE]') return;
         final event = _parseEvent(data);
         if (event != null) yield event;
       }
-      buffer
-        ..clear()
-        ..write(text);
+      if (lineStart > 0) pending.removeRange(0, lineStart);
     }
   }
 

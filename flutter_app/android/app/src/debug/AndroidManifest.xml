@@ -4,4 +4,6 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- 调试构建允许明文 HTTP，便于用本地 mock 服务验证工具链路 -->
+    <application android:usesCleartextTraffic="true" />
 </manifest>

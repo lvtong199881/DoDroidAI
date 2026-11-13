@@ -187,7 +187,78 @@ class ToolRegistry {
         },
       },
     },
+    {
+      'type': 'function',
+      'function': {
+        'name': 'ask_user_question',
+        'description':
+            '当需要用户确认、选择或补充信息才能继续时，向用户提简明、自洽、面向用户的问题。'
+            '某项 selected 为空且没有 custom 表示用户跳过该问题：继续执行、不要重复询问、'
+            '也不要把跳过当作许可。返回 pending 表示超时未答，这不是跳过。',
+        'parameters': {
+          'type': 'object',
+          'properties': {
+            'questions': {
+              'type': 'array',
+              'description': '要询问用户的问题列表',
+              'items': {
+                'type': 'object',
+                'properties': {
+                  'id': {
+                    'type': 'string',
+                    'description': '本问题在本批次内的稳定标识，答案会原样带回',
+                  },
+                  'question': {
+                    'type': 'string',
+                    'description': '要问用户的具体问题',
+                  },
+                  'header': {
+                    'type': 'string',
+                    'description': '可选短标题，例如「确认」「选择模式」',
+                  },
+                  'options': {
+                    'type': 'array',
+                    'description': '可选选项列表；若推荐某个选项，把它放第一位并在标签后加「（推荐）」',
+                    'items': {
+                      'type': 'object',
+                      'properties': {
+                        'label': {
+                          'type': 'string',
+                          'description': '面向用户的简短选项标签',
+                        },
+                        'description': {
+                          'type': 'string',
+                          'description': '一句话解释该选项的取舍或影响',
+                        },
+                      },
+                      'required': ['label'],
+                    },
+                  },
+                  'multi_select': {
+                    'type': 'boolean',
+                    'description': '用户是否可以多选，默认 false',
+                  },
+                },
+                'required': ['id', 'question'],
+              },
+            },
+            'timeout': {
+              'type': 'integer',
+              'description': '整批问题的等待秒数，默认 120。'
+                  '除非用户明确要求等待时长，否则省略。'
+                  '只有在必须拿到答案才能继续时才用 -1（无限等待）',
+            },
+          },
+          'required': ['questions'],
+        },
+      },
+    },
   ];
+
+  /// 交互式工具：执行时需要挂起等待用户输入
+  static const String askQuestionTool = 'ask_user_question';
+
+  static bool isInteractive(String name) => name == askQuestionTool;
 
   static const Set<String> highRiskTools = {'send_sms', 'add_note'};
 
@@ -228,6 +299,10 @@ class ToolRegistry {
   static Future<String> execute(String name, String argumentsJson) async {
     final args = _decode(argumentsJson);
     switch (name) {
+      case askQuestionTool:
+        // 交互式工具由 ChatController 挂起处理，走到这里说明状态异常
+        return 'Error: ask_user_question 需要交互界面，不能直接执行';
+
       case 'web_search':
         final query = (args['query'] as String?) ?? '';
         return WebSearch.search(query);

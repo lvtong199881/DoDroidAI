@@ -12,6 +12,8 @@ import '../settings/settings_screen.dart';
 import 'chat_provider.dart';
 import 'widgets/app_drawer.dart';
 import 'widgets/chat_input_box.dart';
+import '../../models/ask_question.dart';
+import 'widgets/ask_question_sheet.dart';
 import 'widgets/message_bubble.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
@@ -26,6 +28,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
   String? _lastAutoReadKey;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _askSheetOpen = false;
 
   @override
   void initState() {
@@ -89,6 +92,32 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     ref.read(chatProvider.notifier).resolveConfirmation(approved == true);
   }
 
+  Future<void> _showAskQuestionSheet(List<AskQuestion> questions) async {
+    _askSheetOpen = true;
+    final answers = await showAskQuestionSheet(
+      context,
+      questions: questions,
+      timeoutSeconds: 120,
+    );
+    _askSheetOpen = false;
+    if (!mounted) return;
+    ref.read(chatProvider.notifier).resolveQuestions(answers);
+  }
+
+  Future<void> _openPendingAnswer(PendingQuestion pending) async {
+    final answers = await showAskQuestionSheet(
+      context,
+      questions: pending.questions,
+      timeoutSeconds: 0,
+    );
+    if (!mounted || answers == null) return;
+    await ref
+        .read(chatProvider.notifier)
+        .answerPendingQuestion(pending.callId, answers);
+    if (!mounted) return;
+    showToast(context, AppStrings.of(context).t('askAnswered'));
+  }
+
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scrollController.hasClients) return;
@@ -135,6 +164,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       final pending = next.pendingConfirmation;
       if (pending != null && previous?.pendingConfirmation == null) {
         _showToolConfirmDialog(pending);
+      }
+      final questions = next.pendingQuestions;
+      if (questions != null && previous?.pendingQuestions == null) {
+        _showAskQuestionSheet(questions);
+      } else if (questions == null &&
+          previous?.pendingQuestions != null &&
+          _askSheetOpen) {
+        // 超时：provider 清空挂起状态，主动关闭面板
+        Navigator.of(context, rootNavigator: true).maybePop();
       }
     });
 
@@ -205,6 +243,50 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     },
                   ),
           ),
+          if (state.awaitingAnswers.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(10),
+                onTap: () => _openPendingAnswer(state.awaitingAnswers.first),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: scheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.help_outline,
+                        size: 18,
+                        color: scheme.onPrimaryContainer,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '${state.awaitingAnswers.length} '
+                          '${AppStrings.of(context).t('askPendingBanner')}',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: scheme.onPrimaryContainer,
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        Icons.chevron_right,
+                        size: 18,
+                        color: scheme.onPrimaryContainer,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           Padding(
             // 底部额外让出系统手势条高度，使输入框下方留白与左右一致
             padding: EdgeInsets.fromLTRB(

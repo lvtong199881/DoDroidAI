@@ -126,6 +126,21 @@ class MessageBlock { kind, text, ToolCallInfo? tool, seconds }
 - 每次执行写入 `tool_audit_log`（工具名/参数摘要/结果）
 - 原生侧桥接用 `MethodChannel('dodroidai/native')`（目前只有 `searchContacts`）
 
+### 4.3.1 交互式工具 `ask_user_question`
+
+模型需要确认、选择或补充信息时调用，对齐 DSH 的 timed 模式：
+
+- 参数：`questions[]`（`id`/`question` 必填，`header`/`options[]{label,description}`/`multi_select` 可选）
+  + `timeout`（秒，默认 120，`-1` 无限，合法 `-1` 或 `1..2147483`）
+- 结果两种形态：
+  - 按时回答 `{"answers":[{"id","selected":[],"custom"?}]}`，**跳过 = 空 `selected` 且无 `custom`**
+  - 超时 `{"pending":true,"callId","message"}`，模型继续做独立工作
+- 挂起机制：`ChatState.pendingQuestions` + `Completer<AskOutcome>` + `Timer(deadline)`，
+  UI 由 `ask_question_sheet.dart` 渲染（倒计时、单选/多选/自定义、逐题跳过）
+- 超时后问题落库 `pending_questions` 表，输入框上方显示待答横幅，补答时注入带
+  `[answer_to_pending_question callId=...]` 标记的 user 消息并触发新一轮
+- 新增交互式工具走同一路径：`ToolRegistry.isInteractive()` + `ChatController._askQuestions()`
+
 ### 4.4 语音
 
 - ASR：sherpa-onnx + SenseVoice，按住说话，16kHz 单声道
@@ -137,7 +152,8 @@ class MessageBlock { kind, text, ToolCallInfo? tool, seconds }
 
 ### 4.5 数据与持久化
 
-- 会话/消息：`dodroidai_flutter.db`（sqflite），`messages.blocks` 存 JSON
+- 会话/消息：`dodroidai_flutter.db`（sqflite，当前 version 5），`messages.blocks` 存 JSON，
+  `pending_questions` 存超时未答的问题
 - 数据库版本变更必须写 `onUpgrade` 迁移，且 `onCreate` 与迁移列保持一致
 - 新会话懒创建：只有发送第一条消息时才写库，启动和点「+」不落库
 - 笔记/记忆/定时任务各自独立表

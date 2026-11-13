@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,6 +13,7 @@ import '../../data/tool_audit_database.dart';
 import '../../home_widgets.dart';
 import 'dart:async';
 import '../../data/chat_database.dart';
+import '../../models/ask_question.dart';
 import '../../models/chat_message.dart';
 
 class ChatState {
@@ -22,6 +25,8 @@ class ChatState {
     this.autoRead = false,
     this.error,
     this.pendingConfirmation,
+    this.pendingQuestions,
+    this.awaitingAnswers = const [],
   })  : messages = messages ?? [],
         sessions = sessions ?? [];
 
@@ -33,6 +38,12 @@ class ChatState {
   final String? error;
   final ToolCallInfo? pendingConfirmation;
 
+  /// 当前正在等待回答的问题（面板打开时非空）
+  final List<AskQuestion>? pendingQuestions;
+
+  /// 会话内超时未答、仍可补答的问题
+  final List<PendingQuestion> awaitingAnswers;
+
   ChatState copyWith({
     List<ChatMessage>? messages,
     List<ChatSession>? sessions,
@@ -41,7 +52,10 @@ class ChatState {
     bool? autoRead,
     String? error,
     ToolCallInfo? pendingConfirmation,
+    List<AskQuestion>? pendingQuestions,
+    List<PendingQuestion>? awaitingAnswers,
     bool clearPending = false,
+    bool clearPendingQuestions = false,
   }) {
     return ChatState(
       messages: messages ?? this.messages,
@@ -52,6 +66,10 @@ class ChatState {
       error: error,
       pendingConfirmation:
           clearPending ? null : (pendingConfirmation ?? this.pendingConfirmation),
+      pendingQuestions: clearPendingQuestions
+          ? null
+          : (pendingQuestions ?? this.pendingQuestions),
+      awaitingAnswers: awaitingAnswers ?? this.awaitingAnswers,
     );
   }
 
@@ -93,6 +111,9 @@ class ChatController extends StateNotifier<ChatState> {
     }
   }
   Completer<bool>? _confirmationCompleter;
+  Completer<AskOutcome>? _questionCompleter;
+  Timer? _questionTimer;
+  List<AskQuestion>? _lastAskedQuestions;
 
   Future<void> ensureReady() async {
     if (_ready) return;
@@ -104,6 +125,7 @@ class ChatController extends StateNotifier<ChatState> {
       messages: const [],
       sessions: sessions,
       currentSessionId: null,
+      awaitingAnswers: const [],
     );
   }
 
@@ -121,7 +143,23 @@ class ChatController extends StateNotifier<ChatState> {
     if (state.isLoading) return;
     _sessionId = sessionId;
     final history = await _database.messagesOf(sessionId);
-    state = state.copyWith(messages: history, currentSessionId: sessionId);
+    final pending = await _database.pendingQuestionsOf(sessionId);
+    state = state.copyWith(
+      messages: history,
+      currentSessionId: sessionId,
+      awaitingAnswers: pending,
+    );
+  }
+
+  @override
+  void dispose() {
+    _questionTimer?.cancel();
+    final completer = _questionCompleter;
+    if (completer != null && !completer.isCompleted) {
+      completer.complete(const AskOutcome.cancelled());
+    }
+    _confirmationCompleter?.complete(false);
+    super.dispose();
   }
 
   Future<void> deleteSession(String sessionId) async {
@@ -168,10 +206,8 @@ class ChatController extends StateNotifier<ChatState> {
       content: text.trim(),
       images: images,
     );
-    final assistant =
-        ChatMessage(role: ChatRole.assistant, content: '', isLoading: true);
     state = state.copyWith(
-      messages: [...state.messages, user, assistant],
+      messages: [...state.messages, user],
       isLoading: true,
       error: null,
     );
@@ -187,7 +223,24 @@ class ChatController extends StateNotifier<ChatState> {
       state = state.copyWith(sessions: await _database.sessions());
     }
 
-    // 按模型上下文窗口压缩：超过 80% 时从最旧开始丢弃，降到 60% 以下
+    await _runCompletion(deepThink: deepThink);
+  }
+
+  /// 创建助手占位并跑完一轮（含工具循环），send 与补答共用
+  Future<void> _runCompletion({required bool deepThink}) async {
+    final config = _config;
+    if (config == null) return;
+    final assistant =
+        ChatMessage(role: ChatRole.assistant, content: '', isLoading: true);
+    state = state.copyWith(
+      messages: [...state.messages, assistant],
+      isLoading: true,
+      error: null,
+    );
+    // 会话 ID 由 _ensureSessionId 懒创建，幂等
+    final sessionId = await _ensureSessionId();
+    if (sessionId.isEmpty) return;
+    // 按模型上下文窗口压缩：超过 80% 时由摘要替换更早的对话
     final allMessages = state.messages.where((m) => !m.isLoading).toList();
     final history = await _fitContextAsync(allMessages, config);
 
@@ -283,6 +336,48 @@ class ChatController extends StateNotifier<ChatState> {
           blocks: [for (final call in calls) MessageBlock.tool(call)],
         ));
         for (final call in calls) {
+          if (ToolRegistry.isInteractive(call.name)) {
+                    final outcome = await _askQuestions(call);
+            String result;
+            if (outcome.error != null) {
+              result = outcome.error!;
+            } else if (outcome.cancelled) {
+              result = '用户取消了提问';
+            } else if (outcome.timedOut) {
+              result = jsonEncode({
+                'pending': true,
+                'callId': call.id,
+                'message': kAskPendingNotice,
+              });
+              final pending = PendingQuestion(
+                callId: call.id,
+                sessionId: sessionId,
+                questions: _lastAskedQuestions ?? const [],
+                createdAt: DateTime.now(),
+              );
+              await _database.insertPendingQuestion(pending);
+              await _refreshAwaiting(sessionId);
+            } else {
+              result = jsonEncode({
+                'answers': outcome.answers.map((a) => a.toJson()).toList(),
+              });
+            }
+            call.isRunning = false;
+            call.isSuccess = outcome.error == null && !outcome.cancelled;
+            call.resultSummary = _describeAskOutcome(outcome);
+            await ToolAuditRepository.instance.insert(
+              toolName: call.name,
+              argsSummary: call.arguments,
+              resultSummary: result,
+              success: outcome.error == null && !outcome.cancelled,
+            );
+            history.add(ChatMessage(
+              role: ChatRole.tool,
+              content: result,
+              toolCallId: call.id,
+            ));
+            continue;
+          }
           if (ToolRegistry.isHighRisk(call.name)) {
             final approved = await _confirmTool(call);
             if (!approved) {
@@ -337,6 +432,116 @@ class ChatController extends StateNotifier<ChatState> {
     }
   }
 
+  /// 解析并挂起提问：等待用户回答或超时
+  Future<AskOutcome> _askQuestions(ToolCallInfo call) async {
+    final decoded = _decodeArgs(call.arguments);
+    final questions = AskQuestion.parseList(decoded['questions']);
+    if (questions == null) {
+      return const AskOutcome.failed(
+        'Error: ask_user_question requires at least one question',
+      );
+    }
+    final duplicate = AskQuestion.duplicateId(questions);
+    if (duplicate != null) {
+      return AskOutcome.failed(
+        'Error: question id "$duplicate" must be unique within this call',
+      );
+    }
+    var timeout = 120;
+    final rawTimeout = decoded['timeout'];
+    if (rawTimeout is int) {
+      timeout = rawTimeout;
+    } else if (rawTimeout is num) {
+      timeout = rawTimeout.toInt();
+    }
+    // 与 DSH 一致：-1 表示无限等待，其余必须是 1..2147483
+    if (timeout != -1 && (timeout < 1 || timeout > 2147483)) {
+      return const AskOutcome.failed(
+        'Error: timeout must be -1 or a positive integer '
+        'up to 2147483 seconds',
+      );
+    }
+
+    _lastAskedQuestions = questions;
+    final completer = Completer<AskOutcome>();
+    _questionCompleter = completer;
+    state = state.copyWith(pendingQuestions: questions);
+
+    if (timeout > 0) {
+      _questionTimer = Timer(Duration(seconds: timeout), () {
+        if (completer.isCompleted) return;
+        state = state.copyWith(clearPendingQuestions: true);
+        completer.complete(const AskOutcome.timedOut());
+        _questionCompleter = null;
+      });
+    }
+    return completer.future;
+  }
+
+  /// 面板提交答案
+  void resolveQuestions(List<AskAnswer>? answers) {
+    _questionTimer?.cancel();
+    _questionTimer = null;
+    final completer = _questionCompleter;
+    _questionCompleter = null;
+    state = state.copyWith(clearPendingQuestions: true);
+    if (completer == null || completer.isCompleted) return;
+    completer.complete(
+      answers == null
+          ? const AskOutcome.cancelled()
+          : AskOutcome.answered(answers),
+    );
+  }
+
+  /// 会话内刷新待答问题列表
+  Future<void> _refreshAwaiting(String sessionId) async {
+    final pending = await _database.pendingQuestionsOf(sessionId);
+    state = state.copyWith(awaitingAnswers: pending);
+  }
+
+  /// 补答：注入 user 消息并触发新一轮
+  Future<void> answerPendingQuestion(
+    String pendingId,
+    List<AskAnswer> answers,
+  ) async {
+    if (state.isLoading) return;
+    final pending = state.awaitingAnswers.where((p) => p.callId == pendingId);
+    if (pending.isEmpty) return;
+    await _database.markPendingAnswered(pendingId);
+    final user = ChatMessage(
+      role: ChatRole.user,
+      content: pendingAnswerMessage(pendingId, answers),
+    );
+    state = state.copyWith(
+      messages: [...state.messages, user],
+      isLoading: true,
+      error: null,
+    );
+    final sessionId = await _ensureSessionId();
+    await _database.insertMessage(sessionId, user);
+    await _refreshAwaiting(sessionId);
+    await _runCompletion(deepThink: false);
+  }
+
+  String _describeAskOutcome(AskOutcome outcome) {
+    if (outcome.cancelled) return '用户取消了提问';
+    if (outcome.timedOut) return '等待超时，问题保持待答';
+    final answered = outcome.answers.where((a) => !a.isSkipped).length;
+    final skipped = outcome.answers.length - answered;
+    if (answered == 0) return '用户跳过了全部问题';
+    return '用户回答了 $answered 个问题${skipped > 0 ? '，跳过 $skipped 个' : ''}';
+  }
+
+  Map<String, dynamic> _decodeArgs(String raw) {
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is Map) return Map<String, dynamic>.from(decoded);
+    } catch (_) {
+      // ignore
+    }
+    return const {};
+  }
+
   Future<bool> _confirmTool(ToolCallInfo call) {
     final completer = Completer<bool>();
     _confirmationCompleter = completer;
@@ -385,6 +590,9 @@ class ChatController extends StateNotifier<ChatState> {
   void stopGeneration() {
     if (!state.isLoading) return;
     _cancelled = true;
+    _confirmationCompleter?.complete(false);
+    _confirmationCompleter = null;
+    resolveQuestions(null);
     state = state.copyWith(isLoading: false);
   }
 
@@ -513,7 +721,10 @@ class ChatController extends StateNotifier<ChatState> {
     final base =
         '你是 DoDroidAI，一个运行在 Android 手机上的助手。'
         '你可以调用工具操作手机（闹钟、日历、短信、笔记、通讯录、剪贴板、定时任务、联网搜索）。'
-        '需要操作手机时直接调用工具，不要只描述步骤；回答简洁准确。';
+        '需要操作手机时直接调用工具，不要只描述步骤；回答简洁准确。'
+        '缺少必要信息或需要用户做选择时，用 ask_user_question 提问；'
+        '能从上下文推断的不要问。若收到 pending，说明用户还没回答，'
+        '继续做可以独立完成的工作，不要把 pending 当成跳过或许可。';
     try {
       final facts = await MemoryRepository.instance.list();
       if (facts.isEmpty) return base;
