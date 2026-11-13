@@ -118,14 +118,15 @@ class _AskQuestionSheetState extends State<_AskQuestionSheet> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final strings = AppStrings.of(context);
-    final height = MediaQuery.sizeOf(context).height * 0.85;
+    // 高度自适应内容，上限为屏幕 80%
+    final maxHeight = MediaQuery.sizeOf(context).height * 0.8;
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) Navigator.of(context).pop(null);
       },
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: height),
+        constraints: BoxConstraints(maxHeight: maxHeight),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -165,15 +166,18 @@ class _AskQuestionSheetState extends State<_AskQuestionSheet> {
                 ],
               ),
             ),
-            Expanded(
-              child: ListView.separated(
+            // 内容少时按内容高度收缩，超出上限后内部滚动
+            Flexible(
+              child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-                itemCount: widget.questions.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 16),
-                itemBuilder: (context, index) => _buildQuestion(
-                  context,
-                  scheme,
-                  widget.questions[index],
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (var i = 0; i < widget.questions.length; i++) ...[
+                      if (i > 0) const SizedBox(height: 16),
+                      _buildQuestion(context, scheme, widget.questions[i]),
+                    ],
+                  ],
                 ),
               ),
             ),
