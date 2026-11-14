@@ -12,15 +12,17 @@ reminders and web search. Speech input and output run fully offline on top of `s
 
 - **Chat**: SSE streaming, ordered content blocks (reasoning → tool → reasoning → reply), stop
   generation, retry, copy, read-aloud
-- **Tool calling**: 11 tools with risk-based confirmation and runtime permission handling
+- **Tool calling**: 18 tools with risk-based confirmation and runtime permission handling
 - **Sessions**: local sqflite storage, lazy creation, search, export as Markdown
+- **History retrieval**: the model can search past conversations across sessions, read a full
+  message and the turn it belongs to
 - **Offline speech**
   - ASR: SenseVoice Small (press-and-hold, waveform overlay)
   - TTS: Matcha (default, ~350 ms first audio) and MeloTTS, gapless playback
   - Models downloaded in-app; downloads continue in the background
 - **Memory & notes**: long-term facts and notes the agent can write and read
 - **Scheduled tasks**: relative reminders via WorkManager
-- **Web search**: configurable provider, gated by a toggle
+- **Web search**: configurable provider, up to 4 keywords per call with merged results
 - **Settings**: multi-provider AI configs, theme, language, tool audit, diagnostics, request traces
 - **Home screen widgets** and app shortcuts
 

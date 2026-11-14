@@ -66,6 +66,7 @@ git 历史中仍可查阅。
 | AI 配置模型、多配置持久化 | `lib/ai/ai_config.dart` |
 | 请求构建与 SSE 解析 | `lib/ai/chat_api.dart` |
 | 工具契约、注册、执行 | `lib/ai/tools.dart` |
+| 会话检索工具（只读，5 个 session_*） | `lib/ai/session_tools.dart` |
 | 联网搜索 | `lib/ai/web_search.dart` |
 | TTS（Matcha/MeloTTS，逐句合成 + 合并播放） | `lib/ai/sherpa_tts.dart` |
 | ASR（SenseVoice） | `lib/ai/sherpa_asr.dart` |
@@ -125,6 +126,11 @@ class MessageBlock { kind, text, ToolCallInfo? tool, seconds }
 - 工具执行结果直接返回字符串给模型，不要抛异常
 - 每次执行写入 `tool_audit_log`（工具名/参数摘要/结果）
 - 原生侧桥接用 `MethodChannel('dodroidai/native')`（目前只有 `searchContacts`）
+- 会话检索工具（`session_search` / `session_event_search` / `session_event_read` /
+  `session_trace` / `session_event_trace`）全部只读，执行逻辑在 `lib/ai/session_tools.dart`；
+  当前会话 id 由 `ToolRegistry.execute(..., sessionId:)` 传入，省略时用当前会话
+- `web_search` 的 `queries` 接受 1-4 个关键词：串行请求（Brave 免费版约 1 QPS）、
+  结果按 query 分节并全局 URL 去重，单个查询失败不影响其他查询；旧 `query` 参数仍兼容
 
 ### 4.3.1 交互式工具 `ask_user_question`
 

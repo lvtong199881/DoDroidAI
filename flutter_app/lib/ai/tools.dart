@@ -10,6 +10,7 @@ import '../data/memory_database.dart';
 import '../data/note_database.dart';
 import '../data/scheduled_task_database.dart';
 
+import 'session_tools.dart';
 import 'web_search.dart';
 
 const MethodChannel _nativeChannel = MethodChannel('dodroidai/native');
@@ -21,13 +22,24 @@ class ToolRegistry {
       'type': 'function',
       'function': {
         'name': 'web_search',
-        'description': '搜索互联网获取实时信息（需要配置 Brave Search API Key）',
+        'description': '搜索互联网获取实时信息（需要配置 Brave Search API Key）。'
+            '支持一次提交 1-4 个查询，会逐个检索并合并结果。',
         'parameters': {
           'type': 'object',
           'properties': {
-            'query': {'type': 'string', 'description': '搜索关键词'},
+            'queries': {
+              'type': 'array',
+              'items': {'type': 'string'},
+              'minItems': 1,
+              'maxItems': 4,
+              'description': '搜索关键词列表，1-4 个；需要对比多个主题时一次传多个',
+            },
+            'count': {
+              'type': 'integer',
+              'description': '每个查询返回条数，默认 5，最大 10',
+            },
           },
-          'required': ['query'],
+          'required': ['queries'],
         },
       },
     },
@@ -253,6 +265,128 @@ class ToolRegistry {
         },
       },
     },
+    {
+      'type': 'function',
+      'function': {
+        'name': 'session_search',
+        'description': '跨所有历史会话搜索关键词，返回命中的会话、命中条数与最佳片段。'
+            '需要回忆用户过去说过什么时使用。结果里的 session_id 可用于 '
+            'session_event_search / session_event_read。',
+        'parameters': {
+          'type': 'object',
+          'properties': {
+            'query': {'type': 'string', 'description': '搜索关键词'},
+            'limit': {
+              'type': 'integer',
+              'description': '最多返回几个会话，默认 5，最大 20',
+            },
+          },
+          'required': ['query'],
+        },
+      },
+    },
+    {
+      'type': 'function',
+      'function': {
+        'name': 'session_event_search',
+        'description': '在指定会话（默认当前会话）内按关键词检索消息，'
+            '返回消息 id、角色、时间与片段。',
+        'parameters': {
+          'type': 'object',
+          'properties': {
+            'query': {'type': 'string', 'description': '搜索关键词'},
+            'session_id': {
+              'type': 'string',
+              'description': '会话 id，省略则用当前会话',
+            },
+            'role': {
+              'type': 'string',
+              'enum': ['user', 'assistant', 'tool'],
+              'description': '只搜某种角色的消息',
+            },
+            'since': {'type': 'string', 'description': 'ISO8601 起始时间（含）'},
+            'until': {'type': 'string', 'description': 'ISO8601 结束时间（含）'},
+            'limit': {
+              'type': 'integer',
+              'description': '最多返回条数，默认 10，最大 50',
+            },
+          },
+          'required': ['query'],
+        },
+      },
+    },
+    {
+      'type': 'function',
+      'function': {
+        'name': 'session_event_read',
+        'description': '读取一条历史消息的完整内容，并附带前后若干条消息的摘要。',
+        'parameters': {
+          'type': 'object',
+          'properties': {
+            'id': {
+              'type': 'integer',
+              'description': '消息 id（来自 session_event_search 的结果）',
+            },
+            'session_id': {
+              'type': 'string',
+              'description': '会话 id，省略则用当前会话',
+            },
+            'before': {
+              'type': 'integer',
+              'description': '前文条数，默认 2，最大 5',
+            },
+            'after': {
+              'type': 'integer',
+              'description': '后文条数，默认 2，最大 5',
+            },
+          },
+          'required': ['id'],
+        },
+      },
+    },
+    {
+      'type': 'function',
+      'function': {
+        'name': 'session_trace',
+        'description': '查看一个会话的概览：标题、消息总数与角色分布、起止时间、'
+            '首条用户诉求与最近回复。',
+        'parameters': {
+          'type': 'object',
+          'properties': {
+            'session_id': {
+              'type': 'string',
+              'description': '会话 id，省略则用当前会话',
+            },
+          },
+        },
+      },
+    },
+    {
+      'type': 'function',
+      'function': {
+        'name': 'session_event_trace',
+        'description': '查看一条消息所属的完整对话轮次：从该轮用户请求到下一次'
+            '用户请求之间的消息序列，含工具调用。',
+        'parameters': {
+          'type': 'object',
+          'properties': {
+            'id': {
+              'type': 'integer',
+              'description': '消息 id（来自 session_event_search 的结果）',
+            },
+            'session_id': {
+              'type': 'string',
+              'description': '会话 id，省略则用当前会话',
+            },
+            'max_messages': {
+              'type': 'integer',
+              'description': '最多返回条数，默认 10，最大 20',
+            },
+          },
+          'required': ['id'],
+        },
+      },
+    },
   ];
 
   /// 交互式工具：执行时需要挂起等待用户输入
@@ -296,16 +430,32 @@ class ToolRegistry {
     return null;
   }
 
-  static Future<String> execute(String name, String argumentsJson) async {
+  static Future<String> execute(
+    String name,
+    String argumentsJson, {
+    String? sessionId,
+  }) async {
     final args = _decode(argumentsJson);
     switch (name) {
       case askQuestionTool:
         // 交互式工具由 ChatController 挂起处理，走到这里说明状态异常
         return 'Error: ask_user_question 需要交互界面，不能直接执行';
 
+      case 'session_search':
+      case 'session_event_search':
+      case 'session_event_read':
+      case 'session_trace':
+      case 'session_event_trace':
+        return SessionTools.execute(
+          name,
+          args,
+          currentSessionId: sessionId,
+        );
+
       case 'web_search':
-        final query = (args['query'] as String?) ?? '';
-        return WebSearch.search(query);
+        final queries = _queriesOf(args);
+        final count = ((args['count'] as num?)?.toInt() ?? 5).clamp(1, 10);
+        return WebSearch.searchMany(queries, count: count);
       case 'add_note':
         final title = (args['title'] as String?) ?? '';
         final content = (args['content'] as String?) ?? '';
@@ -422,6 +572,24 @@ class ToolRegistry {
     final uri = Uri.parse('sms:$number?body=${Uri.encodeComponent(message)}');
     final ok = await launchUrl(uri);
     return ok ? '已打开发短信界面（请手动确认发送）' : '无法打开短信应用';
+  }
+
+  /// 解析查询列表：优先 queries 数组，兼容旧的 query 字符串
+  static List<String> _queriesOf(Map<String, dynamic> args) {
+    final result = <String>[];
+    final raw = args['queries'];
+    if (raw is List) {
+      for (final item in raw) {
+        if (item is String && item.trim().isNotEmpty) {
+          result.add(item.trim());
+        }
+      }
+    }
+    final single = args['query'];
+    if (single is String && single.trim().isNotEmpty) {
+      result.add(single.trim());
+    }
+    return result;
   }
 
   static Map<String, dynamic> _decode(String json) {

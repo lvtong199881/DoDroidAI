@@ -394,7 +394,11 @@ class ChatController extends StateNotifier<ChatState> {
           }
           final permissionError = await ToolRegistry.ensurePermissions(call.name);
           final output = permissionError ??
-              await ToolRegistry.execute(call.name, call.arguments);
+              await ToolRegistry.execute(
+                call.name,
+                call.arguments,
+                sessionId: sessionId,
+              );
           call.isRunning = false;
           call.isSuccess = true;
           call.resultSummary = output;
@@ -722,6 +726,8 @@ class ChatController extends StateNotifier<ChatState> {
         '你是 DoDroidAI，一个运行在 Android 手机上的助手。'
         '你可以调用工具操作手机（闹钟、日历、短信、笔记、通讯录、剪贴板、定时任务、联网搜索）。'
         '需要操作手机时直接调用工具，不要只描述步骤；回答简洁准确。'
+        '需要回忆过去的对话或查找之前说过的内容时，用 session_search 检索所有历史会话，'
+        '用 session_event_search 在当前会话内检索，用 session_event_read 读取完整消息。'
         '缺少必要信息或需要用户做选择时，用 ask_user_question 提问；'
         '能从上下文推断的不要问。若收到 pending，说明用户还没回答，'
         '继续做可以独立完成的工作，不要把 pending 当成跳过或许可。';
