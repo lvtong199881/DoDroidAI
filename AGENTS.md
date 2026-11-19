@@ -149,12 +149,18 @@ class MessageBlock { kind, text, ToolCallInfo? tool, seconds }
 
 ### 4.4 语音
 
+语音是主交互形式：输入框默认语音模式（按住说话），助手回复默认自动朗读（可在对话设置关闭，持久化在 `auto_read`）。
+
 - ASR：sherpa-onnx + SenseVoice，按住说话，16kHz 单声道
-- TTS：Matcha（默认，首包 ~350ms）与 MeloTTS（备选）
+- TTS：Matcha（默认，首包 ~350ms，依赖 `vocos-16khz-univ.onnx`）与 MeloTTS（备选）
 - 合成在常驻 isolate（`SpeechWorker`）里执行，**不要在 UI isolate 直接调 sherpa**
 - 播放策略：首句先播，其余句子合成后合并成一个 wav，整段只切换一次
-- 模型不随包，用户在「设置 → 语音」下载，下载在 `DownloadManager` 全局进行（退出页面不中断）
-- 下载后校验文件大小，失败清理半成品；仅在无可用激活模型时自动启用
+- 朗读可打断：`SherpaTts.stop()` 自增 `_speakSeq` 并使进行中的朗读在检查点退出；开始录音前会先停朗读，避免麦克风录入外放
+- 模型不随包；`VoiceBootstrap.ensureModels()` 在启动时自动准备：已就绪直接预热，Wi-Fi/以太网下自动下载缺失模型（ASR 默认 SenseVoice、TTS 默认 Matcha），
+  蜂窝/无网时不下载并在输入区提示等待 Wi-Fi。下载在 `DownloadManager` 全局进行（退出页面不中断），输入区状态条展示进度
+- 下载后校验文件大小（±5% 容差，HF revision 波动不影响），失败清理半成品；仅在无可用激活模型时自动启用
+- ASR/TTS 启动预热：`SherpaAsr.warmUp()` / `SherpaTts.warmUp()`，失败或模型未就绪时清空缓存，下载完成后可再次预热
+- 模型切换与手动下载仍在「设置 → 语音」页（本页不加新区块）
 
 ### 4.5 数据与持久化
 
@@ -179,11 +185,14 @@ class MessageBlock { kind, text, ToolCallInfo? tool, seconds }
    不要靠截图估算
 3. **`generateWithCallback` 对 Matcha 不返回**：改用逐句 `generate`
 4. **`audioplayers` 的 `onPlayerComplete` 不稳定**：改为按 wav 文件头计算时长等待
-5. **`onAmplitudeChanged` 是单订阅流**：第二次录音会抛 `Stream has already been listened to`，
+5. **Matcha 必须配 vocos-16khz-univ.onnx**（54MB）：模型仓库根目录不含该文件，清单从 `wmghf2023/vocos-16khz-univ-mirror` 拉取；
+   缺文件时 `SherpaTts.isReady()` 恒 false，自动朗读会静默失效
+6. **模型文件大小校验用 ±5% 容差**：`model_catalog.dart` 里手写的是实测值，上游 revision 变化时不至于整包失败，同时能识别半截文件
+7. **`onAmplitudeChanged` 是单订阅流**：第二次录音会抛 `Stream has already been listened to`，
    改用定时轮询 `getAmplitude()`
-6. **compileSdk 必须 ≥37**：`permission_handler_android` 的 AAR 元数据要求
-7. **`android/app/build.gradle.kts` 锁定了 `abiFilters` 只打 arm64-v8a**
-8. **Release 用 debug 签名**，正式发布前需替换签名配置
+8. **compileSdk 必须 ≥37**：`permission_handler_android` 的 AAR 元数据要求
+9. **`android/app/build.gradle.kts` 锁定了 `abiFilters` 只打 arm64-v8a**
+10. **Release 用 debug 签名**，正式发布前需替换签名配置
 
 ## 6. 修改守则
 

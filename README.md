@@ -16,10 +16,12 @@ reminders and web search. Speech input and output run fully offline on top of `s
 - **Sessions**: local sqflite storage, lazy creation, search, export as Markdown
 - **History retrieval**: the model can search past conversations across sessions, read a full
   message and the turn it belongs to
-- **Offline speech**
-  - ASR: SenseVoice Small (press-and-hold, waveform overlay)
-  - TTS: Matcha (default, ~350 ms first audio) and MeloTTS, gapless playback
-  - Models downloaded in-app; downloads continue in the background
+- **Voice-first offline speech**
+  - ASR: SenseVoice Small (press-and-hold, waveform overlay); the input box starts in voice mode
+  - TTS: Matcha (default, ~350 ms first audio) and MeloTTS, gapless playback; assistant replies
+    are read aloud automatically (toggle in chat settings, persisted)
+  - Models are prepared automatically on first launch over Wi-Fi (progress shown above the input);
+    downloads continue in the background, and read-aloud can be stopped/replaced at any time
 - **Memory & notes**: long-term facts and notes the agent can write and read
 - **Scheduled tasks**: relative reminders via WorkManager
 - **Web search**: configurable provider, up to 4 keywords per call with merged results

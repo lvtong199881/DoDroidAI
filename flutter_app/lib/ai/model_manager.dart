@@ -85,7 +85,8 @@ class ModelManager {
     final total = model.totalBytes;
     try {
       for (final file in model.files) {
-        final url = downloadUrl(source, model.repo, file.name);
+        final url =
+            file.url ?? downloadUrl(source, file.repo ?? model.repo, file.name);
         final path = '$dir/${file.name}';
         final parent = Directory(File(path).parent.path);
         if (!parent.existsSync()) parent.createSync(recursive: true);
@@ -97,11 +98,11 @@ class ModelManager {
             onProgress?.call(done + received, total);
           },
         );
-        // 校验大小，避免半截文件被当成完成
+        // 校验大小，避免半截文件被当成完成（容忍 ±5% 的 revision 波动）
         final expected = file.sizeBytes;
         final actual = File(path).lengthSync();
-        if (expected > 0 && actual != expected) {
-          throw StateError('文件不完整: ${file.name} ($actual/$expected)');
+        if (!isModelFileSizeAcceptable(actual, expected)) {
+          throw StateError('文件大小异常: ${file.name} ($actual/$expected)');
         }
         done += file.sizeBytes;
         onProgress?.call(done, total);
@@ -114,4 +115,14 @@ class ModelManager {
       rethrow;
     }
   }
+}
+
+/// 模型文件大小校验：容忍 ±5% 波动（上游 revision 更新），同时识别半截文件。
+/// expected <= 0 表示已知大小未知，只要求非空。
+bool isModelFileSizeAcceptable(int actual, int expected) {
+  if (actual <= 0) return false;
+  if (expected <= 0) return true;
+  final lower = (expected * 0.95).floor();
+  final upper = (expected * 1.05).ceil();
+  return actual >= lower && actual <= upper;
 }

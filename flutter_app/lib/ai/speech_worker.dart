@@ -125,6 +125,15 @@ class SpeechWorker {
     }
   }
 
+  /// 预加载 ASR 模型，避免首次识别等待
+  static Future<void> warmUpAsr(String modelDir) async {
+    try {
+      await _call('asr-warmup', {'modelDir': modelDir});
+    } catch (e) {
+      // 预热失败不影响使用
+    }
+  }
+
   /// 识别 16k 单声道 PCM
   static Future<String> transcribe({
     required String modelDir,
@@ -148,9 +157,24 @@ class SpeechWorker {
 }
 
 
+/// 构建 SenseVoice 离线识别器
+sherpa.OfflineRecognizer _createAsr(String modelDir) {
+  return sherpa.OfflineRecognizer(
+    sherpa.OfflineRecognizerConfig(
+      feat: const sherpa.FeatureConfig(sampleRate: 16000, featureDim: 80),
+      model: sherpa.OfflineModelConfig(
+        senseVoice: sherpa.OfflineSenseVoiceModelConfig(
+          model: '$modelDir/model.int8.onnx',
+        ),
+        tokens: '$modelDir/tokens.txt',
+        numThreads: 2,
+      ),
+    ),
+  );
+}
+
 /// 按引擎类型构建 OfflineTts（vits / matcha）
-sherpa.OfflineTts _createTts(String modelDir, String kind) {
-  if (kind == 'matcha') {
+sherpa.OfflineTts _createTts(String modelDir, String kind) {  if (kind == 'matcha') {
     return sherpa.OfflineTts(
       sherpa.OfflineTtsConfig(
         model: sherpa.OfflineTtsModelConfig(
@@ -265,25 +289,20 @@ void _workerEntry(SendPort mainPort) async {
           mainPort.send({'id': id, 'result': true});
           break;
 
+        case 'asr-warmup':
+          final modelDir = args['modelDir'] as String;
+          if (recognizer == null || asrDir != modelDir) {
+            recognizer = _createAsr(modelDir);
+            asrDir = modelDir;
+          }
+          mainPort.send({'id': id, 'result': true});
+          break;
+
         case 'asr':
           final modelDir = args['modelDir'] as String;
           final samples = (args['samples'] as List).cast<double>();
           if (recognizer == null || asrDir != modelDir) {
-            recognizer = sherpa.OfflineRecognizer(
-              sherpa.OfflineRecognizerConfig(
-                feat: const sherpa.FeatureConfig(
-                  sampleRate: 16000,
-                  featureDim: 80,
-                ),
-                model: sherpa.OfflineModelConfig(
-                  senseVoice: sherpa.OfflineSenseVoiceModelConfig(
-                    model: '$modelDir/model.int8.onnx',
-                  ),
-                  tokens: '$modelDir/tokens.txt',
-                  numThreads: 2,
-                ),
-              ),
-            );
+            recognizer = _createAsr(modelDir);
             asrDir = modelDir;
           }
           final stream = recognizer.createStream();

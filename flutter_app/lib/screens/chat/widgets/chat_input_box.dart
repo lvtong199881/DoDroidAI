@@ -10,10 +10,13 @@ import 'package:image_picker/image_picker.dart';
 import 'package:record/record.dart';
 
 import '../../../ai/sherpa_asr.dart';
+import '../../../ai/sherpa_tts.dart';
+import '../../../ai/voice_bootstrap.dart';
 import '../../../data/permission_policy_database.dart';
 import '../../../widgets/app_toast.dart';
 import 'voice_input_overlay.dart';
 import '../../../l10n/app_strings.dart';
+import '../../settings/voice_settings_screen.dart';
 
 class ChatInputBox extends StatefulWidget {
   const ChatInputBox({
@@ -39,7 +42,7 @@ class _ChatInputBoxState extends State<ChatInputBox> {
   bool _deepThink = false;
   bool _webSearch = false;
   bool _recording = false;
-  bool _voiceMode = false;
+  bool _voiceMode = true;
   bool _showAddOptions = false;
   AudioRecorder? _recorder;
   StreamSubscription<Uint8List>? _micSub;
@@ -53,6 +56,19 @@ class _ChatInputBoxState extends State<ChatInputBox> {
   void initState() {
     super.initState();
     _loadDeepThink();
+    _loadVoiceMode();
+  }
+
+  Future<void> _loadVoiceMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() => _voiceMode = prefs.getBool('chat_voice_mode') ?? true);
+  }
+
+  Future<void> _setVoiceMode(bool value) async {
+    setState(() => _voiceMode = value);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('chat_voice_mode', value);
   }
 
   Future<void> _loadDeepThink() async {
@@ -180,6 +196,8 @@ class _ChatInputBoxState extends State<ChatInputBox> {
 
   Future<void> _startVoice() async {
     if (_recording) return;
+    // 先停止朗读，避免麦克风录入 TTS 外放
+    unawaited(SherpaTts.stop());
     try {
       final policy = PermissionPolicyRepository.instance;
       final denied = await policy.isDenied('microphone');
@@ -199,6 +217,20 @@ class _ChatInputBoxState extends State<ChatInputBox> {
         await policy.setDenied('microphone');
         if (!mounted) return;
         showToast(context, '请先授予录音权限');
+        return;
+      }
+
+      if (!await SherpaAsr.isReady()) {
+        if (!mounted) return;
+        final boot = VoiceBootstrap.instance.state.value;
+        if (boot.phase == VoiceBootstrapPhase.downloading) {
+          final percent = (boot.sttProgress * 100).round();
+          showToast(context, '语音模型准备中 $percent%');
+        } else if (boot.phase == VoiceBootstrapPhase.needsWifi) {
+          showToast(context, '语音模型未就绪，等待 Wi-Fi 自动下载（或前往 设置 → 语音 手动下载）');
+        } else {
+          showToast(context, '语音模型未就绪，前往 设置 → 语音 下载');
+        }
         return;
       }
 
@@ -294,6 +326,11 @@ class _ChatInputBoxState extends State<ChatInputBox> {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (_voiceMode)
+                ValueListenableBuilder<VoiceBootstrapState>(
+                  valueListenable: VoiceBootstrap.instance.state,
+                  builder: (context, boot, _) => _VoiceModelBanner(state: boot),
+                ),
+              if (_voiceMode)
                 Listener(
                   onPointerDown: (_) => _startVoice(),
                   onPointerUp: (_) => _stopVoice(),
@@ -347,7 +384,7 @@ class _ChatInputBoxState extends State<ChatInputBox> {
                     visualDensity: VisualDensity.compact,
                   ),
                   IconButton(
-                    onPressed: () => setState(() => _voiceMode = !_voiceMode),
+                    onPressed: () => _setVoiceMode(!_voiceMode),
                     icon: Icon(
                       _voiceMode ? Icons.keyboard : Icons.mic_none,
                       size: 24,
@@ -425,6 +462,85 @@ class _ChatInputBoxState extends State<ChatInputBox> {
       visualDensity: VisualDensity.compact,
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       padding: const EdgeInsets.symmetric(horizontal: 4),
+    );
+  }
+}
+
+/// 语音模型下载/等待状态条（仅语音模式且模型未就绪时显示）
+class _VoiceModelBanner extends StatelessWidget {
+  const _VoiceModelBanner({required this.state});
+
+  final VoiceBootstrapState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final String text;
+    var progress = 0.0;
+    switch (state.phase) {
+      case VoiceBootstrapPhase.downloading:
+        progress =
+            ((state.sttProgress + state.ttsProgress) / 2).clamp(0.0, 1.0);
+        text = '正在准备语音模型 ${(progress * 100).round()}%';
+        break;
+      case VoiceBootstrapPhase.needsWifi:
+        text = '语音模型未就绪，等待 Wi-Fi 自动下载';
+        break;
+      case VoiceBootstrapPhase.failed:
+        text = '语音模型下载失败，点此重试';
+        break;
+      default:
+        text = '';
+    }
+    if (text.isEmpty) return const SizedBox.shrink();
+
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: () {
+          if (state.phase == VoiceBootstrapPhase.failed) {
+            VoiceBootstrap.instance.ensureModels();
+          } else if (state.phase == VoiceBootstrapPhase.needsWifi) {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const VoiceSettingsScreen()),
+            );
+          }
+        },
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: scheme.primaryContainer.withValues(alpha: 0.6),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              if (state.phase == VoiceBootstrapPhase.downloading)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      value: progress,
+                    ),
+                  ),
+                ),
+              Expanded(
+                child: Text(
+                  text,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: scheme.onPrimaryContainer,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

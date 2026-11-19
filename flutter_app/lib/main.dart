@@ -7,7 +7,7 @@ import 'package:workmanager/workmanager.dart';
 
 import 'app.dart';
 import 'app_worker.dart';
-import 'ai/sherpa_tts.dart';
+import 'ai/voice_bootstrap.dart';
 import 'notifications.dart';
 import 'quick_actions_handler.dart';
 import 'widget/home_widget_sync.dart';
@@ -43,11 +43,8 @@ Future<void> _initBackgroundServices() async {
     debugPrint('home widget sync failed: $e');
   }
 
-  try {
-    await SherpaTts.warmUp().timeout(const Duration(seconds: 30));
-  } catch (e) {
-    debugPrint('tts warmup failed: $e');
-  }
+  // 语音优先：Wi-Fi 下自动下载缺失的 ASR/TTS 模型并预热（不阻塞其它启动任务）
+  unawaited(VoiceBootstrap.instance.ensureModels());
 
   try {
     await Workmanager()

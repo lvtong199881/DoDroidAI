@@ -198,15 +198,31 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           style: const TextStyle(fontSize: 20),
         ),
         actions: [
-          IconButton(
-            onPressed: () {
-              ref.read(chatProvider.notifier).toggleAutoRead();
-              showToast(context, state.autoRead ? '已关闭自动朗读' : '已开启自动朗读');
+          ValueListenableBuilder<bool>(
+            valueListenable: SherpaTts.speaking,
+            builder: (context, speaking, _) {
+              if (speaking) {
+                return IconButton(
+                  tooltip: '停止朗读',
+                  onPressed: () => SherpaTts.stop(),
+                  icon: Icon(
+                    Icons.stop_circle_outlined,
+                    color: scheme.primary,
+                  ),
+                );
+              }
+              return IconButton(
+                tooltip: state.autoRead ? '关闭自动朗读' : '开启自动朗读',
+                onPressed: () {
+                  ref.read(chatProvider.notifier).toggleAutoRead();
+                  showToast(context, state.autoRead ? '已关闭自动朗读' : '已开启自动朗读');
+                },
+                icon: Icon(
+                  state.autoRead ? Icons.volume_up : Icons.volume_off,
+                  color: state.autoRead ? scheme.primary : scheme.onSurface,
+                ),
+              );
             },
-            icon: Icon(
-              state.autoRead ? Icons.volume_up : Icons.volume_off,
-              color: state.autoRead ? scheme.primary : scheme.onSurface,
-            ),
           ),
           IconButton(
             onPressed: () {

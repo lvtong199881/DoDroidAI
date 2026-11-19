@@ -1,9 +1,15 @@
 /// 离线语音模型清单（与原生 SttModelCatalog / TtsModelCatalog 一致）
 class ModelFile {
-  const ModelFile(this.name, this.sizeBytes);
+  const ModelFile(this.name, this.sizeBytes, {this.repo, this.url});
 
   final String name;
   final int sizeBytes;
+
+  /// 覆盖 VoiceModel.repo：同一模型可能有文件来自其它仓库（如 vocoder）
+  final String? repo;
+
+  /// 完整下载地址，覆盖按下载源拼接的默认 URL
+  final String? url;
 }
 
 class VoiceModel {
@@ -91,19 +97,25 @@ class TtsModels {
     languages: '中文 / 英文',
   );
 
-  /// Matcha-TTS：ODE 步数少，移动端明显快于 VITS
+  /// Matcha-TTS：ODE 步数少，移动端明显快于 VITS。
+  /// 必须搭配 vocos-16khz-univ.onnx（官方 README 明确要求），否则无法合成。
   static const matcha = VoiceModel(
     id: 'matcha_icefall_zh_en',
     displayName: 'Matcha 中英混合（更快）',
     repo: 'csukuangfj/matcha-icefall-zh-en',
     kind: 'matcha',
     files: [
-      ModelFile('model-steps-3.onnx', 75500000),
-      ModelFile('tokens.txt', 21000),
-      ModelFile('lexicon.txt', 1360000),
-      ModelFile('date-zh.fst', 59000),
-      ModelFile('number-zh.fst', 64000),
-      ModelFile('phone-zh.fst', 89000),
+      ModelFile('model-steps-3.onnx', 75717082),
+      ModelFile('tokens.txt', 21146),
+      ModelFile('lexicon.txt', 1400278),
+      ModelFile('date-zh.fst', 59154),
+      ModelFile('number-zh.fst', 64482),
+      ModelFile('phone-zh.fst', 88630),
+      ModelFile(
+        'vocos-16khz-univ.onnx',
+        53882848,
+        repo: 'wmghf2023/vocos-16khz-univ-mirror',
+      ),
     ],
     languages: '中文 / 英文',
   );

@@ -16,6 +16,12 @@ class SherpaTts {
   static final AudioPlayer _player = AudioPlayer();
   static Future<void>? _warming;
 
+  /// 是否正在朗读（供 UI 显示停止按钮）
+  static final ValueNotifier<bool> speaking = ValueNotifier(false);
+
+  /// 朗读序号：stop() 自增使进行中的朗读在下一个检查点退出
+  static int _speakSeq = 0;
+
   /// 当前激活的 TTS 模型（默认 Matcha）
   static Future<VoiceModel> activeModel() async {
     final id = await ModelManager('tts').activeModelId();
@@ -37,15 +43,24 @@ class SherpaTts {
     return File('$dir/model.int8.onnx').existsSync();
   }
 
-  /// App 启动后调用：提前把模型加载进语音 isolate
-  static Future<void> warmUp() async {
+  /// App 启动后调用：提前把模型加载进语音 isolate。
+  /// 模型未就绪或失败时清空缓存，允许下载完成后再预热。
+  static Future<void> warmUp() {
     if (_warming != null) return _warming!;
     _warming = () async {
-      final model = await activeModel();
-      final dir = await ModelManager('tts').modelDir(model);
-      if (!await isReady()) return;
-      await SpeechWorker.warmUpTts(dir, kind: model.kind);
-      debugPrint('SherpaTts: 预热完成 engine=${model.kind}');
+      try {
+        final model = await activeModel();
+        final dir = await ModelManager('tts').modelDir(model);
+        if (!await isReady()) {
+          _warming = null;
+          return;
+        }
+        await SpeechWorker.warmUpTts(dir, kind: model.kind);
+        debugPrint('SherpaTts: 预热完成 engine=${model.kind}');
+      } catch (e) {
+        debugPrint('SherpaTts: 预热失败 $e');
+        _warming = null;
+      }
     }();
     return _warming!;
   }
@@ -75,7 +90,8 @@ class SherpaTts {
     }
   }
 
-  /// 朗读：首句先播，其余句子合成后合并为一个文件，整段只有一次切换
+  /// 朗读：首句先播，其余句子合成后合并为一个文件，整段只有一次切换。
+  /// 朗读可被 stop() 或下一次 speak() 打断（_speakSeq 单调递增）。
   static Future<void> speak(String text) async {
     if (text.trim().isEmpty) return;
     if (!await isReady()) {
@@ -88,11 +104,15 @@ class SherpaTts {
     final pieces = splitForSpeech(text);
     if (pieces.isEmpty) return;
 
+    final seq = ++_speakSeq;
+    bool cancelled() => seq != _speakSeq;
+    speaking.value = true;
+
     final sw = Stopwatch()..start();
     try {
       // 1) 首句，尽快出声
       final first = await _synthPiece(model, dir, temp.path, pieces[0]);
-      if (first == null) return;
+      if (first == null || cancelled()) return;
       debugPrint('TTS_FIRST_READY ms=${sw.elapsedMilliseconds}');
 
       // 2) 首句播放的同时，并行合成剩余句子
@@ -106,8 +126,10 @@ class SherpaTts {
       await _player.play(DeviceFileSource(first));
       final firstMs = _wavDurationMs(first);
       await Future<void>.delayed(Duration(milliseconds: firstMs));
+      if (cancelled()) return;
 
       final rest = (await restFuture).whereType<String>().toList();
+      if (cancelled()) return;
       if (rest.isEmpty) {
         debugPrint('SherpaTts: 播放结束 total_ms=${sw.elapsedMilliseconds}');
         return;
@@ -123,6 +145,9 @@ class SherpaTts {
       debugPrint('SherpaTts: 播放结束 total_ms=${sw.elapsedMilliseconds}');
     } catch (e) {
       debugPrint('SherpaTts: 朗读失败 $e');
+    } finally {
+      // 只有当前正在朗读的这一段才能关闭状态，避免覆盖新朗读
+      if (seq == _speakSeq) speaking.value = false;
     }
   }
 
@@ -251,6 +276,9 @@ class SherpaTts {
   }
 
   static Future<void> stop() async {
+    // 让进行中的 speak 在下一个检查点退出，避免续播
+    _speakSeq++;
+    speaking.value = false;
     try {
       await _player.stop();
     } catch (_) {}

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../ai/ai_config.dart';
 import '../../ai/chat_api.dart';
@@ -22,7 +23,7 @@ class ChatState {
     List<ChatSession>? sessions,
     this.currentSessionId,
     this.isLoading = false,
-    this.autoRead = false,
+    this.autoRead = true,
     this.error,
     this.pendingConfirmation,
     this.pendingQuestions,
@@ -120,12 +121,15 @@ class ChatController extends StateNotifier<ChatState> {
     _ready = true;
     _config = await _configStore.loadActive();
     final sessions = await _database.sessions();
+    final prefs = await SharedPreferences.getInstance();
     // 与原生一致：新会话在发出第一条消息时才创建，启动时不落库
+    // 自动朗读默认开启（语音优先），用户可在对话设置里关闭并持久化
     state = state.copyWith(
       messages: const [],
       sessions: sessions,
       currentSessionId: null,
       awaitingAnswers: const [],
+      autoRead: prefs.getBool(autoReadPrefKey) ?? true,
     );
   }
 
@@ -780,8 +784,17 @@ class ChatController extends StateNotifier<ChatState> {
     return '请求失败：$brief';
   }
 
+  static const autoReadPrefKey = 'auto_read';
+
   void toggleAutoRead() {
-    state = state.copyWith(autoRead: !state.autoRead);
+    final next = !state.autoRead;
+    state = state.copyWith(autoRead: next);
+    unawaited(_saveAutoRead(next));
+  }
+
+  Future<void> _saveAutoRead(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(autoReadPrefKey, value);
   }
 
   void clearError() {

@@ -18,6 +18,28 @@ class SherpaAsr {
     return File('$dir/model.int8.onnx').existsSync();
   }
 
+  static Future<void>? _warming;
+
+  /// 预热：把模型加载移出首次识别路径；模型未就绪或失败时允许下次重试
+  static Future<void> warmUp() {
+    _warming ??= _warmUp();
+    return _warming!;
+  }
+
+  static Future<void> _warmUp() async {
+    final dir = await modelDir();
+    if (!File('$dir/model.int8.onnx').existsSync()) {
+      _warming = null;
+      return;
+    }
+    try {
+      await SpeechWorker.warmUpAsr(dir);
+    } catch (e) {
+      debugPrint('SherpaAsr: 预热失败 $e');
+      _warming = null;
+    }
+  }
+
   static Future<String> transcribe(
     Float32List samples, {
     int sampleRate = 16000,
