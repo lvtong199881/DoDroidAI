@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.widget.RemoteViews
+import es.antonborri.home_widget.HomeWidgetLaunchIntent
 import es.antonborri.home_widget.HomeWidgetProvider
 
 /**
@@ -36,6 +37,8 @@ class ChatWidgetProvider : HomeWidgetProvider() {
 
     private fun openApp(context: Context): PendingIntent {
         val intent = Intent(context, MainActivity::class.java).apply {
+            // 让 home_widget 能识别「由桌面小组件启动」，仅影响欢迎弹窗的入口日志
+            action = HomeWidgetLaunchIntent.HOME_WIDGET_LAUNCH_ACTION
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         return PendingIntent.getActivity(

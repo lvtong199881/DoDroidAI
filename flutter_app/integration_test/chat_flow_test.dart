@@ -6,9 +6,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:dodroidai/app.dart';
 
+import '../test/support/welcome_fakes.dart';
+
 Future<void> _pumpApp(WidgetTester tester) async {
   SharedPreferences.setMockInitialValues({});
-  await tester.pumpWidget(const ProviderScope(child: DoDroidApp()));
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [welcomeAlreadyShownOverride()],
+      child: const DoDroidApp(),
+    ),
+  );
   // 等首帧 + 异步初始化（数据库 ensureReady）
   await tester.pump(const Duration(milliseconds: 100));
   await tester.pumpAndSettle(const Duration(seconds: 2));

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12（API 31+）的云备份与设备迁移规则：只排除欢迎弹窗的一次性标记。 -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="file" path="welcome/welcome_dialog_shown_v1" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="file" path="welcome/welcome_dialog_shown_v1" />
+    </device-transfer>
+</data-extraction-rules>

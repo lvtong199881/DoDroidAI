@@ -6,7 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_strings.dart';
 import '../../ai/sherpa_tts.dart';
 import '../../models/chat_message.dart';
+import '../../settings/welcome_contract.dart';
+import '../../settings/welcome_providers.dart';
 import '../../widgets/app_toast.dart';
+import '../../widgets/welcome_dialog.dart';
 import '../../quick_actions_handler.dart';
 import '../settings/settings_screen.dart';
 import 'chat_provider.dart';
@@ -35,6 +38,40 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     super.initState();
     Future.microtask(() => ref.read(chatProvider.notifier).ensureReady());
     pendingShortcut.addListener(_handleShortcut);
+    // 首页首帧渲染完成后再检查欢迎弹窗，不阻塞首帧与后台初始化。
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkWelcome());
+  }
+
+  /// 进程内只会有一次实际检查（由 [WelcomeController.runOnce] 单飞保证）。
+  Future<void> _checkWelcome() async {
+    if (!mounted) return;
+    final locale =
+        Localizations.localeOf(context).languageCode == 'en' ? 'en' : 'zh';
+    await ref.read(welcomeControllerProvider).runOnce(
+          locale: locale,
+          presenter: _presentWelcome,
+        );
+  }
+
+  /// 展示欢迎弹窗并返回关闭方式与可见时长；render 异常由控制器记录。
+  Future<WelcomeDismissResult> _presentWelcome(void Function() onShown) async {
+    if (!mounted) {
+      throw StateError('首页已销毁，跳过欢迎弹窗');
+    }
+    final startedAt = DateTime.now();
+    final closing = showDialog<WelcomeDismissMethod>(
+      context: context,
+      barrierDismissible: false,
+      useRootNavigator: true,
+      builder: (_) => const WelcomeDialog(),
+    );
+    // showDialog 已 push 路由，此时记录 welcome_shown。
+    onShown();
+    final method = await closing;
+    return WelcomeDismissResult(
+      method: method ?? WelcomeDismissMethod.back,
+      visibleMs: DateTime.now().difference(startedAt).inMilliseconds,
+    );
   }
 
   @override
