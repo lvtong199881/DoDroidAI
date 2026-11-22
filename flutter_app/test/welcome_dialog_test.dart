@@ -56,6 +56,8 @@ Future<Future<WelcomeDismissMethod?>> openWelcome(
     ),
   );
 
+  await tester.pump(); // 本地化是异步 load，补一拍让 home 真正建出来
+
   await tester.tap(find.text('打开弹窗'));
   await tester.pumpAndSettle();
   expect(find.byType(WelcomeDialog), findsOneWidget);

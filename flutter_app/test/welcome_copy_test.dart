@@ -56,7 +56,7 @@ void main() {
   });
 
   test('中文文案不混入英文句子（品牌与技术词除外）', () {
-    const allowed = ['DoDroidAI', 'Wi-Fi'];
+    const allowed = ['DoDroidAI', 'Wi-Fi', 'AI'];
     _zhCopy.forEach((key, value) {
       var text = value;
       for (final word in allowed) {

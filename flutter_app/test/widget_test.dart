@@ -3,8 +3,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:dodroidai/app.dart';
+import 'package:dodroidai/screens/chat/chat_provider.dart';
 
 import 'support/welcome_fakes.dart';
+
+/// 隔离 sqflite：这里只验证首页能渲染，不验证会话加载。
+class _NoopChatController extends ChatController {
+  @override
+  Future<void> ensureReady() async {}
+}
 
 void main() {
   testWidgets('app renders chat screen', (WidgetTester tester) async {
@@ -12,7 +19,10 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         // 欢迎弹窗由 welcome_* 用例覆盖，这里跳过以免遮罩影响首页断言
-        overrides: [welcomeAlreadyShownOverride()],
+        overrides: [
+          chatProvider.overrideWith((_) => _NoopChatController()),
+          welcomeAlreadyShownOverride(),
+        ],
         child: const DoDroidApp(),
       ),
     );
