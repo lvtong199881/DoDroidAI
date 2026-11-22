@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12 及以下（API 24-30）的自动备份规则：只排除欢迎弹窗的一次性标记。 -->
+<full-backup-content>
+    <exclude domain="file" path="welcome/welcome_dialog_shown_v1" />
+</full-backup-content>
