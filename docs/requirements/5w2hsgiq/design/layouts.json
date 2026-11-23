@@ -1,0 +1,415 @@
+{
+  "requirement": "5w2hsgiq DoDroidAI 欢迎弹窗：顶部欢迎图 + 删除三组卖点 + 主/副标题居中",
+  "designTokens": {
+    "fonts": {
+      "android": {
+        "latin": "Roboto（系统默认）",
+        "cjk": "Noto Sans CJK SC（系统回落）",
+        "stack": "Roboto, 'Noto Sans SC', 'Noto Sans CJK SC', sans-serif"
+      },
+      "preview": {
+        "stack": "'Segoe UI', 'Microsoft YaHei', 'Noto Sans SC', sans-serif",
+        "reason": "Windows 出图环境无 Roboto / Noto Sans CJK，用系统字体近似；Android 真机以系统字体为准"
+      }
+    },
+    "colors": {
+      "light": {
+        "pageBg": "#F7F8FA",
+        "surface": "#FFFFFF",
+        "onSurface": "#171A1F",
+        "onSurfaceVariant": "#5B6270",
+        "primary": "#4D6BFE",
+        "onPrimary": "#FFFFFF",
+        "scrim": "rgba(0, 0, 0, 0.54)",
+        "shadow": "0 8px 24px rgba(0, 0, 0, 0.18)",
+        "heroBg": "#EEF2FF"
+      },
+      "dark": {
+        "pageBg": "#0F1115",
+        "surface": "#161920",
+        "onSurface": "#E6E8EC",
+        "onSurfaceVariant": "#A6ADBB",
+        "primary": "#8FA6FF",
+        "onPrimary": "#0A1F5C",
+        "scrim": "rgba(0, 0, 0, 0.54)",
+        "shadow": "0 8px 24px rgba(0, 0, 0, 0.55)",
+        "heroBg": "#1C2436"
+      }
+    },
+    "typography": {
+      "title": {
+        "fontSize": 20,
+        "fontWeight": 600,
+        "lineHeight": 1.3,
+        "colorToken": "onSurface",
+        "androidStyle": "TextStyle(fontSize: 20, fontWeight: w600, height: 1.3)"
+      },
+      "intro": {
+        "fontSize": 15,
+        "fontWeight": 400,
+        "lineHeight": 1.4,
+        "colorToken": "onSurfaceVariant",
+        "androidStyle": "TextStyle(fontSize: 15, height: 1.4)"
+      },
+      "button": {
+        "fontSize": 15,
+        "fontWeight": 600,
+        "lineHeight": 1.2,
+        "colorToken": "onPrimary",
+        "androidStyle": "TextStyle(fontSize: 15, fontWeight: w600)"
+      }
+    },
+    "radius": {
+      "dialog": 16,
+      "pill": 999
+    },
+    "spacing": {
+      "dialogInsetX": 20,
+      "bodyPadding": [20, 24, 8, 24],
+      "titleToIntro": 8,
+      "footerPadding": [12, 20, 20, 20],
+      "buttonHeight": 48
+    }
+  },
+  "copy": {
+    "zh": {
+      "title": "欢迎使用 DoDroidAI",
+      "intro": "说一句话，让手机替你做事。",
+      "button": "开始使用"
+    },
+    "en": {
+      "title": "Welcome to DoDroidAI",
+      "intro": "Say it, and let your phone do it.",
+      "button": "Get started"
+    }
+  },
+  "components": {
+    "dialog.360.zh.light": {
+      "type": "frame",
+      "name": "dialog",
+      "x": 20,
+      "y": 238.5,
+      "width": 320,
+      "radius": 16,
+      "fill": "surface",
+      "layout": { "mode": "vertical", "padding": 0, "spacing": 0, "align": "stretch" },
+      "children": [
+        { "type": "image", "name": "hero", "src": "../assets/welcome_hero_light.png", "width": 320, "height": 160 },
+        {
+          "type": "frame",
+          "name": "body",
+          "layout": { "mode": "vertical", "padding": [20, 24, 8, 24], "align": "stretch" },
+          "children": [
+            { "type": "text", "name": "title", "textRef": "zh.title", "typography": "title", "align": "center" },
+            { "type": "text", "name": "intro", "textRef": "zh.intro", "typography": "intro", "align": "center", "margin": [8, 0, 0, 0] }
+          ]
+        },
+        {
+          "type": "frame",
+          "name": "footer",
+          "layout": { "mode": "vertical", "padding": [12, 20, 20, 20], "align": "stretch" },
+          "children": [
+            {
+              "type": "frame",
+              "name": "button",
+              "height": 48,
+              "radius": 999,
+              "fill": "primary",
+              "layout": { "mode": "vertical", "padding": 0, "align": "center", "justify": "center" },
+              "children": [
+                { "type": "text", "name": "buttonLabel", "textRef": "zh.button", "typography": "button", "align": "center" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "dialog.360.zh.dark": {
+      "type": "frame",
+      "name": "dialog",
+      "x": 20,
+      "y": 238.5,
+      "width": 320,
+      "radius": 16,
+      "fill": "surface",
+      "layout": { "mode": "vertical", "padding": 0, "spacing": 0, "align": "stretch" },
+      "children": [
+        { "type": "image", "name": "hero", "src": "../assets/welcome_hero_dark.png", "width": 320, "height": 160 },
+        {
+          "type": "frame",
+          "name": "body",
+          "layout": { "mode": "vertical", "padding": [20, 24, 8, 24], "align": "stretch" },
+          "children": [
+            { "type": "text", "name": "title", "textRef": "zh.title", "typography": "title", "align": "center" },
+            { "type": "text", "name": "intro", "textRef": "zh.intro", "typography": "intro", "align": "center", "margin": [8, 0, 0, 0] }
+          ]
+        },
+        {
+          "type": "frame",
+          "name": "footer",
+          "layout": { "mode": "vertical", "padding": [12, 20, 20, 20], "align": "stretch" },
+          "children": [
+            {
+              "type": "frame",
+              "name": "button",
+              "height": 48,
+              "radius": 999,
+              "fill": "primary",
+              "layout": { "mode": "vertical", "padding": 0, "align": "center", "justify": "center" },
+              "children": [
+                { "type": "text", "name": "buttonLabel", "textRef": "zh.button", "typography": "button", "align": "center" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "dialog.360.en.light": {
+      "type": "frame",
+      "name": "dialog",
+      "x": 20,
+      "y": 238.5,
+      "width": 320,
+      "radius": 16,
+      "fill": "surface",
+      "layout": { "mode": "vertical", "padding": 0, "spacing": 0, "align": "stretch" },
+      "children": [
+        { "type": "image", "name": "hero", "src": "../assets/welcome_hero_light.png", "width": 320, "height": 160 },
+        {
+          "type": "frame",
+          "name": "body",
+          "layout": { "mode": "vertical", "padding": [20, 24, 8, 24], "align": "stretch" },
+          "children": [
+            { "type": "text", "name": "title", "textRef": "en.title", "typography": "title", "align": "center" },
+            { "type": "text", "name": "intro", "textRef": "en.intro", "typography": "intro", "align": "center", "margin": [8, 0, 0, 0] }
+          ]
+        },
+        {
+          "type": "frame",
+          "name": "footer",
+          "layout": { "mode": "vertical", "padding": [12, 20, 20, 20], "align": "stretch" },
+          "children": [
+            {
+              "type": "frame",
+              "name": "button",
+              "height": 48,
+              "radius": 999,
+              "fill": "primary",
+              "layout": { "mode": "vertical", "padding": 0, "align": "center", "justify": "center" },
+              "children": [
+                { "type": "text", "name": "buttonLabel", "textRef": "en.button", "typography": "button", "align": "center" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "dialog.320.en.light": {
+      "type": "frame",
+      "name": "dialog",
+      "x": 20,
+      "y": 238,
+      "width": 280,
+      "radius": 16,
+      "fill": "surface",
+      "layout": { "mode": "vertical", "padding": 0, "spacing": 0, "align": "stretch" },
+      "children": [
+        { "type": "image", "name": "hero", "src": "../assets/welcome_hero_light.png", "width": 280, "height": 140 },
+        {
+          "type": "frame",
+          "name": "body",
+          "layout": { "mode": "vertical", "padding": [20, 24, 8, 24], "align": "stretch" },
+          "children": [
+            { "type": "text", "name": "title", "textRef": "en.title", "typography": "title", "align": "center" },
+            { "type": "text", "name": "intro", "textRef": "en.intro", "typography": "intro", "align": "center", "margin": [8, 0, 0, 0] }
+          ]
+        },
+        {
+          "type": "frame",
+          "name": "footer",
+          "layout": { "mode": "vertical", "padding": [12, 20, 20, 20], "align": "stretch" },
+          "children": [
+            {
+              "type": "frame",
+              "name": "button",
+              "height": 48,
+              "radius": 999,
+              "fill": "primary",
+              "layout": { "mode": "vertical", "padding": 0, "align": "center", "justify": "center" },
+              "children": [
+                { "type": "text", "name": "buttonLabel", "textRef": "en.button", "typography": "button", "align": "center" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "dialog.600.zh.light": {
+      "type": "frame",
+      "name": "dialog",
+      "x": 20,
+      "y": 40,
+      "width": 600,
+      "height": 320,
+      "radius": 16,
+      "fill": "surface",
+      "children": [
+        { "type": "rect", "name": "hero.cornerPad", "x": 0, "y": 0, "width": 600, "height": 32, "radius": 16, "fill": "heroBg" },
+        { "type": "image", "name": "hero", "x": 0, "y": 0, "src": "../assets/welcome_hero_light.png", "width": 600, "height": 300 },
+        {
+          "type": "frame",
+          "name": "footer",
+          "x": 0,
+          "y": 240,
+          "width": 600,
+          "height": 64,
+          "fill": "surface",
+          "layout": { "mode": "vertical", "padding": [12, 20, 4, 20], "align": "stretch" },
+          "children": [
+            {
+              "type": "frame",
+              "name": "button",
+              "height": 48,
+              "radius": 999,
+              "fill": "primary",
+              "layout": { "mode": "vertical", "padding": 0, "align": "center", "justify": "center" },
+              "children": [
+                { "type": "text", "name": "buttonLabel", "textRef": "zh.button", "typography": "button", "align": "center" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "dialog.noHero.360.zh.light": {
+      "type": "frame",
+      "name": "dialog",
+      "x": 20,
+      "y": 318.5,
+      "width": 320,
+      "radius": 16,
+      "fill": "surface",
+      "layout": { "mode": "vertical", "padding": 0, "spacing": 0, "align": "stretch" },
+      "children": [
+        {
+          "type": "frame",
+          "name": "body",
+          "layout": { "mode": "vertical", "padding": [20, 24, 8, 24], "align": "stretch" },
+          "children": [
+            { "type": "text", "name": "title", "textRef": "zh.title", "typography": "title", "align": "center" },
+            { "type": "text", "name": "intro", "textRef": "zh.intro", "typography": "intro", "align": "center", "margin": [8, 0, 0, 0] }
+          ]
+        },
+        {
+          "type": "frame",
+          "name": "footer",
+          "layout": { "mode": "vertical", "padding": [12, 20, 20, 20], "align": "stretch" },
+          "children": [
+            {
+              "type": "frame",
+              "name": "button",
+              "height": 48,
+              "radius": 999,
+              "fill": "primary",
+              "layout": { "mode": "vertical", "padding": 0, "align": "center", "justify": "center" },
+              "children": [
+                { "type": "text", "name": "buttonLabel", "textRef": "zh.button", "typography": "button", "align": "center" }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "frames": [
+    {
+      "id": "F01_absent_zh_light",
+      "name": "F01 无弹窗·浅色",
+      "theme": "light",
+      "locale": "zh",
+      "canvas": { "width": 360, "height": 800, "deviceScale": 3 },
+      "background": { "type": "color", "fill": "pageBg" },
+      "changeScope": "full-page",
+      "ac": ["AC-10"],
+      "notes": "空态：已展示过（含老用户覆盖升级）首屏不出现欢迎弹窗。检出目录无首页真实截图，背景用规范底色 N1 占位，仅表示「无弹窗」这一状态，不代表首页内容。"
+    },
+    {
+      "id": "F02_normal_zh_light",
+      "name": "F02 正常态·浅色·中文·360dp",
+      "theme": "light",
+      "locale": "zh",
+      "canvas": { "width": 360, "height": 800, "deviceScale": 3 },
+      "background": { "type": "color", "fill": "pageBg" },
+      "scrim": true,
+      "contentRef": "dialog.360.zh.light",
+      "changeScope": "full-page",
+      "ac": ["AC-1", "AC-2", "AC-3", "AC-5", "AC-6", "AC-7", "AC-15"],
+      "notes": "基准帧：顶部欢迎图贴边铺满（320×160），主标题、副标题居中，三组卖点已删除，底部胶囊主按钮。弹窗 y=238.5，高 323（屏幕 80% 上限内）。"
+    },
+    {
+      "id": "F03_normal_zh_dark",
+      "name": "F03 正常态·深色·中文·360dp",
+      "theme": "dark",
+      "locale": "zh",
+      "canvas": { "width": 360, "height": 800, "deviceScale": 3 },
+      "background": { "type": "color", "fill": "pageBg" },
+      "scrim": true,
+      "contentRef": "dialog.360.zh.dark",
+      "changeScope": "full-page",
+      "ac": ["AC-14"],
+      "notes": "系统深色对照帧：弹窗 #161920，欢迎图使用深色版素材，主体轮廓与波形、气泡、对勾仍可辨。"
+    },
+    {
+      "id": "F04_normal_en_light",
+      "name": "F04 多语言·英文·浅色·360dp",
+      "theme": "light",
+      "locale": "en",
+      "canvas": { "width": 360, "height": 800, "deviceScale": 3 },
+      "background": { "type": "color", "fill": "pageBg" },
+      "scrim": true,
+      "contentRef": "dialog.360.en.light",
+      "changeScope": "full-page",
+      "ac": ["AC-8", "AC-15", "AC-16"],
+      "notes": "英文文案：主标题 Welcome to DoDroidAI、副标题 Say it, and let your phone do it.、按钮 Get started；与中文共用同一张欢迎图（图内无文字）。"
+    },
+    {
+      "id": "F05_narrow_en_light",
+      "name": "F05 小屏 320dp·英文·浅色",
+      "theme": "light",
+      "locale": "en",
+      "canvas": { "width": 320, "height": 800, "deviceScale": 3 },
+      "background": { "type": "color", "fill": "pageBg" },
+      "scrim": true,
+      "contentRef": "dialog.320.en.light",
+      "changeScope": "full-page",
+      "ac": ["AC-2", "AC-4", "AC-6", "AC-7", "AC-15"],
+      "notes": "320dp 小屏 + 最长英文副标题：图片 280×140（同 2:1，等比），副标题换 2 行且每行居中，标题/按钮不截断；弹窗 y=238，高 324。"
+    },
+    {
+      "id": "F06_overheight_zh_light",
+      "name": "F06 内容超高·滚动起点·横屏 640×400",
+      "theme": "light",
+      "locale": "zh",
+      "canvas": { "width": 640, "height": 400, "deviceScale": 2 },
+      "background": { "type": "color", "fill": "pageBg" },
+      "scrim": true,
+      "contentRef": "dialog.600.zh.light",
+      "changeScope": "full-page",
+      "ac": ["AC-1", "AC-12"],
+      "notes": "极端数据：横屏/大宽屏下欢迎图 600×300，内容总高 463 超出弹窗 80% 上限（320），欢迎图+标题+副标题一起进入纵向滚动区，初始位置在顶部；底部「开始使用」固定可见可点。滚动到底可见完整标题与副标题（本帧为滚动起点）。"
+    },
+    {
+      "id": "F07_hero_missing_zh_light",
+      "name": "F07 欢迎图缺失/解码失败·浅色·中文",
+      "theme": "light",
+      "locale": "zh",
+      "canvas": { "width": 360, "height": 800, "deviceScale": 3 },
+      "background": { "type": "color", "fill": "pageBg" },
+      "scrim": true,
+      "contentRef": "dialog.noHero.360.zh.light",
+      "changeScope": "full-page",
+      "ac": ["AC-13"],
+      "notes": "错误态：欢迎图资源缺失或解码失败时不预占高度、不显示破图与错误文案，标题/副标题/按钮照常展示且可关闭；弹窗高 163，垂直居中 y=318.5。"
+    }
+  ]
+}

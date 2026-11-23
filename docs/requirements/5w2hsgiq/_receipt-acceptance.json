@@ -1,0 +1,62 @@
+{
+  "status": "done",
+  "summary": "验收 AC-1～AC-17：通过 16、偏差 0、未验证 1（AC-13 图片资源失败降级需专项测试构建）；已在 Pixel_3a_API_34 模拟器亲手装包，实测中英文、深浅色、320/360/392dp、横屏超高滚动、关闭方式与一次性门控，截图库已同名更新。",
+  "artifacts": [
+    { "path": "C:/Users/mohanshang/.qq-bot/checkouts/rsqebdf9y/.qq-bot-scratch/5w2hsgiq/验收文档.md", "action": "created" },
+    { "path": "docs/ui-screenshots/welcome/first-show-en-light.png", "action": "modified" },
+    { "path": "docs/ui-screenshots/welcome/first-show-en-360dp.png", "action": "modified" },
+    { "path": "docs/ui-screenshots/welcome/first-show-en-320dp.png", "action": "modified" },
+    { "path": "docs/ui-screenshots/welcome/first-show-en-dark.png", "action": "modified" },
+    { "path": "docs/ui-screenshots/welcome/first-show-zh-light.png", "action": "modified" },
+    { "path": "docs/ui-screenshots/welcome/landscape-top.png", "action": "modified" },
+    { "path": "docs/ui-screenshots/welcome/landscape-bottom.png", "action": "modified" },
+    { "path": "docs/ui-screenshots/welcome/closed-by-button.png", "action": "modified" },
+    { "path": "docs/ui-screenshots/welcome/closed-by-back.png", "action": "modified" },
+    { "path": "docs/ui-screenshots/welcome/double-tap.png", "action": "modified" },
+    { "path": "docs/ui-screenshots/welcome/barrier-tap.png", "action": "modified" },
+    { "path": "docs/ui-screenshots/welcome/lifecycle-return.png", "action": "modified" },
+    { "path": "docs/ui-screenshots/welcome/upgrade-no-dialog.png", "action": "modified" },
+    { "path": "docs/ui-screenshots/welcome/restart-no-dialog.png", "action": "created" },
+    { "path": "docs/ui-screenshots/welcome/anr-observation.png", "action": "modified" }
+  ],
+  "selfCheck": "①追溯矩阵完整：17 条 AC 均有实现位置（PRD 指定的 welcome_dialog.dart / 设计源）与本次独立实测用例 A-01～A-17；②有界面变化，已亲手在模拟器装包实操并保留结论；③未看源码、未构建、未跑单测、未读测试报告与评审结论；④设计 F01～F07 逐状态对照，F05 英文副标题 1 行属设计说明已允许的差异，F07 未验证；⑤每条 AC 有明确结论（16 通过、1 未验证、0 偏差）；⑥截图库 15 张已按本次真实界面同名覆盖/新增；⑦偏差与未验证项已在第 7 节显式列出；⑧待决策事项已在第 9 节集中整理。",
+  "decisions": [
+    {
+      "q": "AC-10 旧用户升级验证：本机无旧版本 APK，采用「当前包写标记 + install -r -d 覆盖安装不重置」等效验证，是否接受？",
+      "options": [
+        { "text": "接受等效验证，AC-10 视为通过", "recommended": true },
+        { "text": "提供旧版 debug APK，重做「旧版写标记→新版覆盖安装」严格复验" }
+      ]
+    },
+    {
+      "q": "AC-13「图片资源缺失/解码失败降级」验收包上无法构造，证据如何兜底？",
+      "options": [
+        { "text": "接受测试阶段专项构建结论兜底（本阶段未阅读测试报告，请桥接层附上）", "recommended": true },
+        { "text": "安排一次移除/替换欢迎图资源的专项构建并重开验收补测" }
+      ]
+    },
+    {
+      "q": "AC-7 中文副标题居中口径：按字身框（advance box）测量居中，字面墨迹因末字符全角句号右留白偏左 4.55dp，是否接受？",
+      "options": [
+        { "text": "采用字身框口径，判定通过并记录说明", "recommended": true },
+        { "text": "坚持字面墨迹≤1dp，需改文案标点或字距（属需求变更）" }
+      ]
+    },
+    {
+      "q": "观察项：应用内切中文后欢迎日志 locale 仍为 en（系统 locale），是否本需求内处理？",
+      "options": [
+        { "text": "记录为既有问题，另立需求处理", "recommended": true },
+        { "text": "本需求内修正日志字段（触及既有埋点口径）" }
+      ]
+    }
+  ],
+  "blockers": [
+    {
+      "reason": "AC-13 未验证：需在测试构建中移除/替换欢迎图资源才能验证降级，验收阶段不构建、不改包；建议由测试阶段专项构建结论兜底，或安排专项构建复验。",
+      "severity": "suggestion"
+    }
+  ],
+  "deliverables": {
+    "debugPackage": "C:/Users/mohanshang/.qq-bot/worktrees/5w2hsgiq/flutter_app/build/app/outputs/flutter-apk/app-debug.apk#0.1.0 (versionCode 4)"
+  }
+}

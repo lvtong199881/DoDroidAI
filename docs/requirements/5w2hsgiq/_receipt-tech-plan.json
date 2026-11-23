@@ -1,0 +1,29 @@
+{
+  "status": "done",
+  "summary": "完成技术方案：保留门控、日志、关闭与入口不变，重构欢迎弹窗布局，新增深浅两套本地欢迎图，并定稿组件/资源/错误语义、开发拆分、影响面、测试与回滚方案；PRD 与设计逐条核对无硬冲突。",
+  "artifacts": [
+    {
+      "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\5w2hsgiq\\技术方案.md",
+      "action": "created"
+    }
+  ],
+  "selfCheck": "接口定稿：是，展示入口/hero/资源/门控日志/布局/错误语义/测试 Key 均给定值，全文无待定；影响面：是，已覆盖首次门控、欢迎标记、WelcomeLog、关闭与连点、chat_screen 入口、中英文、深浅主题、小屏横屏、既有 golden、包体内存、构建前置，并列出不改清单；PRD↔设计：逐条核对 16 项，无硬冲突，设计新增的按钮外观、标题 20sp/w600、body/footer 内边距、两套素材、失败留空均已记录，按 PRD 优先或设计允许处理，3 条建议写入 blockers；风险与回滚：13 项风险均有触发信号与对策，回滚按单提交回退、不重置欢迎标记、含验证步骤与触发条件；开发拆分：T1-T10 均标依赖、REQ/AC、完成判据、粗估和状态；模块改动：5 项均挂 REQ，另有明确不改清单；未修改项目下任何源码、配置、资源或测试；构建/单测未跑（本阶段不写代码，无可运行改动），构建与环境核对留到开发阶段 T1/T9。",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "设计说明 5.3 给出主标题 20sp/w600、按钮 48dp 胶囊/primary、body/footer 内边距等 PRD 未写明的视觉值；PRD REQ-3 要求标题沿用现有样式，REQ-5 只锁按钮行为。方案按「PRD 有规定从 PRD、未规定从设计」处理：标题不改现有样式，按钮外观按设计但保留现有组件/回调/连点保护。建议 bridge 让需求 agent 在 PRD 补一句「视觉细节以设计说明为准」，避免验收口径分歧；不阻塞开发。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "设计说明 5.2 写「源 640×320」，交付物与素材表写 1280×640；两者同为 2:1，不影响 AC-4。方案以交付 PNG 1280×640 为准，并用资源解码测试守护比例；建议设计文档统一表述。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "本阶段检出目录无 flutter_app 源码与 android 构建配置，无法核实现有入口签名、TextStyle、WelcomeLog API、pubspec 资源目录和 AGP 现状；方案按 PRD 给出的路径/标识符编写，并把「T1 先核对真实源码」列为开发首步。环境提示 AGP 9.1.0 过低、9.1.1 有插件应用顺序错误；方案要求构建前置只允许调整 settings.gradle.kts 版本与 app/build.gradle.kts 插件应用顺序，不改其他构建配置，仍失败则停止回报。",
+      "severity": "suggestion"
+    }
+  ],
+  "deliverables": {
+    "debugPackage": ""
+  }
+}

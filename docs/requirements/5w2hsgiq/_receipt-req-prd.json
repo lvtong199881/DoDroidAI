@@ -1,0 +1,22 @@
+{
+  "status": "done",
+  "summary": "完成需求定稿：产出《PRD.md》和《需求卡片.md》，落实 Q2/Q3/Q4 的 A 选项；Q1 未回答，按推荐值 A（三组卖点整组删除）转为采用假设 A1，并完成歧义扫描、系统条件判断、多语言/权限文案与监测指标。",
+  "artifacts": [
+    {
+      "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\5w2hsgiq\\PRD.md",
+      "action": "created"
+    },
+    {
+      "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\5w2hsgiq\\需求卡片.md",
+      "action": "created"
+    }
+  ],
+  "selfCheck": "回合 B 准出清单：1) 目标、范围、明确不做的事、验收标准齐全——通过；2) 功能 REQ-1～REQ-9、验收 AC-1～AC-17 均有编号，AC 均标注覆盖 REQ——通过；3) 歧义扫描完成，结论写入 PRD 第 10 节——通过；4) Q2/Q3/Q4 已按用户选择的 A 落地，Q1 未回答已按推荐值 A 转为假设 A1——通过；5) 系统条件逐项判断：深色模式（AC-14）、折叠屏/分屏/悬浮窗（明确不做专项）、生命周期（AC-17）、升级路径（AC-10）、异常（AC-13，其余不适用或沿用现状）、系统字体缩放与读屏（明确不做专项）——通过；6) 中英文文案与权限文案已写到（PRD 8.1 / 8.3）——通过；7) 监测指标均映射到既有 WelcomeLog 事件，无新增埋点——通过；8) 需求卡片含测试账号与数据，无账号/凭据，复现方式与来源写清——通过；9) 未改上游文档、未写其他需求目录——通过。未验证项：构建与真机验收未执行，本阶段为需求定稿，由开发/测试阶段按 AC 执行。",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "本回合 checkout C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y 仍只有 .qq-bot-scratch，没有仓库工作树（无 .git、无 flutter_app 源码）；AGENTS.md 从 C:\\Users\\mohanshang\\.qq-bot\\repo.git 的 origin/main 读取。PRD 与需求卡片不依赖工作树，已正常产出；开发阶段需要先恢复工作树，否则无法构建、安装和真机验证。",
+      "severity": "suggestion"
+    }
+  ]
+}

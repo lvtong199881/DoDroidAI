@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="640" height="400" viewBox="0 0 640 400">
+<defs><filter id="dlgShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.18"/></filter></defs>
+<rect width="640" height="400" fill="#F7F8FA"/>
+<rect width="640" height="400" fill="rgba(0, 0, 0, 0.54)"/>
+<g filter="url(#dlgShadow)"><rect x="20" y="40" width="600" height="320" rx="16" fill="#FFFFFF" /><rect x="20" y="40" width="600" height="32" rx="16" fill="#EEF2FF" /><image href="../assets/welcome_hero_light.png" x="20" y="40" width="600" height="300" preserveAspectRatio="xMidYMid slice" /><rect x="20" y="280" width="600" height="64" rx="0" fill="#FFFFFF" /><rect x="40" y="292" width="560" height="48" rx="24" fill="#4D6BFE" /><text x="320" y="321.4" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="15" font-weight="600" fill="#FFFFFF" text-anchor="middle" >开始使用</text></g>
+</svg>

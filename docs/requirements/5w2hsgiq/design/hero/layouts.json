@@ -1,0 +1,130 @@
+{
+  "requirement": "5w2hsgiq 欢迎弹窗顶部欢迎图素材（2:1，浅色/深色两版）",
+  "designTokens": {
+    "fonts": {
+      "android": "Roboto / 系统默认（图中无文字）",
+      "preview": "'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif"
+    },
+    "colors": {
+      "light": {
+        "heroBg": "#EEF2FF",
+        "heroDeco1": "#DDE5FF",
+        "heroDeco2": "#C6D2F7",
+        "heroSurface": "#FFFFFF",
+        "heroScreen": "#F4F7FF",
+        "heroStroke": "#C3CFF0",
+        "heroInk": "#4D6BFE",
+        "heroAccent": "#8FA6FF",
+        "heroBubble": "#4D6BFE",
+        "heroBubbleInk": "#FFFFFF",
+        "heroBadgeInk": "#FFFFFF"
+      },
+      "dark": {
+        "heroBg": "#1C2436",
+        "heroDeco1": "#232D45",
+        "heroDeco2": "#2C3957",
+        "heroSurface": "#2A3348",
+        "heroScreen": "#212A3E",
+        "heroStroke": "#3D4B6B",
+        "heroInk": "#8FA6FF",
+        "heroAccent": "#6E88FF",
+        "heroBubble": "#7C97FF",
+        "heroBubbleInk": "#0E1220",
+        "heroBadgeInk": "#0E1220"
+      }
+    },
+    "radius": {
+      "hero": 32,
+      "pill": 999
+    },
+    "icons": {
+      "size": 28,
+      "strokeWidth": 1.9,
+      "viewport": 24,
+      "colorToken": "heroInk",
+      "items": {
+        "sparkle": {
+          "svg": "<path d=\"M12 3.1c.7 4.2 3.7 7.2 7.9 7.9-4.2.7-7.2 3.7-7.9 7.9-.7-4.2-3.7-7.2-7.9-7.9 4.2-.7 7.2-3.7 7.9-7.9Z\"/>"
+        },
+        "check": {
+          "svg": "<path d=\"M5.2 12.5l4.4 4.4 9.2-9.2\"/>"
+        }
+      }
+    }
+  },
+  "components": {
+    "hero": {
+      "type": "frame",
+      "name": "hero",
+      "width": 640,
+      "height": 320,
+      "children": [
+        { "type": "rect", "name": "hero.bg", "x": 0, "y": 0, "width": 640, "height": 320, "radius": 32, "fill": "heroBg" },
+        { "type": "rect", "name": "hero.bg.squareBottom", "x": 0, "y": 280, "width": 640, "height": 40, "radius": 0, "fill": "heroBg" },
+        { "type": "rect", "name": "hero.deco.circle", "x": 170, "y": 10, "width": 300, "height": 300, "radius": 999, "fill": "heroDeco1" },
+        { "type": "rect", "name": "hero.deco.dotA", "x": 560, "y": 60, "width": 12, "height": 12, "radius": 999, "fill": "heroDeco2" },
+        { "type": "rect", "name": "hero.deco.dotB", "x": 584, "y": 80, "width": 6, "height": 6, "radius": 999, "fill": "heroAccent" },
+        { "type": "rect", "name": "hero.deco.dotC", "x": 74, "y": 150, "width": 8, "height": 8, "radius": 999, "fill": "heroDeco2" },
+        { "type": "rect", "name": "hero.deco.dotD", "x": 556, "y": 250, "width": 8, "height": 8, "radius": 999, "fill": "heroDeco2" },
+        {
+          "type": "frame",
+          "name": "hero.phone",
+          "x": 265, "y": 44, "width": 110, "height": 232, "radius": 22,
+          "fill": "heroSurface", "stroke": "heroStroke", "strokeWidth": 2,
+          "children": [
+            { "type": "rect", "name": "hero.phone.screen", "x": 10, "y": 20, "width": 90, "height": 180, "radius": 12, "fill": "heroScreen" },
+            { "type": "rect", "name": "hero.phone.speaker", "x": 43, "y": 8, "width": 24, "height": 5, "radius": 3, "fill": "heroStroke" },
+            { "type": "rect", "name": "hero.phone.bar1", "x": 24, "y": 97, "width": 7, "height": 26, "radius": 999, "fill": "heroInk" },
+            { "type": "rect", "name": "hero.phone.bar2", "x": 38, "y": 85, "width": 7, "height": 50, "radius": 999, "fill": "heroInk" },
+            { "type": "rect", "name": "hero.phone.bar3", "x": 52, "y": 71, "width": 7, "height": 78, "radius": 999, "fill": "heroInk" },
+            { "type": "rect", "name": "hero.phone.bar4", "x": 66, "y": 85, "width": 7, "height": 50, "radius": 999, "fill": "heroInk" },
+            { "type": "rect", "name": "hero.phone.bar5", "x": 80, "y": 97, "width": 7, "height": 26, "radius": 999, "fill": "heroInk" },
+            { "type": "rect", "name": "hero.phone.home", "x": 39, "y": 211, "width": 32, "height": 4, "radius": 2, "fill": "heroStroke" }
+          ]
+        },
+        {
+          "type": "frame",
+          "name": "hero.bubble",
+          "x": 92, "y": 76, "width": 132, "height": 86, "radius": 20,
+          "fill": "heroBubble",
+          "children": [
+            { "type": "rect", "name": "hero.bubble.dot1", "x": 33, "y": 36, "width": 14, "height": 14, "radius": 999, "fill": "heroBubbleInk" },
+            { "type": "rect", "name": "hero.bubble.dot2", "x": 59, "y": 36, "width": 14, "height": 14, "radius": 999, "fill": "heroBubbleInk" },
+            { "type": "rect", "name": "hero.bubble.dot3", "x": 85, "y": 36, "width": 14, "height": 14, "radius": 999, "fill": "heroBubbleInk" }
+          ]
+        },
+        { "type": "rect", "name": "hero.bubble.tail1", "x": 101, "y": 151, "width": 18, "height": 18, "radius": 999, "fill": "heroBubble" },
+        { "type": "rect", "name": "hero.bubble.tail2", "x": 90, "y": 167, "width": 10, "height": 10, "radius": 999, "fill": "heroBubble" },
+        { "type": "rect", "name": "hero.badge", "x": 444, "y": 82, "width": 56, "height": 56, "radius": 999, "fill": "heroInk" },
+        { "type": "icon", "name": "hero.badge.check", "icon": "check", "x": 458, "y": 96, "width": 28, "height": 28, "fill": "heroBadgeInk" },
+        { "type": "icon", "name": "hero.sparkle.big", "icon": "sparkle", "x": 430, "y": 32, "width": 32, "height": 32, "fill": "heroAccent" },
+        { "type": "icon", "name": "hero.sparkle.mid", "icon": "sparkle", "x": 86, "y": 204, "width": 22, "height": 22, "fill": "heroAccent" },
+        { "type": "icon", "name": "hero.sparkle.small", "icon": "sparkle", "x": 520, "y": 226, "width": 18, "height": 18, "fill": "heroInk" }
+      ]
+    }
+  },
+  "frames": [
+    {
+      "id": "welcome_hero_light",
+      "name": "welcome_hero_light",
+      "theme": "light",
+      "canvas": { "width": 640, "height": 320, "deviceScale": 2 },
+      "background": { "type": "color", "fill": "transparent" },
+      "contentRef": "hero",
+      "changeScope": "asset",
+      "ac": ["AC-13", "AC-14", "AC-16"],
+      "notes": "浅色版欢迎图源（640×320，2:1）；顶部两角圆角 32px，底部直角；画布透明。"
+    },
+    {
+      "id": "welcome_hero_dark",
+      "name": "welcome_hero_dark",
+      "theme": "dark",
+      "canvas": { "width": 640, "height": 320, "deviceScale": 2 },
+      "background": { "type": "color", "fill": "transparent" },
+      "contentRef": "hero",
+      "changeScope": "asset",
+      "ac": ["AC-13", "AC-14", "AC-16"],
+      "notes": "深色版欢迎图源；同一构图，仅换配色，品牌识别一致。"
+    }
+  ]
+}

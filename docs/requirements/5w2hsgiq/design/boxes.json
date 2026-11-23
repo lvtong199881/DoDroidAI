@@ -1,0 +1,298 @@
+{
+  "F01_absent_zh_light": [],
+  "F02_normal_zh_light": [
+    {
+      "name": "hero",
+      "type": "image",
+      "width": 320,
+      "height": 160
+    },
+    {
+      "name": "body",
+      "type": "frame",
+      "width": 320,
+      "height": 83
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 272,
+      "height": 26,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ]
+    },
+    {
+      "name": "intro",
+      "type": "text",
+      "width": 272,
+      "height": 21,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 320,
+      "height": 80
+    },
+    {
+      "name": "button",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "buttonLabel",
+      "type": "text",
+      "width": 60,
+      "height": 18,
+      "lines": [
+        "开始使用"
+      ]
+    }
+  ],
+  "F03_normal_zh_dark": [
+    {
+      "name": "hero",
+      "type": "image",
+      "width": 320,
+      "height": 160
+    },
+    {
+      "name": "body",
+      "type": "frame",
+      "width": 320,
+      "height": 83
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 272,
+      "height": 26,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ]
+    },
+    {
+      "name": "intro",
+      "type": "text",
+      "width": 272,
+      "height": 21,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 320,
+      "height": 80
+    },
+    {
+      "name": "button",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "buttonLabel",
+      "type": "text",
+      "width": 60,
+      "height": 18,
+      "lines": [
+        "开始使用"
+      ]
+    }
+  ],
+  "F04_normal_en_light": [
+    {
+      "name": "hero",
+      "type": "image",
+      "width": 320,
+      "height": 160
+    },
+    {
+      "name": "body",
+      "type": "frame",
+      "width": 320,
+      "height": 83
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 272,
+      "height": 26,
+      "lines": [
+        "Welcome to DoDroidAI"
+      ]
+    },
+    {
+      "name": "intro",
+      "type": "text",
+      "width": 272,
+      "height": 21,
+      "lines": [
+        "Say it, and let your phone do it."
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 320,
+      "height": 80
+    },
+    {
+      "name": "button",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "buttonLabel",
+      "type": "text",
+      "width": 86.7,
+      "height": 18,
+      "lines": [
+        "Get started"
+      ]
+    }
+  ],
+  "F05_narrow_en_light": [
+    {
+      "name": "hero",
+      "type": "image",
+      "width": 280,
+      "height": 140
+    },
+    {
+      "name": "body",
+      "type": "frame",
+      "width": 280,
+      "height": 104
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 232,
+      "height": 26,
+      "lines": [
+        "Welcome to DoDroidAI"
+      ]
+    },
+    {
+      "name": "intro",
+      "type": "text",
+      "width": 232,
+      "height": 42,
+      "lines": [
+        "Say it, and let your phone do ",
+        "it."
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 280,
+      "height": 80
+    },
+    {
+      "name": "button",
+      "type": "frame",
+      "width": 240,
+      "height": 48
+    },
+    {
+      "name": "buttonLabel",
+      "type": "text",
+      "width": 86.7,
+      "height": 18,
+      "lines": [
+        "Get started"
+      ]
+    }
+  ],
+  "F06_overheight_zh_light": [
+    {
+      "name": "hero.cornerPad",
+      "type": "rect",
+      "width": 600,
+      "height": 32
+    },
+    {
+      "name": "hero",
+      "type": "image",
+      "width": 600,
+      "height": 300
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 600,
+      "height": 64
+    },
+    {
+      "name": "button",
+      "type": "frame",
+      "width": 560,
+      "height": 48
+    },
+    {
+      "name": "buttonLabel",
+      "type": "text",
+      "width": 60,
+      "height": 18,
+      "lines": [
+        "开始使用"
+      ]
+    }
+  ],
+  "F07_hero_missing_zh_light": [
+    {
+      "name": "body",
+      "type": "frame",
+      "width": 320,
+      "height": 83
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 272,
+      "height": 26,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ]
+    },
+    {
+      "name": "intro",
+      "type": "text",
+      "width": 272,
+      "height": 21,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 320,
+      "height": 80
+    },
+    {
+      "name": "button",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "buttonLabel",
+      "type": "text",
+      "width": 60,
+      "height": 18,
+      "lines": [
+        "开始使用"
+      ]
+    }
+  ]
+}

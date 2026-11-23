@@ -1,0 +1,65 @@
+{
+  "status": "done",
+  "summary": "用例 22 条：通过 17，部分通过 1，未覆盖 4，失败 0；真机实测欢迎图贴边 2:1、卖点删除、标题/副标题居中、升级不重弹、按钮/返回/遮罩/连点、深色/中文/320/360dp/横屏滚动、WelcomeLog 正常路径均通过，结论有条件通过。",
+  "artifacts": [
+    {
+      "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\5w2hsgiq\\测试报告.md",
+      "action": "modified"
+    },
+    {
+      "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\5w2hsgiq\\docs\\ui-screenshots\\welcome\\first-show-en-light.png",
+      "action": "created"
+    },
+    {
+      "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\5w2hsgiq\\docs\\ui-screenshots\\welcome\\first-show-zh-light.png",
+      "action": "created"
+    },
+    {
+      "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\5w2hsgiq\\docs\\ui-screenshots\\welcome\\first-show-en-dark.png",
+      "action": "created"
+    },
+    {
+      "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\5w2hsgiq\\docs\\ui-screenshots\\welcome\\landscape-top.png",
+      "action": "created"
+    },
+    {
+      "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\5w2hsgiq\\docs\\ui-screenshots\\welcome\\landscape-bottom.png",
+      "action": "created"
+    },
+    {
+      "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\5w2hsgiq\\docs\\ui-screenshots\\welcome\\upgrade-no-dialog.png",
+      "action": "created"
+    },
+    {
+      "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\5w2hsgiq\\logs\\qa\\package-info.txt",
+      "action": "created"
+    },
+    {
+      "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\5w2hsgiq\\logs\\qa\\welcome-events-evidence.txt",
+      "action": "created"
+    }
+  ],
+  "selfCheck": "①未读源码/未构建/未跑单测：满足（未打开 lib/，未执行 Gradle/Flutter 构建或测试）；②包路径/版本/安装启动命令与开发交付一致：满足（versionCode=4、versionName=0.1.0、SHA256、install Success、am start 均登记）；③关键路径真实执行证据：满足（升级 skip、首次 show/mark/shown、按钮/返回 dismissed、遮罩不关、连点一次、回前台保持、深色/中文/320/360dp/横屏、几何测量均有截图/UI 树/日志）；④PRD 覆盖表填全：满足（REQ-1～REQ-9 与监测指标逐项有结论或未覆盖原因）；⑤每用例标需求编号：满足（TC-01～TC-22 均标 REQ/AC）；⑥监测日志逐条校验：部分满足（正常路径 check/mark/shown/dismissed 已校验并留原始日志；error/图片失败路径未覆盖）；⑦截图按页面归档：满足（14 张）；⑧缺陷处理计划：满足（0 失败，观察项列明复测/确认计划）；⑨范围外仅记录：满足（Bilibili 遗留、中英混排）；⑩未覆盖项写明原因：满足（4 项）；⑪平台能力类单列：满足。",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "观察（非阻塞，环境相关）：欢迎弹窗展示期间按 Home 触发 dodroidai ANR（dumpsys lastanr: Input dispatching timed out, Waited 5011ms for FocusEvent(hasFocus=false)），同机 System UI 亦 ANR；疑似模拟器宿主过载（冷启动约 50s、hero 首帧约 15s），建议在健康设备/真机复测首帧与切后台性能，确认非本需求引入的主线程阻塞。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "观察（非阻塞，口径待确认）：应用语言切到简体中文后，欢迎弹窗文案为中文，但 WelcomeLog 仍上报 locale=en（系统语言 en-US）；若按 PRD 第 9 节 locale 分组会误分类，请确认埋点 locale 应取应用语言还是系统语言。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "未覆盖（非阻塞，需专用构建）：AC-13/TC-13 图片资源失败降级无法在已安装包上注入（heroAssetOverride 仅测试参数）；需开发提供注入不存在路径的 debug 包或用 widget test 证据补位，本轮按规则不构建。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "未覆盖（环境）：01:29 起分配设备 emulator-5554 的 adb shell/logcat 全部挂起、emulator console 5554 拒绝连接，导致标记读写失败（TC-22）与断网本地资源（TC-21）两项补测未完成；未重启/重置设备，需环境恢复后补测。",
+      "severity": "suggestion"
+    }
+  ],
+  "deliverables": {
+    "debugPackage": "C:\\Users\\mohanshang\\.qq-bot\\worktrees\\5w2hsgiq\\flutter_app\\build\\app\\outputs\\flutter-apk\\app-debug.apk#0.1.0(versionCode=4)"
+  }
+}

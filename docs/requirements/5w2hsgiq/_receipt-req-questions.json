@@ -1,0 +1,50 @@
+{
+  "status": "needs_input",
+  "summary": "完成欢迎弹窗改版的歧义扫描，产出 4 个待确认问题（三组卖点删除范围、副标题文案、图片铺满方式、老用户是否重弹），未写 PRD 与需求卡片。",
+  "artifacts": [
+    {
+      "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\5w2hsgiq\\待提问清单.md",
+      "action": "created"
+    }
+  ],
+  "selfCheck": "回合 A 准出清单：1) 4 条疑点均写了「会改变什么」与「推荐答案」——通过；2) 未混入只影响实现细节的问题（图片画法/比例、深色资源策略、横屏降级、旧文案 key 已归入文末「不单独提问」）——通过；3) 未替用户作答，仅给推荐选项，未写 PRD / 需求卡片——通过；4) 只产出待提问清单.md——通过。未验证项：无（本回合不涉及构建与真机）。",
+  "decisions": [
+    {
+      "q": "中间三组卖点删除到什么程度？",
+      "options": [
+        { "text": "整组删除：图标、标题、描述全部删除", "recommended": true },
+        { "text": "只删除三组描述文字，保留三个图标和标题" },
+        { "text": "其他（请说明具体保留/删除哪些元素）" }
+      ]
+    },
+    {
+      "q": "副标题显示哪一句？",
+      "options": [
+        { "text": "沿用导语「说一句话，让手机替你做事。」作为副标题并居中", "recommended": true },
+        { "text": "换一句新副标题（需提供中英文文案）" },
+        { "text": "不设副标题，同时删除现有导语，只保留居中主标题" }
+      ]
+    },
+    {
+      "q": "图片「宽度撑满弹窗」是贴到弹窗边缘，还是在内容区内撑满？",
+      "options": [
+        { "text": "贴边铺满：图片左右贴弹窗边缘，顶部两角随弹窗圆角裁切", "recommended": true },
+        { "text": "内容区内撑满：左右各保留 20dp 内边距" }
+      ]
+    },
+    {
+      "q": "已经关闭过旧版欢迎弹窗的老用户，升级后要不要再看到新版弹窗？",
+      "options": [
+        { "text": "不重弹：保持一次性逻辑，老用户升级后不再看到新版弹窗", "recommended": true },
+        { "text": "重弹一次：升级欢迎标记，老用户升级后首次启动再看一次新版弹窗" },
+        { "text": "其他（请说明）" }
+      ]
+    }
+  ],
+  "blockers": [
+    {
+      "reason": "本回合工作目录 C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y 下没有仓库工作树（只有 .qq-bot-scratch），AGENTS.md 与 flutter_app 源码均不在 checkout 中，也没有 .git。已改用 C:\\Users\\mohanshang\\.qq-bot\\repo.git 的 origin/main（e94389d）只读提取到临时目录核对现状，需求澄清不受影响。开发阶段需要先恢复工作树，否则无法构建、安装和真机验证。",
+      "severity": "suggestion"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "status": "done",
+  "summary": "完成欢迎弹窗新版设计：7 帧 SVG/PNG（正常/空态/深色/英文/320dp 换行/超高滚动/图片缺失）+ 深浅两版欢迎图素材（1280×640 PNG 及矢量源）+ 设计说明。",
+  "artifacts": [
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\5w2hsgiq\\design\\", "action": "created" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\5w2hsgiq\\design\\assets\\", "action": "created" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\5w2hsgiq\\design-images\\", "action": "created" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\5w2hsgiq\\设计说明.md", "action": "created" }
+  ],
+  "selfCheck": "1) design/layouts.json + design/svg/ 7 帧 + design/boxes.json 齐全，PNG 在 design-images/；SVG 全部由自带 svggen.cjs 生成，未手写坐标（PNG 因沙箱禁命名管道、Chrome 无法启动，改用 node-canvas 对同一份 SVG 栅格化，scale=3、透明底，见设计说明第 8 节）。2) 帧结构改动后已重跑渲染，SVG/PNG/boxes 时间戳一致，帧内容与 layouts.json 一致。3) 四个必备状态都有稿：正常态 F02、空态 F01、超长文案/多语言 F04/F05、极端数据 F06；另出深色 F03、错误态 F07；加载态舍弃（本地同步解码、无网络等待，PRD 未要求），理由写进设计说明。4) 无参照截图，全部按新页面整页出稿并标注 full-page，背景用规范底色 + 54% 遮罩占位并注明不代表首页内容。5) 每个「页面×状态」为独立 frame。6) boxes.json 无内容盒溢出：文字块宽=内容宽、行数 1/2/1，图片宽=弹窗宽、高=宽÷2，无超出画布或父容器。7) 颜色/字号/间距取自 PRD 主题色与项目既有弹窗规格 + MOBILE-UI，字体降级（出图 Segoe UI/Microsoft YaHei → 真机 Roboto/系统中文）已记录；插画专用色板单独列明且不用于 UI 控件。8) 只在需求目录写产物，未改动项目下任何源码、配置、资源。",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "检出目录（C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y）除 .qq-bot-scratch 外没有项目源码，也没有 docs/ui-screenshots，无法核对现有弹窗的真实 padding/字号与首页截图。设计按「新页面整页出稿」处理，token 依据 PRD 指定主题色（#FFFFFF/#161920、#4D6BFE 系）+ 项目金标准示例 + MOBILE-UI；开发接入前需以真实代码校准，若与设计说明第 5 节规格有出入，以设计说明为准。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "沙箱禁止命名管道，Chrome/Edge 无头模式启动即崩（mojo platform_channel 拒绝访问），自带 svg2png.cjs 无法产出 PNG，升级沙箱权限又没有审批通道。已用 node-canvas 对同一批 SVG 复刻栅格化出图（scale=3、透明底），SVG 仍为唯一设计源；若必须交付脚本原生产物，需要放开沙箱或提供审批通道后重跑 svg2png.cjs。",
+      "severity": "suggestion"
+    }
+  ],
+  "deliverables": {}
+}

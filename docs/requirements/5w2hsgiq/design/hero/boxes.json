@@ -1,0 +1,330 @@
+{
+  "welcome_hero_light": [
+    {
+      "name": "hero.bg",
+      "type": "rect",
+      "width": 640,
+      "height": 320
+    },
+    {
+      "name": "hero.bg.squareBottom",
+      "type": "rect",
+      "width": 640,
+      "height": 40
+    },
+    {
+      "name": "hero.deco.circle",
+      "type": "rect",
+      "width": 300,
+      "height": 300
+    },
+    {
+      "name": "hero.deco.dotA",
+      "type": "rect",
+      "width": 12,
+      "height": 12
+    },
+    {
+      "name": "hero.deco.dotB",
+      "type": "rect",
+      "width": 6,
+      "height": 6
+    },
+    {
+      "name": "hero.deco.dotC",
+      "type": "rect",
+      "width": 8,
+      "height": 8
+    },
+    {
+      "name": "hero.deco.dotD",
+      "type": "rect",
+      "width": 8,
+      "height": 8
+    },
+    {
+      "name": "hero.phone",
+      "type": "frame",
+      "width": 110,
+      "height": 232
+    },
+    {
+      "name": "hero.phone.screen",
+      "type": "rect",
+      "width": 90,
+      "height": 180
+    },
+    {
+      "name": "hero.phone.speaker",
+      "type": "rect",
+      "width": 24,
+      "height": 5
+    },
+    {
+      "name": "hero.phone.bar1",
+      "type": "rect",
+      "width": 7,
+      "height": 26
+    },
+    {
+      "name": "hero.phone.bar2",
+      "type": "rect",
+      "width": 7,
+      "height": 50
+    },
+    {
+      "name": "hero.phone.bar3",
+      "type": "rect",
+      "width": 7,
+      "height": 78
+    },
+    {
+      "name": "hero.phone.bar4",
+      "type": "rect",
+      "width": 7,
+      "height": 50
+    },
+    {
+      "name": "hero.phone.bar5",
+      "type": "rect",
+      "width": 7,
+      "height": 26
+    },
+    {
+      "name": "hero.phone.home",
+      "type": "rect",
+      "width": 32,
+      "height": 4
+    },
+    {
+      "name": "hero.bubble",
+      "type": "frame",
+      "width": 132,
+      "height": 86
+    },
+    {
+      "name": "hero.bubble.dot1",
+      "type": "rect",
+      "width": 14,
+      "height": 14
+    },
+    {
+      "name": "hero.bubble.dot2",
+      "type": "rect",
+      "width": 14,
+      "height": 14
+    },
+    {
+      "name": "hero.bubble.dot3",
+      "type": "rect",
+      "width": 14,
+      "height": 14
+    },
+    {
+      "name": "hero.bubble.tail1",
+      "type": "rect",
+      "width": 18,
+      "height": 18
+    },
+    {
+      "name": "hero.bubble.tail2",
+      "type": "rect",
+      "width": 10,
+      "height": 10
+    },
+    {
+      "name": "hero.badge",
+      "type": "rect",
+      "width": 56,
+      "height": 56
+    },
+    {
+      "name": "hero.badge.check",
+      "type": "icon",
+      "width": 28,
+      "height": 28
+    },
+    {
+      "name": "hero.sparkle.big",
+      "type": "icon",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "name": "hero.sparkle.mid",
+      "type": "icon",
+      "width": 22,
+      "height": 22
+    },
+    {
+      "name": "hero.sparkle.small",
+      "type": "icon",
+      "width": 18,
+      "height": 18
+    }
+  ],
+  "welcome_hero_dark": [
+    {
+      "name": "hero.bg",
+      "type": "rect",
+      "width": 640,
+      "height": 320
+    },
+    {
+      "name": "hero.bg.squareBottom",
+      "type": "rect",
+      "width": 640,
+      "height": 40
+    },
+    {
+      "name": "hero.deco.circle",
+      "type": "rect",
+      "width": 300,
+      "height": 300
+    },
+    {
+      "name": "hero.deco.dotA",
+      "type": "rect",
+      "width": 12,
+      "height": 12
+    },
+    {
+      "name": "hero.deco.dotB",
+      "type": "rect",
+      "width": 6,
+      "height": 6
+    },
+    {
+      "name": "hero.deco.dotC",
+      "type": "rect",
+      "width": 8,
+      "height": 8
+    },
+    {
+      "name": "hero.deco.dotD",
+      "type": "rect",
+      "width": 8,
+      "height": 8
+    },
+    {
+      "name": "hero.phone",
+      "type": "frame",
+      "width": 110,
+      "height": 232
+    },
+    {
+      "name": "hero.phone.screen",
+      "type": "rect",
+      "width": 90,
+      "height": 180
+    },
+    {
+      "name": "hero.phone.speaker",
+      "type": "rect",
+      "width": 24,
+      "height": 5
+    },
+    {
+      "name": "hero.phone.bar1",
+      "type": "rect",
+      "width": 7,
+      "height": 26
+    },
+    {
+      "name": "hero.phone.bar2",
+      "type": "rect",
+      "width": 7,
+      "height": 50
+    },
+    {
+      "name": "hero.phone.bar3",
+      "type": "rect",
+      "width": 7,
+      "height": 78
+    },
+    {
+      "name": "hero.phone.bar4",
+      "type": "rect",
+      "width": 7,
+      "height": 50
+    },
+    {
+      "name": "hero.phone.bar5",
+      "type": "rect",
+      "width": 7,
+      "height": 26
+    },
+    {
+      "name": "hero.phone.home",
+      "type": "rect",
+      "width": 32,
+      "height": 4
+    },
+    {
+      "name": "hero.bubble",
+      "type": "frame",
+      "width": 132,
+      "height": 86
+    },
+    {
+      "name": "hero.bubble.dot1",
+      "type": "rect",
+      "width": 14,
+      "height": 14
+    },
+    {
+      "name": "hero.bubble.dot2",
+      "type": "rect",
+      "width": 14,
+      "height": 14
+    },
+    {
+      "name": "hero.bubble.dot3",
+      "type": "rect",
+      "width": 14,
+      "height": 14
+    },
+    {
+      "name": "hero.bubble.tail1",
+      "type": "rect",
+      "width": 18,
+      "height": 18
+    },
+    {
+      "name": "hero.bubble.tail2",
+      "type": "rect",
+      "width": 10,
+      "height": 10
+    },
+    {
+      "name": "hero.badge",
+      "type": "rect",
+      "width": 56,
+      "height": 56
+    },
+    {
+      "name": "hero.badge.check",
+      "type": "icon",
+      "width": 28,
+      "height": 28
+    },
+    {
+      "name": "hero.sparkle.big",
+      "type": "icon",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "name": "hero.sparkle.mid",
+      "type": "icon",
+      "width": 22,
+      "height": 22
+    },
+    {
+      "name": "hero.sparkle.small",
+      "type": "icon",
+      "width": 18,
+      "height": 18
+    }
+  ]
+}

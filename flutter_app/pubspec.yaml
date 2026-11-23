@@ -52,3 +52,5 @@ flutter:
   uses-material-design: true
   assets:
     - assets/providers/
+    - assets/images/welcome_hero_light.png
+    - assets/images/welcome_hero_dark.png
