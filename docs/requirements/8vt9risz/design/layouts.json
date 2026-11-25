@@ -1,0 +1,361 @@
+{
+  "requirement": "8vt9risz 欢迎弹窗新增「去配置AI」按钮（未配置 AI 时显示，次要按钮置于「开始使用」上方）",
+  "designTokens": {
+    "fonts": {
+      "android": {
+        "latin": "Roboto（系统默认）",
+        "cjk": "Noto Sans CJK SC（系统回落）",
+        "stack": "Roboto, 'Noto Sans SC', 'Noto Sans CJK SC', sans-serif"
+      },
+      "preview": {
+        "stack": "'Segoe UI', 'Microsoft YaHei', 'Noto Sans SC', sans-serif",
+        "reason": "Windows 出图环境无 Roboto / Noto Sans CJK，用系统字体近似；Android 真机以系统字体为准"
+      }
+    },
+    "colors": {
+      "light": {
+        "pageBg": "#F7F8FA",
+        "surface": "#FFFFFF",
+        "onSurface": "#171A1F",
+        "onSurfaceVariant": "#5B6270",
+        "primary": "#4D6BFE",
+        "onPrimary": "#FFFFFF",
+        "outline": "#C6CBD4",
+        "outlineVariant": "#E1E4EA",
+        "scrim": "rgba(0, 0, 0, 0.54)",
+        "shadow": "0 8px 24px rgba(0, 0, 0, 0.18)",
+        "heroBg": "#EEF2FF"
+      },
+      "dark": {
+        "pageBg": "#0F1115",
+        "surface": "#161920",
+        "onSurface": "#E6E8EC",
+        "onSurfaceVariant": "#A6ADBB",
+        "primary": "#8FA6FF",
+        "onPrimary": "#0A1F5C",
+        "outline": "#3A404C",
+        "outlineVariant": "#2A2F39",
+        "scrim": "rgba(0, 0, 0, 0.54)",
+        "shadow": "0 8px 24px rgba(0, 0, 0, 0.55)",
+        "heroBg": "#1C2436"
+      }
+    },
+    "assets": {
+      "light": {
+        "hero": "../assets/welcome_hero_light.png"
+      },
+      "dark": {
+        "hero": "../assets/welcome_hero_dark.png"
+      }
+    },
+    "typography": {
+      "title": {
+        "fontSize": 20,
+        "fontWeight": 600,
+        "lineHeight": 1.3,
+        "colorToken": "onSurface",
+        "androidStyle": "TextStyle(fontSize: 20, fontWeight: w600, height: 1.3)"
+      },
+      "intro": {
+        "fontSize": 15,
+        "fontWeight": 400,
+        "lineHeight": 1.4,
+        "colorToken": "onSurfaceVariant",
+        "androidStyle": "TextStyle(fontSize: 15, height: 1.4)"
+      },
+      "button": {
+        "fontSize": 15,
+        "fontWeight": 600,
+        "lineHeight": 1.2,
+        "colorToken": "onPrimary",
+        "androidStyle": "TextStyle(fontSize: 15, fontWeight: w600)"
+      }
+    },
+    "buttonStyles": {
+      "primary": {
+        "fill": "primary",
+        "colorToken": "onPrimary",
+        "border": null
+      },
+      "secondary": {
+        "fill": "transparent",
+        "colorToken": "primary",
+        "border": "outline",
+        "borderWidth": 1,
+        "note": "OutlinedButton 次要样式：透明底 + 1dp outline 描边 + primary 文字；与主按钮（实心 primary、白字）形成明显视觉权重差"
+      }
+    },
+    "radius": {
+      "dialog": 16,
+      "pill": 999
+    },
+    "spacing": {
+      "dialogInsetX": 20,
+      "dialogInsetY": 24,
+      "maxHeightRatio": 0.8,
+      "bodyPadding": [20, 24, 8, 24],
+      "titleToIntro": 8,
+      "footerPadding": [12, 20, 20, 20],
+      "buttonHeight": 48,
+      "buttonGap": 8
+    }
+  },
+  "copy": {
+    "zh": {
+      "title": "欢迎使用 DoDroidAI",
+      "intro": "说一句话，让手机替你做事。",
+      "configureAi": "去配置AI",
+      "start": "开始使用"
+    },
+    "en": {
+      "title": "Welcome to DoDroidAI",
+      "intro": "Say it, and let your phone do it.",
+      "configureAi": "Set up AI",
+      "start": "Get started"
+    }
+  },
+  "components": {
+    "dialog.twoButtons": {
+      "type": "frame",
+      "name": "dialog",
+      "fill": "surface",
+      "radius": 16,
+      "clip": true,
+      "inset": 20,
+      "maxHeightRatio": 0.8,
+      "center": true,
+      "layout": { "mode": "vertical", "padding": 0, "spacing": 0, "align": "stretch" },
+      "children": [
+        { "type": "image", "name": "hero", "srcRef": "hero", "aspectRatio": 2, "backdrop": "heroBg" },
+        {
+          "type": "frame",
+          "name": "body",
+          "layout": { "mode": "vertical", "padding": [20, 24, 8, 24], "spacing": 8, "align": "stretch" },
+          "children": [
+            { "type": "text", "name": "title", "textRef": "{{LOCALE}}.title", "typography": "title", "align": "center" },
+            { "type": "text", "name": "intro", "textRef": "{{LOCALE}}.intro", "typography": "intro", "align": "center" }
+          ]
+        },
+        {
+          "type": "frame",
+          "name": "footer",
+          "layout": { "mode": "vertical", "padding": [12, 20, 20, 20], "spacing": 8, "align": "stretch" },
+          "children": [
+            {
+              "type": "frame",
+              "name": "configureButton",
+              "height": 48,
+              "radius": 999,
+              "fill": "transparent",
+              "stroke": "outline",
+              "strokeWidth": 1,
+              "layout": { "mode": "vertical", "padding": 0, "align": "center", "justify": "center" },
+              "children": [
+                { "type": "text", "name": "configureLabel", "textRef": "{{LOCALE}}.configureAi", "typography": "button", "colorToken": "primary", "align": "center" }
+              ]
+            },
+            {
+              "type": "frame",
+              "name": "startButton",
+              "height": 48,
+              "radius": 999,
+              "fill": "primary",
+              "layout": { "mode": "vertical", "padding": 0, "align": "center", "justify": "center" },
+              "children": [
+                { "type": "text", "name": "startLabel", "textRef": "{{LOCALE}}.start", "typography": "button", "colorToken": "onPrimary", "align": "center" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "dialog.oneButton": {
+      "type": "frame",
+      "name": "dialog",
+      "fill": "surface",
+      "radius": 16,
+      "clip": true,
+      "inset": 20,
+      "maxHeightRatio": 0.8,
+      "center": true,
+      "layout": { "mode": "vertical", "padding": 0, "spacing": 0, "align": "stretch" },
+      "children": [
+        { "type": "image", "name": "hero", "srcRef": "hero", "aspectRatio": 2, "backdrop": "heroBg" },
+        {
+          "type": "frame",
+          "name": "body",
+          "layout": { "mode": "vertical", "padding": [20, 24, 8, 24], "spacing": 8, "align": "stretch" },
+          "children": [
+            { "type": "text", "name": "title", "textRef": "{{LOCALE}}.title", "typography": "title", "align": "center" },
+            { "type": "text", "name": "intro", "textRef": "{{LOCALE}}.intro", "typography": "intro", "align": "center" }
+          ]
+        },
+        {
+          "type": "frame",
+          "name": "footer",
+          "layout": { "mode": "vertical", "padding": [12, 20, 20, 20], "spacing": 8, "align": "stretch" },
+          "children": [
+            {
+              "type": "frame",
+              "name": "startButton",
+              "height": 48,
+              "radius": 999,
+              "fill": "primary",
+              "layout": { "mode": "vertical", "padding": 0, "align": "center", "justify": "center" },
+              "children": [
+                { "type": "text", "name": "startLabel", "textRef": "{{LOCALE}}.start", "typography": "button", "colorToken": "onPrimary", "align": "center" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "dialog.twoButtons.noHero": {
+      "type": "frame",
+      "name": "dialog",
+      "fill": "surface",
+      "radius": 16,
+      "clip": true,
+      "inset": 20,
+      "maxHeightRatio": 0.8,
+      "center": true,
+      "layout": { "mode": "vertical", "padding": 0, "spacing": 0, "align": "stretch" },
+      "children": [
+        {
+          "type": "frame",
+          "name": "body",
+          "layout": { "mode": "vertical", "padding": [20, 24, 8, 24], "spacing": 8, "align": "stretch" },
+          "children": [
+            { "type": "text", "name": "title", "textRef": "{{LOCALE}}.title", "typography": "title", "align": "center" },
+            { "type": "text", "name": "intro", "textRef": "{{LOCALE}}.intro", "typography": "intro", "align": "center" }
+          ]
+        },
+        {
+          "type": "frame",
+          "name": "footer",
+          "layout": { "mode": "vertical", "padding": [12, 20, 20, 20], "spacing": 8, "align": "stretch" },
+          "children": [
+            {
+              "type": "frame",
+              "name": "configureButton",
+              "height": 48,
+              "radius": 999,
+              "fill": "transparent",
+              "stroke": "outline",
+              "strokeWidth": 1,
+              "layout": { "mode": "vertical", "padding": 0, "align": "center", "justify": "center" },
+              "children": [
+                { "type": "text", "name": "configureLabel", "textRef": "{{LOCALE}}.configureAi", "typography": "button", "colorToken": "primary", "align": "center" }
+              ]
+            },
+            {
+              "type": "frame",
+              "name": "startButton",
+              "height": 48,
+              "radius": 999,
+              "fill": "primary",
+              "layout": { "mode": "vertical", "padding": 0, "align": "center", "justify": "center" },
+              "children": [
+                { "type": "text", "name": "startLabel", "textRef": "{{LOCALE}}.start", "typography": "button", "colorToken": "onPrimary", "align": "center" }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "frames": [
+    {
+      "id": "F01_two_buttons_zh_light",
+      "name": "F01 未配置·双按钮·中文·浅色·360dp",
+      "theme": "light",
+      "locale": "zh",
+      "canvas": { "width": 360, "height": 800, "deviceScale": 3 },
+      "background": { "type": "color", "fill": "pageBg" },
+      "scrim": true,
+      "contentRef": "dialog.twoButtons",
+      "changeScope": "component",
+      "changeScopeNote": "老页面（既有欢迎弹窗），无真实截图库；本次改动区域 = 弹窗底部按钮区，背景为规范底色占位，不代表首页内容。",
+      "ac": ["AC-1", "AC-2", "AC-3", "AC-4", "AC-6", "AC-7", "AC-11", "AC-13", "AC-16", "AC-19"],
+      "notes": "基准帧：未配置 AI（无配置 / 三字段任一 trim 为空 / 读取异常）时的弹窗。底部两按钮纵向排列、各占满内容宽度：上为「去配置AI」描边次要按钮，下为「开始使用」实心主按钮，间距 8dp；hero 320×160，弹窗高 379，垂直居中 y=210.5。",
+      "variants": [
+        {
+          "id": "F03_two_buttons_zh_dark",
+          "name": "F03 未配置·双按钮·中文·深色·360dp",
+          "theme": "dark",
+          "ac": ["PRD-7.2-dark"],
+          "notes": "深色对照：surface #161920 / onSurface #E6E8EC / outline #3A404C / primary #8FA6FF，hero 换深色素材。次要按钮描边与 primary 文字在深色底上仍清晰可辨；两按钮层级与浅色一致。"
+        },
+        {
+          "id": "F04_two_buttons_en_light",
+          "name": "F04 未配置·双按钮·英文·浅色·360dp",
+          "locale": "en",
+          "ac": ["AC-13", "AC-14"],
+          "notes": "英文：次要按钮 Set up AI、主按钮 Get started；与中文共用同一张 hero（图内无文字）。按钮宽度仍占满内容宽，文案单行居中。"
+        },
+        {
+          "id": "F05_two_buttons_en_light_320",
+          "name": "F05 未配置·双按钮·英文·小屏 320dp",
+          "locale": "en",
+          "canvas": { "width": 320, "height": 800, "deviceScale": 3 },
+          "ac": ["AC-11", "AC-14"],
+          "notes": "最窄画布 320dp（弹窗宽 280、hero 280×140 等比）：英文两按钮文案完整可见、不被裁切；副标题换 2 行且逐行居中，按钮区不受影响。"
+        }
+      ]
+    },
+    {
+      "id": "F02_one_button_zh_light",
+      "name": "F02 已配置·单按钮·中文·浅色·360dp（回归基线）",
+      "theme": "light",
+      "locale": "zh",
+      "canvas": { "width": 360, "height": 800, "deviceScale": 3 },
+      "background": { "type": "color", "fill": "pageBg" },
+      "scrim": true,
+      "contentRef": "dialog.oneButton",
+      "changeScope": "component",
+      "changeScopeNote": "老页面（既有欢迎弹窗），改动区域 = 无新增按钮时的原样，用于对齐「已配置用户界面不变」。",
+      "ac": ["AC-5"],
+      "notes": "已配置 AI（Base URL / API Key / 主模型 trim 后均非空）：只渲染「开始使用」一个按钮，不保留「去配置AI」占位、不留额外间距；弹窗高 323、y=238.5，与改动前一致，作为回归基线。"
+    },
+    {
+      "id": "F06_two_buttons_nohero_zh_light",
+      "name": "F06 空态·欢迎图缺失降级·双按钮·中文·浅色",
+      "theme": "light",
+      "locale": "zh",
+      "canvas": { "width": 360, "height": 800, "deviceScale": 3 },
+      "background": { "type": "color", "fill": "pageBg" },
+      "scrim": true,
+      "contentRef": "dialog.twoButtons.noHero",
+      "changeScope": "component",
+      "changeScopeNote": "老页面（既有欢迎弹窗）的图片失败降级态，改动区域 = 按钮区。",
+      "ac": ["AC-6", "AC-11"],
+      "notes": "空态/错误降级：hero 资源缺失或解码失败时整块折叠、不预占高度，不出现破图或技术文案；标题、副标题与两个按钮照常展示，弹窗高 219、y=290.5，仍可用「去配置AI」「开始使用」或返回键关闭。"
+    },
+    {
+      "id": "F07_two_buttons_zh_light_landscape",
+      "name": "F07 极端数据·内容超高·双按钮·横屏 640×400",
+      "theme": "light",
+      "locale": "zh",
+      "canvas": { "width": 640, "height": 400, "deviceScale": 2 },
+      "background": { "type": "color", "fill": "pageBg" },
+      "scrim": true,
+      "contentRef": "dialog.twoButtons",
+      "changeScope": "component",
+      "changeScopeNote": "极端视口（横屏/大宽屏）下的既有滚动布局，改动区域 = 固定在底部的双按钮区。",
+      "ac": ["AC-11", "AC-19"],
+      "notes": "极端数据：画布 640×400、弹窗上限 80% 屏高 = 320；hero 600×300 + 正文后自然高 519，超出上限。hero 与正文从顶部进入滚动区（本帧为滚动起点，正文在视口下方不可见），底部按钮区固定：两按钮完整可见、互不重叠、不被裁切。"
+    },
+    {
+      "id": "F08_absent_zh_light",
+      "name": "F08 空态·已展示过·不出现弹窗",
+      "theme": "light",
+      "locale": "zh",
+      "canvas": { "width": 360, "height": 800, "deviceScale": 3 },
+      "background": { "type": "color", "fill": "pageBg" },
+      "changeScope": "full-page",
+      "changeScopeNote": "老页面：本地已有「已展示」标记时首屏无弹窗，本帧只有规范底色占位，不含首页真实内容（检出环境无首页截图），只用于确认「不补弹」。",
+      "ac": ["AC-15"],
+      "notes": "一次性逻辑回归：本地已存在「欢迎弹窗已展示」标记（含升级用户）时不展示弹窗，即使仍未配置 AI；因此不存在双按钮或单按钮画面。背景为规范底色占位，不代表首页设计。"
+    }
+  ]
+}

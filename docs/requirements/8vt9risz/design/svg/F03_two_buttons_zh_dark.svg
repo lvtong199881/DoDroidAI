@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="360" height="800" viewBox="0 0 360 800">
+<defs><filter id="dlgShadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.55"/></filter></defs>
+<rect width="360" height="800" fill="#0F1115"/>
+<rect width="360" height="800" fill="rgba(0, 0, 0, 0.54)"/>
+<rect x="20" y="210.5" width="320" height="379" rx="16" fill="#161920" filter="url(#dlgShadow)"/>
+<clipPath id="dlgClip"><rect x="20" y="210.5" width="320" height="379" rx="16"/></clipPath>
+<g clip-path="url(#dlgClip)">
+<rect x="20" y="210.5" width="320" height="160" fill="#1C2436"/>
+<image href="../assets/welcome_hero_dark.png" x="20" y="210.5" width="320" height="160" preserveAspectRatio="xMidYMid slice"/>
+<text x="180" y="410.7" font-family="'Segoe UI', 'Microsoft YaHei', 'Noto Sans SC', sans-serif" font-size="20" font-weight="600" fill="#E6E8EC" text-anchor="middle">欢迎使用 DoDroidAI</text>
+<text x="180" y="440.4" font-family="'Segoe UI', 'Microsoft YaHei', 'Noto Sans SC', sans-serif" font-size="15" font-weight="400" fill="#A6ADBB" text-anchor="middle">说一句话，让手机替你做事。</text>
+<rect x="40" y="465.5" width="280" height="48" rx="999" fill="none" stroke="#3A404C" stroke-width="1"/>
+<text x="180" y="494.9" font-family="'Segoe UI', 'Microsoft YaHei', 'Noto Sans SC', sans-serif" font-size="15" font-weight="600" fill="#8FA6FF" text-anchor="middle">去配置AI</text>
+<rect x="40" y="521.5" width="280" height="48" rx="999" fill="#8FA6FF"/>
+<text x="180" y="550.9" font-family="'Segoe UI', 'Microsoft YaHei', 'Noto Sans SC', sans-serif" font-size="15" font-weight="600" fill="#0A1F5C" text-anchor="middle">开始使用</text>
+</g>
+</svg>

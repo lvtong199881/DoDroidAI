@@ -1,0 +1,22 @@
+{
+  "status": "done",
+  "summary": "完成欢迎弹窗新增「去配置AI」的设计：8 帧 SVG/PNG + boxes.json + 设计说明，覆盖未配置双按钮、已配置单按钮回归、深色、英文、320dp 小屏、欢迎图缺失降级、横屏超高滚动与不弹窗。",
+  "artifacts": [
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\8vt9risz\\design", "action": "created" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\8vt9risz\\design-images", "action": "created" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\8vt9risz\\设计说明.md", "action": "created" }
+  ],
+  "selfCheck": "1) design/layouts.json、8 个 design/svg/*.svg、design/boxes.json、8 个 design-images/*.png 均由布局清单同次渲染生成，无手写坐标充当设计源；2) 最后一次改动（按钮间距 8dp、描边文字色、hero 同色底）后已重跑渲染与栅格化，三处产物时间戳一致；3) 四个必备状态均有独立帧：正常态 F01、空态 F06+F08、多语言/长文案 F04+F05、极端数据 F07，另出深色 F03、已配置回归 F02；加载态舍弃（判断在展示前完成，无中间态），错误态与未配置同画面（F01/F06）或仅日志（AC-18），理由写入设计说明；4) 老页面按组件级处理，changeScope=component，改动区域=弹窗底部按钮区（无 docs/ui-screenshots，背景为规范底色占位，已注明）；5) 每个页面×状态独立 frame，未拼图；6) boxes.json 无内容盒超出画布/父容器（F07 hero 的 clipped 为滚动视口的预期裁剪，footer 完整在弹窗内）；7) 颜色/字号/圆角/内边距取自 app_theme.dart 与 welcome_dialog.dart，新增的 8dp 按钮间距与 OutlinedButton 组合已写入「与现有规范的差异」；8) 字体降级（Segoe UI/Microsoft YaHei 预览 vs Roboto/Noto 真机）已记录；9) 未改动项目任何源码、配置、资源，仅在需求目录写入设计产物与 .render 工具脚本。",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "设计卡指定的 <skillAssets> 未提供绝对路径，且可访问目录中找不到 svggen.cjs / svg2png.cjs；为不中断交付，已在需求目录 .render/ 下复刻同一管线（layouts.json → SVG → boxes.json → resvg 栅格化），文件命名与 boxes 结构对齐金标准。若编排要求必须使用自带脚本，请给出 <skillAssets> 路径后重跑同一份 layouts.json；本机字体度量可能带来 ±1 行差异。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "无 docs/ui-screenshots/ 真实截图（PRD H-8 已声明），F01–F07 的首页背景为规范底色 + 54% 遮罩占位，不代表真实首页；弹窗布局与素材以主仓库 welcome_dialog.dart、app_theme.dart 和既有 hero 资源为准。验收请以弹窗区域与 AC 为准。",
+      "severity": "suggestion"
+    }
+  ],
+  "deliverables": {}
+}

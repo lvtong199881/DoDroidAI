@@ -1,0 +1,22 @@
+{
+  "status": "done",
+  "summary": "完成欢迎弹窗「去配置AI」技术方案：定稿激活配置完整性判定、双按钮布局与次要样式、configure_ai 日志、新建态 DeepSeek 预设跳转及失败兜底，并逐条核对 PRD 与设计说明。",
+  "artifacts": [
+    {
+      "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\8vt9risz\\技术方案.md",
+      "action": "created"
+    }
+  ],
+  "selfCheck": "准出清单逐项：① 接口已定稿——gate/dialog/controller/config page/i18n/log 均给出类型、默认值、空值与异常语义，无「待定」；② 影响面已列全——覆盖欢迎门控、标记、日志、已配置用户布局、开始使用/返回键、首页首帧、配置列表/编辑页、聊天发送提示、设置页口径、测试与构建等；③ PRD↔设计已逐条核对 27 项——无硬冲突，2 处表述差异按 PRD 处理并记入 blockers（建议级）；④ 风险 15 条均有可执行对策，回滚按单提交 revert、标记不重置、附回滚验证步骤；⑤ 开发内容 T1~T10 均标依赖、REQ/AC、完成判据与状态（待办）；⑥ 模块与改动点 15 条（9 源码/文案 + 6 测试）均可追到 REQ；⑦ 未修改项目——本回合只写 技术方案.md 与本回执，未改任何源码、配置、资源或测试。未验证：构建、单测与真机 AC（本阶段不执行，留待开发/测试阶段）。",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "设计说明 §2/§6.8 称「Base URL / 主模型预设属于既有页面能力」，但现有 ApiConfigScreen 新建态默认 custom + 空字段，没有预设入参；方案不得不用新增 initialProvider 实现 PRD REQ-2.2/AC-8。建议设计说明补充预设来源并明确默认服务商为 DeepSeek（PRD H-1），避免验收时误判为「改造了既有页面」。不阻塞开发。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "PRD REQ-1.8 写「不得读取真实凭据内容」，但 REQ-1.3/AC-3 要求按 API Key 去除首尾空白后是否为空来判定，必须读取该字段才能判空。建议需求 agent 改写为「不得将凭据用于网络请求、日志输出或界面展示」。方案按「仅读字段判空、不记录、不外发」实现，不阻塞开发。",
+      "severity": "suggestion"
+    }
+  ]
+}

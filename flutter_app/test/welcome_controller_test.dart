@@ -272,10 +272,102 @@ void main() {
     expect(log.events[2], 'shown:widget:en');
   });
 
+  test('configure_ai：先记 dismissed 再回调，回调只一次', () async {
+    final store = FakeWelcomeFlagStore();
+    final log = RecordingWelcomeLog();
+    var calls = 0;
+    var eventsAtCallback = <String>[];
+
+    await build(store, log).runOnce(
+      locale: 'zh',
+      presenter: (onShown) async {
+        onShown();
+        return const WelcomeDismissResult(
+          method: WelcomeDismissMethod.configureAi,
+          visibleMs: 42,
+        );
+      },
+      onConfigureAi: () async {
+        calls++;
+        eventsAtCallback = List<String>.of(log.events);
+      },
+    );
+
+    expect(calls, 1);
+    expect(log.events.last, 'dismissed:configure_ai:42');
+    expect(eventsAtCallback.last, 'dismissed:configure_ai:42');
+  });
+
+  test('button / back 关闭不触发 onConfigureAi', () async {
+    for (final method in [
+      WelcomeDismissMethod.button,
+      WelcomeDismissMethod.back,
+    ]) {
+      final store = FakeWelcomeFlagStore();
+      final log = RecordingWelcomeLog();
+      var calls = 0;
+
+      await build(store, log).runOnce(
+        locale: 'zh',
+        presenter: (onShown) async {
+          onShown();
+          return WelcomeDismissResult(method: method, visibleMs: 3);
+        },
+        onConfigureAi: () async {
+          calls++;
+        },
+      );
+
+      expect(calls, 0, reason: method.wire);
+      expect(log.events.last, 'dismissed:${method.wire}:3');
+    }
+  });
+
+  test('configure_ai 但无回调：只记日志、不报错', () async {
+    final store = FakeWelcomeFlagStore();
+    final log = RecordingWelcomeLog();
+
+    await build(store, log).runOnce(
+      locale: 'zh',
+      presenter: (onShown) async {
+        onShown();
+        return const WelcomeDismissResult(
+          method: WelcomeDismissMethod.configureAi,
+          visibleMs: 5,
+        );
+      },
+    );
+
+    expect(log.events.last, 'dismissed:configure_ai:5');
+    expect(log.events.any((event) => event.startsWith('error:')), isFalse);
+  });
+
+  test('打开配置页异常：不向调用方抛，dismissed 已记录且落 render', () async {
+    final store = FakeWelcomeFlagStore();
+    final log = RecordingWelcomeLog();
+
+    await expectLater(
+      build(store, log).runOnce(
+        locale: 'zh',
+        presenter: (onShown) async {
+          onShown();
+          return const WelcomeDismissResult(
+            method: WelcomeDismissMethod.configureAi,
+            visibleMs: 9,
+          );
+        },
+        onConfigureAi: () async => throw StateError('nav failed'),
+      ),
+      completes,
+    );
+
+    expect(log.events.last, startsWith('error:render:StateError'));
+    expect(log.events.any((event) => event == 'dismissed:configure_ai:9'), isTrue);
+  });
+
   test('日志实现抛异常也不影响展示与关闭', () async {
     final store = FakeWelcomeFlagStore();
     var presented = 0;
-
     final controller = WelcomeController(
       store: store,
       log: _ThrowingWelcomeLog(),
@@ -296,5 +388,30 @@ void main() {
 
     expect(presented, 1);
     expect(store.writeCount, 1);
+  });
+
+  test('日志实现抛异常也不阻塞「去配置AI」的跳转', () async {
+    var navigated = 0;
+    final controller = WelcomeController(
+      store: FakeWelcomeFlagStore(),
+      log: _ThrowingWelcomeLog(),
+      entryResolver: fixedEntryResolver(WelcomeEntry.coldStart),
+    );
+
+    await controller.runOnce(
+      locale: 'zh',
+      presenter: (onShown) async {
+        onShown();
+        return const WelcomeDismissResult(
+          method: WelcomeDismissMethod.configureAi,
+          visibleMs: 4,
+        );
+      },
+      onConfigureAi: () async {
+        navigated++;
+      },
+    );
+
+    expect(navigated, 1);
   });
 }

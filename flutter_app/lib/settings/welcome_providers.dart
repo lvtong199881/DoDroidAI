@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'welcome_ai_gate.dart';
 import 'welcome_controller.dart';
 import 'welcome_flag_store.dart';
 import 'welcome_launch_entry.dart';
@@ -14,4 +15,9 @@ final welcomeControllerProvider = Provider<WelcomeController>((ref) {
     log: const DebugWelcomeLog(),
     entryResolver: LaunchEntryResolver(),
   );
+});
+
+/// 「去配置AI」入口判定：读激活 AI 配置，测试用 `overrideWithValue` 注入。
+final welcomeAiGateProvider = Provider<WelcomeAiGate>((ref) {
+  return WelcomeAiGate();
 });

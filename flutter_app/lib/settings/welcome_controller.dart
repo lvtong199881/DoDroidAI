@@ -9,7 +9,7 @@ typedef WelcomePresenter = Future<WelcomeDismissResult> Function(
   void Function() onShown,
 );
 
-/// 欢迎弹窗门控：单飞、读标记 → 写标记 → 展示 → 记日志。
+/// 欢迎弹窗门控：单飞、读标记 → 写标记 → 展示 → 记日志 →（可选）跳配置页。
 ///
 /// 同一实例只执行一次检查，并发调用复用同一个 Future；[runOnce] 永不向调用方
 /// 抛异常，所有日志异常被吞掉，不阻塞首页。
@@ -28,13 +28,22 @@ class WelcomeController {
 
   Future<void>? _run;
 
+  /// 执行一次欢迎弹窗检查。
+  ///
+  /// [onConfigureAi] 仅在用户点「去配置AI」关闭弹窗后调用一次，且已在
+  /// `welcome_dismissed` 日志之后；它抛出的异常由本方法兜底记 `render`。
   Future<void> runOnce({
     required String locale,
     required WelcomePresenter presenter,
+    Future<void> Function()? onConfigureAi,
   }) {
     final running = _run;
     if (running != null) return running;
-    final future = _runInternal(locale: locale, presenter: presenter);
+    final future = _runInternal(
+      locale: locale,
+      presenter: presenter,
+      onConfigureAi: onConfigureAi,
+    );
     _run = future;
     return future;
   }
@@ -42,6 +51,7 @@ class WelcomeController {
   Future<void> _runInternal({
     required String locale,
     required WelcomePresenter presenter,
+    Future<void> Function()? onConfigureAi,
   }) async {
     try {
       final entry = await _entryResolver.resolve();
@@ -99,12 +109,17 @@ class WelcomeController {
         shownLogged = true;
         _safeLog(() => _log.shown(entry: entry, locale: locale));
       });
+      // 先记关闭方式再导航：日志时机与用户点击一致，不等配置页关闭。
       _safeLog(
         () => _log.dismissed(
           method: result.method,
           visibleMs: result.visibleMs,
         ),
       );
+      if (result.method == WelcomeDismissMethod.configureAi &&
+          onConfigureAi != null) {
+        await onConfigureAi();
+      }
     } catch (error) {
       // 展示/导航异常：本次不重试、不再展示第二次。
       _safeLog(

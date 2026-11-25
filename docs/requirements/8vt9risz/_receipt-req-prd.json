@@ -1,0 +1,26 @@
+{
+  "status": "done",
+  "summary": "按用户对 7 项待提问的决定完成需求定稿，产出需求卡片（REQ-1~6、AC-1~19、测试账号与数据）与 PRD（含边界、系统条件、多语言、监测、假设与歧义扫描）。",
+  "artifacts": [
+    {
+      "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\8vt9risz\\需求卡片.md",
+      "action": "created"
+    },
+    {
+      "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\8vt9risz\\PRD.md",
+      "action": "created"
+    }
+  ],
+  "selfCheck": "回合 B 准出逐项：1) 目标、范围、明确不做、验收标准齐全——通过；2) 功能 REQ-1~6 与 AC-1~19 均编号，每条 AC 标注覆盖 REQ——通过；3) 歧义扫描四类（矛盾/无法判定/缺边界/悬空引用）已完成并写入 PRD §12——通过；4) 7 项待提问均已有用户明确决定，未指定的服务商预设、按钮顺序、trim 口径等转为 H-1~H-8 假设——通过；5) 深色/折叠屏/生命周期/升级/异常五项系统条件逐项判断并写入 §7.2——通过；6) 中英按钮文案与无新增权限的权限文案已写——通过；7) 监测指标 5 项均映射到 welcome_shown / welcome_dismissed / welcome_error 日志，数据契约仅新增 method=configure_ai——通过；8) 需求卡片包含测试账号与数据（无账号，全部占位 Key，来源为测试阶段在 debug 包内构造）——通过。构建/单测未跑：本阶段只产出需求文档，无代码改动。",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "当前 checkout 根目录仍只有 .qq-bot-scratch，没有工程工作区与 AGENTS.md；本次需求核对基于主仓库 worktree（5w2hsgiq）的 flutter_app 源码。后续设计/开发/测试若仍在无源码的 checkout 中执行，将无法构建或验证，需要先为该需求准备可用的工作区。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "平台命令给的是 Android Gradle（./gradlew assembleDebug / testDebugUnitTest），但仓库实际是 Flutter 工程（AGENTS.md：flutter analyze / flutter test / flutter build apk）。后续阶段应按 Flutter 命令执行，否则会直接失败。",
+      "severity": "suggestion"
+    }
+  ]
+}

@@ -53,12 +53,14 @@ enum WelcomeErrorStage {
 /// 用户关闭欢迎弹窗的方式。系统返回键关闭时没有返回值，由宿主记为 [back]。
 enum WelcomeDismissMethod {
   button,
-  back;
+  back,
+  configureAi;
 
   /// 日志字段 `method` 的固定取值。
   String get wire => switch (this) {
         WelcomeDismissMethod.button => 'button',
         WelcomeDismissMethod.back => 'back',
+        WelcomeDismissMethod.configureAi => 'configure_ai',
       };
 }
 

@@ -48,6 +48,15 @@ class AiConfig {
   bool get isConfigured =>
       baseUrl.isNotEmpty && apiKey.isNotEmpty && mainModel.isNotEmpty;
 
+  /// 欢迎弹窗入口口径：Base URL / API Key / 主模型 去除首尾空白后均非空。
+  ///
+  /// 与 [isConfigured] 的区别仅在「全空白字符」这类异常数据上，
+  /// 聊天发送提示仍沿用 [isConfigured]。
+  bool get hasCompleteFields =>
+      baseUrl.trim().isNotEmpty &&
+      apiKey.trim().isNotEmpty &&
+      mainModel.trim().isNotEmpty;
+
   /// 原生 AIConfig.isValid：只需 key 与模型
   bool get isValid => apiKey.isNotBlankSafe() && mainModel.isNotBlankSafe();
 
