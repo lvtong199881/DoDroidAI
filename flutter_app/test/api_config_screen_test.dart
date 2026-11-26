@@ -29,13 +29,16 @@ AiConfig existingConfig() => AiConfig(
     );
 
 /// 页面内容较长：用高视口让所有控件都真实建出来，避免 ListView 懒加载找不到。
+///
+/// 宽度保持测试默认的 800：flutter_test 的等宽测试字体会把「Anthropic Messages」
+/// 下拉文本撑宽，窄视口下会触发与真机无关的 RenderFlex overflow。
 Future<void> pumpScreen(
   WidgetTester tester, {
   AiConfig? config,
   AiProvider? initialProvider,
 }) async {
   tester.view.devicePixelRatio = 1.0;
-  tester.view.physicalSize = const Size(400, 1800);
+  tester.view.physicalSize = const Size(800, 1800);
   addTearDown(tester.view.resetDevicePixelRatio);
   addTearDown(tester.view.resetPhysicalSize);
 

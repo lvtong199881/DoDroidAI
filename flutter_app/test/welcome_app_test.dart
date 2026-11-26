@@ -150,7 +150,8 @@ void main() {
     );
 
     await tester.pumpWidget(appWith(controller: controller, gate: gate));
-    // 首帧只有首页，弹窗还没上屏
+    // 本地化异步 load：补一拍首页才真正建出来
+    await tester.pump();
     expect(find.byType(ChatScreen), findsOneWidget);
     expect(find.byType(WelcomeDialog), findsNothing);
 
@@ -205,9 +206,10 @@ void main() {
   });
 
   testWidgets('点击「去配置AI」：关弹窗后进入带预设的新建配置页', (tester) async {
-    // 配置页内容较长：用高视口让预设字段都真实建出来
+    // 配置页内容较长：用高视口让预设字段都真实建出来（宽度按测试默认，
+    // 避免测试字体的等宽字形把 ApiFormat 下拉文本挤出）
     tester.view.devicePixelRatio = 1.0;
-    tester.view.physicalSize = const Size(400, 1800);
+    tester.view.physicalSize = const Size(800, 1800);
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
 

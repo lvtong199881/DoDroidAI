@@ -105,6 +105,13 @@ ScrollableState scrollState(WidgetTester tester) {
   );
 }
 
+/// footer 高度 = 弹窗底边 - 滚动区底边（滚动区下方紧接固定 footer）。
+double footerHeight(WidgetTester tester) {
+  final dialogRect = dialogSurfaceRect(tester);
+  final scrollRect = tester.getRect(find.byKey(_scrollKey));
+  return dialogRect.bottom - scrollRect.bottom;
+}
+
 /// 读取 PNG 的 IHDR 宽高。
 ({int width, int height}) readPngSize(String path) {
   final file = File(path);
@@ -472,6 +479,9 @@ void main() {
       expect(rect.height, greaterThanOrEqualTo(48));
     }
 
+    // footer 高度 = 上 12 + 48 + 8 + 48 + 下 20 = 136
+    expect(footerHeight(tester), closeTo(136, 0.5));
+
     // 次要样式：OutlinedButton + 主题 outline 描边 / primary 文字，主按钮仍是 FilledButton
     final secondary = tester.widget<OutlinedButton>(find.byKey(_configureAiKey));
     expect(tester.widget(find.byKey(_startKey)), isA<FilledButton>());
@@ -490,18 +500,17 @@ void main() {
     );
   });
 
-  testWidgets('已配置：无次要按钮、无额外占位（比双按钮矮 56）', (tester) async {
-    await openWelcome(tester, showConfigureAi: true);
-    final doubleHeight = dialogSurfaceRect(tester).height;
-
+  testWidgets('已配置：无次要按钮、无额外占位（footer 仍 80）', (tester) async {
     await openWelcome(tester, showConfigureAi: false);
+
     final dialogRect = dialogSurfaceRect(tester);
     final primaryRect = tester.getRect(find.byKey(_startKey));
 
     expect(find.byKey(_configureAiKey), findsNothing);
     expect(find.text('去配置AI'), findsNothing);
-    // 只少一个按钮 48 + 间距 8，footer 无留白
-    expect(doubleHeight - dialogRect.height, closeTo(56, 0.5));
+    // 未配置时 footer 为 136（多一个 48 按钮 + 8 间距），已配置必须回到 80
+    expect(footerHeight(tester), closeTo(80, 0.5));
+    // 主按钮贴底：48 + 下内边距 20
     expect(primaryRect.bottom, closeTo(dialogRect.bottom - 20, 0.5));
     expect(tester.takeException(), isNull);
   });
