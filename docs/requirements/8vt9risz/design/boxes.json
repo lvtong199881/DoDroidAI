@@ -1,0 +1,686 @@
+{
+  "F01_two_buttons_zh_light": [
+    {
+      "name": "dialog",
+      "type": "dialog",
+      "x": 20,
+      "y": 210.5,
+      "width": 320,
+      "height": 379,
+      "naturalHeight": 379,
+      "overflow": false,
+      "scrolled": null
+    },
+    {
+      "name": "hero",
+      "type": "image",
+      "x": 20,
+      "y": 210.5,
+      "width": 320,
+      "height": 160,
+      "src": "../assets/welcome_hero_light.png"
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "x": 44,
+      "y": 390.5,
+      "width": 272,
+      "height": 26,
+      "fontSize": 20,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ],
+      "text": "欢迎使用 DoDroidAI"
+    },
+    {
+      "name": "intro",
+      "type": "text",
+      "x": 44,
+      "y": 424.5,
+      "width": 272,
+      "height": 21,
+      "fontSize": 15,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ],
+      "text": "说一句话，让手机替你做事。"
+    },
+    {
+      "name": "body",
+      "type": "frame",
+      "x": 20,
+      "y": 370.5,
+      "width": 320,
+      "height": 83
+    },
+    {
+      "name": "configureLabel",
+      "type": "text",
+      "x": 40,
+      "y": 480.5,
+      "width": 280,
+      "height": 18,
+      "fontSize": 15,
+      "lines": [
+        "去配置AI"
+      ],
+      "text": "去配置AI"
+    },
+    {
+      "name": "configureButton",
+      "type": "frame",
+      "x": 40,
+      "y": 465.5,
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "startLabel",
+      "type": "text",
+      "x": 40,
+      "y": 536.5,
+      "width": 280,
+      "height": 18,
+      "fontSize": 15,
+      "lines": [
+        "开始使用"
+      ],
+      "text": "开始使用"
+    },
+    {
+      "name": "startButton",
+      "type": "frame",
+      "x": 40,
+      "y": 521.5,
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "x": 20,
+      "y": 453.5,
+      "width": 320,
+      "height": 136
+    }
+  ],
+  "F02_one_button_zh_light": [
+    {
+      "name": "dialog",
+      "type": "dialog",
+      "x": 20,
+      "y": 238.5,
+      "width": 320,
+      "height": 323,
+      "naturalHeight": 323,
+      "overflow": false,
+      "scrolled": null
+    },
+    {
+      "name": "hero",
+      "type": "image",
+      "x": 20,
+      "y": 238.5,
+      "width": 320,
+      "height": 160,
+      "src": "../assets/welcome_hero_light.png"
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "x": 44,
+      "y": 418.5,
+      "width": 272,
+      "height": 26,
+      "fontSize": 20,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ],
+      "text": "欢迎使用 DoDroidAI"
+    },
+    {
+      "name": "intro",
+      "type": "text",
+      "x": 44,
+      "y": 452.5,
+      "width": 272,
+      "height": 21,
+      "fontSize": 15,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ],
+      "text": "说一句话，让手机替你做事。"
+    },
+    {
+      "name": "body",
+      "type": "frame",
+      "x": 20,
+      "y": 398.5,
+      "width": 320,
+      "height": 83
+    },
+    {
+      "name": "startLabel",
+      "type": "text",
+      "x": 40,
+      "y": 508.5,
+      "width": 280,
+      "height": 18,
+      "fontSize": 15,
+      "lines": [
+        "开始使用"
+      ],
+      "text": "开始使用"
+    },
+    {
+      "name": "startButton",
+      "type": "frame",
+      "x": 40,
+      "y": 493.5,
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "x": 20,
+      "y": 481.5,
+      "width": 320,
+      "height": 80
+    }
+  ],
+  "F03_two_buttons_zh_dark": [
+    {
+      "name": "dialog",
+      "type": "dialog",
+      "x": 20,
+      "y": 210.5,
+      "width": 320,
+      "height": 379,
+      "naturalHeight": 379,
+      "overflow": false,
+      "scrolled": null
+    },
+    {
+      "name": "hero",
+      "type": "image",
+      "x": 20,
+      "y": 210.5,
+      "width": 320,
+      "height": 160,
+      "src": "../assets/welcome_hero_dark.png"
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "x": 44,
+      "y": 390.5,
+      "width": 272,
+      "height": 26,
+      "fontSize": 20,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ],
+      "text": "欢迎使用 DoDroidAI"
+    },
+    {
+      "name": "intro",
+      "type": "text",
+      "x": 44,
+      "y": 424.5,
+      "width": 272,
+      "height": 21,
+      "fontSize": 15,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ],
+      "text": "说一句话，让手机替你做事。"
+    },
+    {
+      "name": "body",
+      "type": "frame",
+      "x": 20,
+      "y": 370.5,
+      "width": 320,
+      "height": 83
+    },
+    {
+      "name": "configureLabel",
+      "type": "text",
+      "x": 40,
+      "y": 480.5,
+      "width": 280,
+      "height": 18,
+      "fontSize": 15,
+      "lines": [
+        "去配置AI"
+      ],
+      "text": "去配置AI"
+    },
+    {
+      "name": "configureButton",
+      "type": "frame",
+      "x": 40,
+      "y": 465.5,
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "startLabel",
+      "type": "text",
+      "x": 40,
+      "y": 536.5,
+      "width": 280,
+      "height": 18,
+      "fontSize": 15,
+      "lines": [
+        "开始使用"
+      ],
+      "text": "开始使用"
+    },
+    {
+      "name": "startButton",
+      "type": "frame",
+      "x": 40,
+      "y": 521.5,
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "x": 20,
+      "y": 453.5,
+      "width": 320,
+      "height": 136
+    }
+  ],
+  "F04_two_buttons_en_light": [
+    {
+      "name": "dialog",
+      "type": "dialog",
+      "x": 20,
+      "y": 210.5,
+      "width": 320,
+      "height": 379,
+      "naturalHeight": 379,
+      "overflow": false,
+      "scrolled": null
+    },
+    {
+      "name": "hero",
+      "type": "image",
+      "x": 20,
+      "y": 210.5,
+      "width": 320,
+      "height": 160,
+      "src": "../assets/welcome_hero_light.png"
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "x": 44,
+      "y": 390.5,
+      "width": 272,
+      "height": 26,
+      "fontSize": 20,
+      "lines": [
+        "Welcome to DoDroidAI"
+      ],
+      "text": "Welcome to DoDroidAI"
+    },
+    {
+      "name": "intro",
+      "type": "text",
+      "x": 44,
+      "y": 424.5,
+      "width": 272,
+      "height": 21,
+      "fontSize": 15,
+      "lines": [
+        "Say it, and let your phone do it."
+      ],
+      "text": "Say it, and let your phone do it."
+    },
+    {
+      "name": "body",
+      "type": "frame",
+      "x": 20,
+      "y": 370.5,
+      "width": 320,
+      "height": 83
+    },
+    {
+      "name": "configureLabel",
+      "type": "text",
+      "x": 40,
+      "y": 480.5,
+      "width": 280,
+      "height": 18,
+      "fontSize": 15,
+      "lines": [
+        "Set up AI"
+      ],
+      "text": "Set up AI"
+    },
+    {
+      "name": "configureButton",
+      "type": "frame",
+      "x": 40,
+      "y": 465.5,
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "startLabel",
+      "type": "text",
+      "x": 40,
+      "y": 536.5,
+      "width": 280,
+      "height": 18,
+      "fontSize": 15,
+      "lines": [
+        "Get started"
+      ],
+      "text": "Get started"
+    },
+    {
+      "name": "startButton",
+      "type": "frame",
+      "x": 40,
+      "y": 521.5,
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "x": 20,
+      "y": 453.5,
+      "width": 320,
+      "height": 136
+    }
+  ],
+  "F05_two_buttons_en_light_320": [
+    {
+      "name": "dialog",
+      "type": "dialog",
+      "x": 20,
+      "y": 210,
+      "width": 280,
+      "height": 380,
+      "naturalHeight": 380,
+      "overflow": false,
+      "scrolled": null
+    },
+    {
+      "name": "hero",
+      "type": "image",
+      "x": 20,
+      "y": 210,
+      "width": 280,
+      "height": 140,
+      "src": "../assets/welcome_hero_light.png"
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "x": 44,
+      "y": 370,
+      "width": 232,
+      "height": 26,
+      "fontSize": 20,
+      "lines": [
+        "Welcome to DoDroidAI"
+      ],
+      "text": "Welcome to DoDroidAI"
+    },
+    {
+      "name": "intro",
+      "type": "text",
+      "x": 44,
+      "y": 404,
+      "width": 232,
+      "height": 42,
+      "fontSize": 15,
+      "lines": [
+        "Say it, and let your phone do",
+        "it."
+      ],
+      "text": "Say it, and let your phone do it."
+    },
+    {
+      "name": "body",
+      "type": "frame",
+      "x": 20,
+      "y": 350,
+      "width": 280,
+      "height": 104
+    },
+    {
+      "name": "configureLabel",
+      "type": "text",
+      "x": 40,
+      "y": 481,
+      "width": 240,
+      "height": 18,
+      "fontSize": 15,
+      "lines": [
+        "Set up AI"
+      ],
+      "text": "Set up AI"
+    },
+    {
+      "name": "configureButton",
+      "type": "frame",
+      "x": 40,
+      "y": 466,
+      "width": 240,
+      "height": 48
+    },
+    {
+      "name": "startLabel",
+      "type": "text",
+      "x": 40,
+      "y": 537,
+      "width": 240,
+      "height": 18,
+      "fontSize": 15,
+      "lines": [
+        "Get started"
+      ],
+      "text": "Get started"
+    },
+    {
+      "name": "startButton",
+      "type": "frame",
+      "x": 40,
+      "y": 522,
+      "width": 240,
+      "height": 48
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "x": 20,
+      "y": 454,
+      "width": 280,
+      "height": 136
+    }
+  ],
+  "F06_two_buttons_nohero_zh_light": [
+    {
+      "name": "dialog",
+      "type": "dialog",
+      "x": 20,
+      "y": 290.5,
+      "width": 320,
+      "height": 219,
+      "naturalHeight": 219,
+      "overflow": false,
+      "scrolled": null
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "x": 44,
+      "y": 310.5,
+      "width": 272,
+      "height": 26,
+      "fontSize": 20,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ],
+      "text": "欢迎使用 DoDroidAI"
+    },
+    {
+      "name": "intro",
+      "type": "text",
+      "x": 44,
+      "y": 344.5,
+      "width": 272,
+      "height": 21,
+      "fontSize": 15,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ],
+      "text": "说一句话，让手机替你做事。"
+    },
+    {
+      "name": "body",
+      "type": "frame",
+      "x": 20,
+      "y": 290.5,
+      "width": 320,
+      "height": 83
+    },
+    {
+      "name": "configureLabel",
+      "type": "text",
+      "x": 40,
+      "y": 400.5,
+      "width": 280,
+      "height": 18,
+      "fontSize": 15,
+      "lines": [
+        "去配置AI"
+      ],
+      "text": "去配置AI"
+    },
+    {
+      "name": "configureButton",
+      "type": "frame",
+      "x": 40,
+      "y": 385.5,
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "startLabel",
+      "type": "text",
+      "x": 40,
+      "y": 456.5,
+      "width": 280,
+      "height": 18,
+      "fontSize": 15,
+      "lines": [
+        "开始使用"
+      ],
+      "text": "开始使用"
+    },
+    {
+      "name": "startButton",
+      "type": "frame",
+      "x": 40,
+      "y": 441.5,
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "x": 20,
+      "y": 373.5,
+      "width": 320,
+      "height": 136
+    }
+  ],
+  "F07_two_buttons_zh_light_landscape": [
+    {
+      "name": "dialog",
+      "type": "dialog",
+      "x": 20,
+      "y": 40,
+      "width": 600,
+      "height": 320,
+      "naturalHeight": 519,
+      "overflow": true,
+      "scrolled": {
+        "viewportHeight": 184,
+        "offset": 0
+      }
+    },
+    {
+      "name": "hero",
+      "type": "image",
+      "x": 20,
+      "y": 40,
+      "width": 600,
+      "height": 300,
+      "src": "../assets/welcome_hero_light.png",
+      "clipped": true
+    },
+    {
+      "name": "configureLabel",
+      "type": "text",
+      "x": 40,
+      "y": 251,
+      "width": 560,
+      "height": 18,
+      "fontSize": 15,
+      "lines": [
+        "去配置AI"
+      ],
+      "text": "去配置AI"
+    },
+    {
+      "name": "configureButton",
+      "type": "frame",
+      "x": 40,
+      "y": 236,
+      "width": 560,
+      "height": 48
+    },
+    {
+      "name": "startLabel",
+      "type": "text",
+      "x": 40,
+      "y": 307,
+      "width": 560,
+      "height": 18,
+      "fontSize": 15,
+      "lines": [
+        "开始使用"
+      ],
+      "text": "开始使用"
+    },
+    {
+      "name": "startButton",
+      "type": "frame",
+      "x": 40,
+      "y": 292,
+      "width": 560,
+      "height": 48
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "x": 20,
+      "y": 224,
+      "width": 600,
+      "height": 136
+    }
+  ],
+  "F08_absent_zh_light": []
+}

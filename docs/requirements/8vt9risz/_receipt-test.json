@@ -1,0 +1,37 @@
+{
+  "status": "done",
+  "summary": "用例 24 条，通过 17，失败 1，未覆盖 6；发现 P1 阻断：新建 AI 配置保存抛未捕获异常，AC-9 失败并连带配置态相关 AC 无法覆盖",
+  "artifacts": [
+    {
+      "path": "C:/Users/mohanshang/.qq-bot/worktrees/8vt9risz/docs/requirements/8vt9risz/测试报告.md",
+      "action": "created"
+    },
+    {
+      "path": "C:/Users/mohanshang/.qq-bot/worktrees/8vt9risz/docs/requirements/8vt9risz/ui-screenshots/",
+      "action": "created"
+    },
+    {
+      "path": "C:/Users/mohanshang/.qq-bot/worktrees/8vt9risz/docs/requirements/8vt9risz/evidence/",
+      "action": "created"
+    }
+  ],
+  "selfCheck": "未读源码/未构建/未跑单元测试：是；包路径/版本/安装启动命令已登记（实际 0.1.0.2/versionCode 6，任务标注 0.1.0.1 已记录差异）；关键路径有截图+logcat+uiautomator+录屏证据；AC-1~19 对照表填全（12 通过/1 失败/6 未覆盖）；每条用例标了需求编号；监测日志逐条校验（button/back/configure_ai 与 visible_ms 均实测）；关键页面截图按 welcome/api-config/chat 归档；P1 保存崩溃已记录并建议退回开发；范围外发现只记录；未覆盖项均写明原因；深色/ANR 等平台项单列待确认。",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "P1 阻断（AC-9）：新建 AI 配置点保存抛未捕获异常 Unsupported operation: Cannot add to an unmodifiable list（AiConfigStore.saveActive），无提示并停留编辑页，配置未落盘。已复现：①欢迎弹窗→去配置AI→填 Key→保存；②设置→AI 配置→新建（DeepSeek 预设）→保存；③自定义配置→保存。影响：AC-9 失败；无法产生完整激活配置，连带 AC-2~AC-6 无法构造。需开发修复保存链路后用新包复测。证据：evidence/02-save-crash-log.txt、ui-screenshots/api-config/06。",
+      "severity": "blocker"
+    },
+    {
+      "reason": "建议：修复后请提供 AC-2~AC-6 所需测试数据（至少 1 份完整激活配置、3 份单字段为空的配置、1 份损坏 JSON）与 AC-18 的导航失败注入方式；否则这 7 项仍只能标记未覆盖或引用自动化单测结果。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "建议：任务包标注 app-debug.apk#0.1.0.1（versionCode 5），实际文件经 aapt2 校验为 0.1.0.2（versionCode 6），与技术方案 §7.3 一致；请编排层更正交付标注，避免下游按旧版本记录或误装旧包。",
+      "severity": "suggestion"
+    }
+  ],
+  "deliverables": {
+    "debugPackage": "flutter_app/build/app/outputs/flutter-apk/app-debug.apk#0.1.0.2（versionCode 6，arm64-v8a，debug）"
+  }
+}

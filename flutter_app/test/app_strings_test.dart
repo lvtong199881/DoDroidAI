@@ -21,4 +21,10 @@ void main() {
     final unknown = AppStrings(const Locale('fr'));
     expect(unknown.newChat, '新对话');
   });
+
+  test('welcomeConfigureAi：中英定稿，其他语言回退中文', () {
+    expect(AppStrings(const Locale('zh')).t('welcomeConfigureAi'), '去配置AI');
+    expect(AppStrings(const Locale('en')).t('welcomeConfigureAi'), 'Set up AI');
+    expect(AppStrings(const Locale('fr')).t('welcomeConfigureAi'), '去配置AI');
+  });
 }

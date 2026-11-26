@@ -1,0 +1,25 @@
+# 冷启动 ANR 观察（320dp + 深色模式，08:40）
+
+## 现象
+冷启动后系统弹出「dodroidai isn't responding」对话框（Close app / Wait），弹窗背景已可见欢迎弹窗。
+点 Wait 后应用恢复，欢迎弹窗及两个按钮正常显示、可操作。
+
+## logcat 原样摘录
+11-26 08:40:06.139 I/ActivityManager(  563): Start proc 7554:com.mohanlv.dodroidai/u0a204 for next-top-activity {com.mohanlv.dodroidai/com.mohanlv.dodroidai.MainActivity}
+11-26 08:40:20.150 E/ActivityManager(  563): ANR in com.mohanlv.dodroidai
+11-26 08:40:20.150 E/ActivityManager(  563):   144% 7554/com.mohanlv.dodroidai: 90% user + 54% kernel / faults: 7769 minor 23 major
+11-26 08:40:20.150 E/ActivityManager(  563):     58% 7554/hanlv.dodroidai: 45% user + 13% kernel
+11-26 08:40:20.160 D/ActivityManager(  563): Completed ANR of com.mohanlv.dodroidai in 1637ms, latency 1ms
+11-26 08:40:20.266 D/CoreBackPreview(  563): Window{b9313f8 u0 Application Not Responding: com.mohanlv.dodroidai}: Setting back callback ...
+11-26 08:40:20.280 I/flutter ( 7554): [welcome] welcome_check result=show reason=no_flag entry=other locale=en
+11-26 08:40:21.195 I/flutter ( 7554): [welcome] welcome_mark result=success
+11-26 08:40:21.389 I/flutter ( 7554): [welcome] welcome_shown entry=other locale=en
+
+## 复现尝试
+- 08:42:07 再次以「深色 + 默认尺寸」冷启动：Displayed +13s322ms，welcome_check 08:42:10.070，无 ANR。
+- 之前 4 次浅色/默认尺寸冷启动均无 ANR。
+- 本轮 1 次 ANR 发生在连续快速 force-stop/重启、切换深色与 320dp、且此前刚完成多次冷启动之后。
+
+## 判断
+一次性、未复现；发生在 debug 包 + arm64 在 x86_64 模拟器转译、冷启动 13~17s 的环境下，
+暂按环境/性能抖动记录，不直接计为本需求功能缺陷；建议真机复测冷启动与深色场景时关注。

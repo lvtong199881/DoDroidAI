@@ -1,0 +1,27 @@
+{
+  "status": "done",
+  "summary": "复审 R-1：已闭环（632e0f3 提交 3 个测试修复，579aaed 提交 lock；flutter_app 工作区干净、lib 无改动）；未发现新问题；S-1~S-4 维持建议级，不阻断放行。",
+  "artifacts": [
+    { "path": "docs/requirements/8vt9risz/代码评审报告.md", "action": "modified" }
+  ],
+  "selfCheck": "准出清单逐项：1) 只判定本轮 R-1 与是否引入新问题，未重提新意见；2) 覆盖 67348a0..HEAD 的修正 diff、直接调用方与 AGENTS.md；3) 未运行 flutter analyze/test/build/装机，未写代码；4) R-1 的提交、工作区状态与 lib 无改动均有 git 证据；5) 修正后的测试断言与实现一致，未发现新问题；6) 范围外 docs 未提交只记录、未改动；7) 复审只判本轮编号，S-1~S-4 仅维持记录，不作为本轮闭环条件。",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "维持上一轮建议（非本轮新提）：chat_screen.dart:89-100 在 api_config_screen.dart:217 的 _save 已 reloadConfig 后又 await 一次，且忽略 Navigator.push 的保存结果；保存路径重复读，取消也 reload。建议收敛到一处（_save await reload 后再 pop，_openApiConfig 只负责 push）。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "维持上一轮建议（非本轮新提）：api_config_screen.dart:56-60 的预设 seed 与 :201 的 _save baseline 各自用 AiConfig.defaultFor 推导，当前一致但依赖隐式约束；建议在 initState 存 _seed，_save 用 widget.config ?? _seed。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "维持上一轮建议（非本轮新提）：缺少预设页保存链路的自动化用例（api_config_screen_test 只断言渲染，welcome_app_test 不点保存）；建议加一条填 Key → 点 api_config_save → 断言 AiConfigStore().loadActive() 的 baseUrl/mainModel/apiKey 与 hasCompleteFields 的用例。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "维持上一轮建议（非本轮新提）：welcome_controller.dart:119-122 的 onConfigureAi 等待 Navigator.push 的整个路由生命周期，runOnce 的 Future 会 pending 到用户离开配置页；建议由 _openApiConfig 自己负责导航后的 reload/错误，控制器只发起 push，或在 runOnce 文档中明确该语义。",
+      "severity": "suggestion"
+    }
+  ]
+}

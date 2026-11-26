@@ -1,0 +1,38 @@
+{
+  "status": "done",
+  "summary": "验收标准 19 条：通过 12、失败 1（AC-9 保存 AI 配置抛 UnmodifiableListMixin.add，主流程中断）、未验证 6；按用户明确决定打回，退回修复后复测",
+  "artifacts": [
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\worktrees\\8vt9risz\\docs\\requirements\\8vt9risz\\验收文档.md", "action": "created" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\worktrees\\8vt9risz\\docs\\ui-screenshots\\welcome\\first-show-zh-light.png", "action": "modified" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\worktrees\\8vt9risz\\docs\\ui-screenshots\\welcome\\first-show-en-light.png", "action": "modified" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\worktrees\\8vt9risz\\docs\\ui-screenshots\\welcome\\first-show-zh-dark.png", "action": "created" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\worktrees\\8vt9risz\\docs\\ui-screenshots\\welcome\\closed-by-button.png", "action": "modified" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\worktrees\\8vt9risz\\docs\\ui-screenshots\\welcome\\closed-by-back.png", "action": "modified" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\worktrees\\8vt9risz\\docs\\ui-screenshots\\welcome\\barrier-tap.png", "action": "modified" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\worktrees\\8vt9risz\\docs\\ui-screenshots\\welcome\\restart-no-dialog.png", "action": "modified" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\worktrees\\8vt9risz\\docs\\ui-screenshots\\welcome\\double-tap.png", "action": "modified" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\worktrees\\8vt9risz\\docs\\ui-screenshots\\welcome\\landscape-two-buttons.png", "action": "created" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\worktrees\\8vt9risz\\docs\\ui-screenshots\\welcome\\config-page-from-welcome.png", "action": "created" }
+  ],
+  "selfCheck": "追溯矩阵完整（19/19 逐条，含验证方式）；装包后亲手跑过清数据冷启动→双按钮→去配置AI→编辑页→填 Key→保存→返回→重启→连点→横屏→深色，结论在文档 §3/§4；未看源码、未构建、未评价代码风格（仅从 logcat 运行时栈定位现象）；设计偏差逐状态对照（F01/F03/F04/F07/F08 一致，F02/F05/F06 未核并说明）；每条 AC 有明确结论（通过 12 / 失败 1 / 未验证 6）；截图库本次可达状态已同名覆盖/新增 10 张，不可达/未复测状态列出清单；偏差与未验证项见 §7；待决策事项见 §8。",
+  "decisionsTitle": "复测口径确认",
+  "decisions": [
+    {
+      "q": "AC-2/3/4/6/18 依赖单测注入或异常注入，验收阶段无法经 UI 手工构造；修复 AC-9 后的复测如何覆盖这几条？",
+      "options": [
+        { "text": "接受单测/异常注入覆盖这 5 条，验收只复测 UI 可达项（AC-1、AC-5、AC-7~AC-17、AC-19）", "recommended": true },
+        { "text": "要求开发在 debug 包提供构造入口或脚本，验收时逐条手工复核" }
+      ]
+    }
+  ],
+  "blockers": [
+    {
+      "reason": "AC-9 未达成：在「去配置AI」打开的新建配置编辑页保留预设、填占位 API Key 后点保存，抛未捕获异常 Unsupported operation: Cannot add to an unmodifiable list（AiConfigStore.saveActive ← _ApiConfigScreenState._save），页面无反馈、配置未保存、未回首页；因此主流程不可用，并阻断 AC-5 及 AC-2/3/4 的手工构造。需修复保存路径后复测 AC-9（含失败提示），并补测 AC-5。",
+      "severity": "blocker"
+    },
+    {
+      "reason": "AC-2/3/4/6/18 本轮未验证：分别依赖「空字段激活配置」「损坏 JSON / 读取异常」「打开配置页失败」的注入式构造，验收无法经 UI 复现。建议下轮由单测/异常注入覆盖，或在 debug 包提供可手工构造入口。",
+      "severity": "suggestion"
+    }
+  ]
+}

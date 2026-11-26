@@ -1,0 +1,63 @@
+# 欢迎弹窗日志原样摘录（adb logcat -d -v time -s flutter）
+# 采集方式：每个场景执行前 adb logcat -c；行首时间为设备时间。
+# 设备：emulator-5554（Android 14，sdk_gphone64_x86_64，arm64-v8a 转译）
+
+[场景 A] 首次冷启动，无 AI 配置，应用语言 English（08:25）
+11-26 08:25:01.833 I/flutter ( 5583): [welcome] welcome_check result=show reason=no_flag entry=other locale=en
+11-26 08:25:02.247 I/flutter ( 5583): [welcome] welcome_mark result=success
+11-26 08:25:02.563 I/flutter ( 5583): [welcome] welcome_shown entry=other locale=en
+11-26 08:25:02.233 I/ActivityTaskManager(  563): Displayed com.mohanlv.dodroidai/.MainActivity for user 0: +14s470ms
+
+[场景 A'] 点击「Set up AI」（08:25:27）
+11-26 08:25:27.468 I/flutter ( 5583): [welcome] welcome_dismissed method=configure_ai visible_ms=25164
+
+[场景 B] 第二次冷启动，欢迎标记已存在（08:31）
+11-26 08:31:56.509 I/flutter ( 5954): [welcome] welcome_check result=skip reason=flagged entry=other locale=en
+（无 welcome_shown / welcome_mark / welcome_dismissed，弹窗未出现）
+
+[场景 C] 应用内切换为简体中文后首次冷启动（08:34，录屏同时采集）
+11-26 08:34:50.169 I/flutter ( 6492): [welcome] welcome_check result=show reason=no_flag entry=other locale=en
+11-26 08:34:50.766 I/ActivityTaskManager(  563): Displayed com.mohanlv.dodroidai/.MainActivity for user 0: +15s394ms
+11-26 08:34:51.721 I/flutter ( 6492): [welcome] welcome_mark result=success
+11-26 08:34:51.861 I/flutter ( 6492): [welcome] welcome_shown entry=other locale=en
+
+[场景 C'] 遮罩点击不关闭后，连点两次「去配置AI」（08:36）
+11-26 08:36:28.173 I/flutter ( 6492): [welcome] welcome_dismissed method=configure_ai visible_ms=96423
+
+[场景 D] 首次冷启动后点击「开始使用」（08:37）
+11-26 08:37:04.959 I/flutter ( 6981): [welcome] welcome_check result=show reason=no_flag entry=other locale=en
+11-26 08:37:05.323 I/flutter ( 6981): [welcome] welcome_mark result=success
+11-26 08:37:05.469 I/flutter ( 6981): [welcome] welcome_shown entry=other locale=en
+11-26 08:37:14.301 I/flutter ( 6981): [welcome] welcome_dismissed method=button visible_ms=8959
+
+[场景 E] 首次冷启动后按系统返回键（08:37）
+11-26 08:37:37.564 I/flutter ( 7089): [welcome] welcome_check result=show reason=no_flag entry=other locale=en
+11-26 08:37:38.169 I/flutter ( 7089): [welcome] welcome_mark result=success
+11-26 08:37:38.265 I/flutter ( 7089): [welcome] welcome_shown entry=other locale=en
+11-26 08:37:47.698 I/flutter ( 7089): [welcome] welcome_dismissed method=back visible_ms=9506
+
+[场景 F] 应用内切换为繁體中文后首次冷启动（08:38）
+11-26 08:38:45.217 I/flutter ( 7261): [welcome] welcome_check result=show reason=no_flag entry=other locale=en
+11-26 08:38:46.507 I/flutter ( 7261): [welcome] welcome_mark result=success
+11-26 08:38:46.641 I/flutter ( 7261): [welcome] welcome_shown entry=other locale=en
+
+[场景 G] 英文 + 320dp（wm size 880x2220）首次冷启动（08:39）
+11-26 08:39:34.074 I/flutter ( 7433): [welcome] welcome_check result=show reason=no_flag entry=other locale=en
+11-26 08:39:35.074 I/flutter ( 7433): [welcome] welcome_mark result=success
+11-26 08:39:35.243 I/flutter ( 7433): [welcome] welcome_shown entry=other locale=en
+
+[场景 H] 英文 + 320dp + 深色模式首次冷启动（08:40）
+11-26 08:40:20.280 I/flutter ( 7554): [welcome] welcome_check result=show reason=no_flag entry=other locale=en
+11-26 08:40:21.195 I/flutter ( 7554): [welcome] welcome_mark result=success
+11-26 08:40:21.389 I/flutter ( 7554): [welcome] welcome_shown entry=other locale=en
+
+[场景 I] 深色 + 默认尺寸复测冷启动（08:42，无 ANR）
+11-26 08:42:09.221 I/ActivityTaskManager(  563): Displayed com.mohanlv.dodroidai/.MainActivity for user 0: +13s322ms
+11-26 08:42:10.070 I/flutter ( 7778): [welcome] welcome_check result=show reason=no_flag entry=other locale=en
+11-26 08:42:10.567 I/flutter ( 7778): [welcome] welcome_shown entry=other locale=en
+
+[统计]
+- 每次首次展示只出现 1 次 welcome_check(show) + 1 次 welcome_mark(success) + 1 次 welcome_shown。
+- 每次关闭只出现 1 条 welcome_dismissed；三种 method 各验证至少 1 次。
+- 全部场景未出现 welcome_error。
+- 应用内语言为简体中文/繁體中文时，welcome_shown 仍记录 locale=en（系统语言）。

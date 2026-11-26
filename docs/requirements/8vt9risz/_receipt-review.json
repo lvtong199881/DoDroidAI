@@ -1,0 +1,31 @@
+{
+  "status": "done",
+  "summary": "完成首次代码评审：源码主链路未发现阻断级缺陷；应修 1 条（第三轮测试修复与 pubspec.lock 未提交，HEAD 仍是旧测试写法）、建议 4 条（重复 reload、预设双源、保存链路测试缺口、runOnce 跨配置页等待）。",
+  "artifacts": [
+    { "path": "docs/requirements/8vt9risz/代码评审报告.md", "action": "created" }
+  ],
+  "selfCheck": "准出清单逐项：1) 覆盖本次 flutter_app diff、5 个直接调用方与 AGENTS.md 约定；2) 未主动打开 PRD.md/需求卡片，未做需求覆盖核对；3) 未运行 flutter analyze/test/build/装机，未写代码；4) 每条问题有位置、证据、风险；5) 应修给了提交命令与文件清单，建议给了方向；6) 范围外仅记录（功能提交混入文档、既有保存连点、本地渲染脚本），未改动；7) 复审 N/A（首次评审）。",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "应修：第三轮测试修复与 pubspec.lock 未提交（git status 显示 3 个测试文件 + lock 为 M；git log 无对应提交）。HEAD 的 welcome_dialog_test.dart:493 同一测试内两次 openWelcome（旧弹窗路由留在栈顶，closing! 空断言）、api_config_screen_test.dart:38 与 welcome_app_test.dart:210 仍用 400dp 视口、welcome_app_test.dart:153 首帧断言缺 pump；按分支提交跑测试会是红测。需在 feature/8vt9risz 提交这 3 个测试文件，pubspec.lock 单独 chore 或回退，提交后 git status 为空并补 sha。",
+      "severity": "blocker"
+    },
+    {
+      "reason": "建议：chat_screen.dart:89-100 在 api_config_screen.dart:217 的 _save 已 reloadConfig 后又 await 一次，且忽略 Navigator.push 的保存结果；保存路径重复读，取消也 reload。建议收敛到一处：_save await reload 后再 pop，_openApiConfig 只负责 push 与结果处理。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "建议：api_config_screen.dart:56-60 的预设 seed 与 :201 的 _save baseline 各自用 AiConfig.defaultFor 推导，当前一致但依赖隐式约束；建议在 initState 存 _seed，_save 用 widget.config ?? _seed，让渲染与保存共用同一基线。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "建议：缺少预设页保存链路的自动化用例（api_config_screen_test 只断言渲染，welcome_app_test 不点保存）；建议加一条填 Key → 点 api_config_save → 断言 AiConfigStore().loadActive() 的 baseUrl/mainModel/apiKey 与 hasCompleteFields 的用例。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "建议：welcome_controller.dart:119-122 的 onConfigureAi 等待 Navigator.push 的整个路由生命周期，runOnce 的 Future 会 pending 到用户离开配置页；建议由 _openApiConfig 自己负责导航后的 reload/错误，控制器只发起 push，或在 runOnce 文档中明确该语义并补并发 runOnce 测试。",
+      "severity": "suggestion"
+    }
+  ]
+}

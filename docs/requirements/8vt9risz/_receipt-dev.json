@@ -1,0 +1,38 @@
+{
+  "status": "done",
+  "summary": "环境恢复后补跑并修掉 3 处测试自身写法问题：「去配置AI」功能全部落地，`flutter test` 173/173 通过、`flutter analyze` 0 error/0 warning，debug 包 0.1.0.1（versionCode 5）构建成功并已装到 emulator-5554 冷启动验证——弹窗双按钮、英文 `Set up AI`、点击进「新建配置」页（DeepSeek 预设、Key 空）、日志 `welcome_dismissed method=configure_ai` 均正确。",
+  "artifacts": [
+    { "path": "flutter_app/lib/settings/welcome_contract.dart", "action": "modified" },
+    { "path": "flutter_app/lib/settings/welcome_ai_gate.dart", "action": "created" },
+    { "path": "flutter_app/lib/settings/welcome_providers.dart", "action": "modified" },
+    { "path": "flutter_app/lib/settings/welcome_controller.dart", "action": "modified" },
+    { "path": "flutter_app/lib/ai/ai_config.dart", "action": "modified" },
+    { "path": "flutter_app/lib/widgets/welcome_dialog.dart", "action": "modified" },
+    { "path": "flutter_app/lib/screens/chat/chat_screen.dart", "action": "modified" },
+    { "path": "flutter_app/lib/screens/settings/api_config_screen.dart", "action": "modified" },
+    { "path": "flutter_app/lib/l10n/app_strings.dart", "action": "modified" },
+    { "path": "flutter_app/test/welcome_ai_gate_test.dart", "action": "created" },
+    { "path": "flutter_app/test/welcome_dialog_test.dart", "action": "modified" },
+    { "path": "flutter_app/test/welcome_controller_test.dart", "action": "modified" },
+    { "path": "flutter_app/test/welcome_app_test.dart", "action": "modified" },
+    { "path": "flutter_app/test/api_config_screen_test.dart", "action": "created" },
+    { "path": "flutter_app/test/welcome_log_test.dart", "action": "modified" },
+    { "path": "flutter_app/test/app_strings_test.dart", "action": "modified" },
+    { "path": "flutter_app/pubspec.lock", "action": "modified" },
+    { "path": "docs/requirements/8vt9risz/技术方案.md", "action": "modified" },
+    { "path": "docs/requirements/8vt9risz/_receipt-dev.json", "action": "created" }
+  ],
+  "selfCheck": "准出清单逐项：\n1) 开发内容状态：T1-T10 全部「已完成」，技术方案 §5 状态列、§7.3 交付产物表、§13.4（本轮补跑记录）均已按实际结果更新。—— 完成。\n2) 编译：**通过**。`cd flutter_app && flutter build apk --debug --build-name=0.1.0.1 --build-number=5` → `√ Built build\\app\\outputs\\flutter-apk\\app-debug.apk`（164.9s，127.4 MB）；`aapt2 dump badging` 确认 `versionCode=5 / versionName=0.1.0.1 / native-code: arm64-v8a`。\n3) 单元测试：**173/173 通过**（`flutter test` 全量，末行 `All tests passed!`，日志中 0 处 EXCEPTION）。其中本需求新增 17 个用例（gate 8 / dialog 7 / controller 5 / app 6 / api_config 3 / log 2 / strings 1，含边界与异常分支），全部真实跑通；修掉 3 处**测试自身**写法问题（窄视口触发测试字体下 Dropdown 溢出、本地化异步导致首帧断言过早、同一测试内重复开弹窗被旧路由遮挡），产品代码未因此改动。\n4) 测试框架：未引入新框架，沿用 flutter_test + 既有 test/support/welcome_fakes.dart。\n5) debug 包：已产出并登记到技术方案 §7.3——版本 **0.1.0.1（versionCode 5）**，路径 `flutter_app/build/app/outputs/flutter-apk/app-debug.apk`，安装 `adb -s emulator-5554 install -r -t flutter_app/build/app/outputs/flutter-apk/app-debug.apk`（AVD 名 `Pixel_3a_API_34_extension_level_7_x86_64` 即本阶段设备），启动 `adb -s emulator-5554 shell am start -n com.mohanlv.dodroidai/.MainActivity`。未修改任何 versionCode/versionName/pubspec 版本字段，版本只由构建命令传入。\n6) 设备冒烟（非验收结论）：卸载旧包后装机 `Success`，冷启动无 Crash（arm64 包在 x86_64 模拟器上走 ARM 转译，冷启动约 16s，属预期偏慢）；弹窗底部依次为描边「Set up AI」+ 实心「Get started」（英文环境），全宽纵向、间距 8、无裁切；点「Set up AI」后 logcat 输出 `welcome_dismissed method=configure_ai visible_ms=43046`，随后进入「新建配置」页：DeepSeek 卡选中、Base URL 已填 `https://api.deepseek.com/anthropic`、API 密钥为空、底部只有 Save（无删除/设为激活）。完整 AC 矩阵留给测试阶段。\n7) 遗留 TODO：无。\n8) 符合 AGENTS.md：命名/注释沿用既有风格；未改 applicationId、Manifest、Gradle、资源、pubspec 版本；`pubspec.lock` 仅同步 Flutter 3.50.1 要求的 `test_api` 与传递依赖 `listen`（单独 chore 提交）；日志不输出 Key/URL/模型名；未顺手格式化无关文件。\n9) 改动文件与 REQ 映射：REQ-1（welcome_ai_gate.dart、ai_config.dart、welcome_providers.dart、chat_screen.dart）；REQ-2（chat_screen.dart、api_config_screen.dart、welcome_controller.dart）；REQ-3/REQ-5（welcome_dialog.dart、app_strings.dart）；REQ-4（welcome_contract.dart、welcome_controller.dart）；REQ-6（flag 存储、入口解析、弹窗遮罩/返回键、既有主按钮行为均未改，`showConfigureAi` 默认 false）。\n10) 提交：`feature/8vt9risz`，功能提交 `51cecaa` + 本回合承诺的 `test:`/`chore:` 提交（见 git log 顶端 3 条）；工作区提交后干净（build/.dart_tool 已被 ignore，未入库）。\n11) rebase：先 `git fetch origin` 再 rebase 本地 main；fetch 因无 HTTPS 凭证（schannel SEC_E_NO_CREDENTIALS）可能失败，届时以本地 main（1ca44ee，HEAD 祖先）为准，无需 rebase。\n12) push：`git push origin feature/8vt9risz` 若因无凭证失败，按规范不算阻塞，代码已在本地 feature 分支。\n13) 未切分支、未 merge、未触碰主分支；设备仅做本需求装机/启动/截图/日志，未重启或重置模拟器（卸载重装仅清理应用层数据）。",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "仓库缺少 Gradle wrapper（suggestion，不影响本需求交付）：任务包的构建/单测命令 `./gradlew assembleDebug|testDebugUnitTest` 在本仓库不可执行——`flutter_app/gradlew`、`gradlew.bat`、`android/gradlew`、`android/gradle/wrapper/gradle-wrapper.jar` 均不存在，PATH 也无 `gradle`。建议补提交 wrapper 或把平台命令改成 Flutter 口径（`flutter build apk --debug` / `flutter test`）。本回合已用 Flutter 口径完成构建与单测。"
+    },
+    {
+      "reason": "给测试阶段的提示（suggestion）：`abiFilters` 仅 arm64-v8a，本机 APK 在 x86_64 模拟器上属 ARM 转译运行，冷启动约 16s（首帧前会有较久 Flutter 启动画面），不是卡死；另首次启动会弹语音模型下载提示条，与本需求无关，不影响弹窗验证。"
+    }
+  ],
+  "deliverables": {
+    "debugPackage": "flutter_app/build/app/outputs/flutter-apk/app-debug.apk#0.1.0.1（versionCode 5，arm64-v8a，debug，127.4 MB）"
+  }
+}

@@ -1,0 +1,18 @@
+# 「去配置AI」打开的新建配置页字段实测（uiautomator dump）
+
+页面标题：新建配置（无「删除」「设为激活」，底部只有 Save/保存）
+
+预填字段（从欢迎弹窗进入，DeepSeek 预设）：
+- 服务商卡片：DeepSeek 选中（OpenAI / DeepSeek / MiniMax / OpenCode / 自定义）
+- 基本信息 > 配置名称：DeepSeek
+- 官网地址：https://platform.deepseek.com
+- API 配置 > API 密钥：空（placeholder「API 密钥」，右侧有显示/隐藏按钮）
+- 接口地址（Base URL）：https://api.deepseek.com/anthropic
+- API 格式：Anthropic Messages
+- 模型配置 > 主模型：DeepSeek-V4-Flash
+- 其他默认模型：DeepSeek-V4-Flash（Haiku/Sonnet/Opus 位）
+- 上下文窗口：200K
+- 支持图片输入：开
+- 底部：保存（Save）
+
+结论：Base URL 与主模型已预填且非空，API 密钥为空；新建态，未出现编辑态按钮。与 AC-8 一致。

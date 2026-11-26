@@ -1,0 +1,9 @@
+﻿
+package: name='com.mohanlv.dodroidai' versionCode='6' versionName='0.1.0.2' platformBuildVersionName='17' platformBuild
+VersionCode='37' compileSdkVersion='37' compileSdkVersionCodename='17'
+sdkVersion:'24'
+targetSdkVersion:'36'
+native-code: 'arm64-v8a'
+
+
+apk_sha256=FE542167118E8760732202528ADE885E6373095EA57FB2F02CAB5EC55A706C9C

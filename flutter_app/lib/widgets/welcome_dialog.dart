@@ -16,7 +16,16 @@ const double welcomeHeroAspectRatio = 2.0;
 /// 内容超高时图片与文字一起滚动，按钮固定在底部；
 /// 图片缺失/解码失败时整块折叠，其余内容与关闭能力不受影响。
 class WelcomeDialog extends StatefulWidget {
-  const WelcomeDialog({super.key, @visibleForTesting this.heroAssetOverride});
+  const WelcomeDialog({
+    super.key,
+    this.showConfigureAi = false,
+    @visibleForTesting this.heroAssetOverride,
+  });
+
+  /// 是否显示次要按钮「去配置AI」（未配置 AI 时由宿主传入 `true`）。
+  ///
+  /// 为 `false` 时整段不渲染，footer 高度与改动前一致。
+  final bool showConfigureAi;
 
   /// 仅测试注入：非空时使用该 asset path；空字符串视为资源缺失，直接不渲染图片。
   @visibleForTesting
@@ -122,22 +131,49 @@ class _WelcomeDialogState extends State<WelcomeDialog> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-              child: SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  key: const Key('welcome_dialog_start'),
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size.fromHeight(48),
-                    shape: const StadiumBorder(),
-                    textStyle: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      height: 1.2,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // 未配置 AI：次要按钮在上，主按钮在下；已配置时整段不渲染。
+                  if (widget.showConfigureAi) ...[
+                    OutlinedButton(
+                      key: const Key('welcome_dialog_configure_ai'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: scheme.primary,
+                        side: BorderSide(color: scheme.outline, width: 1),
+                        minimumSize: const Size.fromHeight(48),
+                        shape: const StadiumBorder(),
+                        textStyle: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          height: 1.2,
+                        ),
+                      ),
+                      onPressed: () =>
+                          _close(WelcomeDismissMethod.configureAi),
+                      child: Text(strings.t('welcomeConfigureAi')),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      key: const Key('welcome_dialog_start'),
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(48),
+                        shape: const StadiumBorder(),
+                        textStyle: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          height: 1.2,
+                        ),
+                      ),
+                      onPressed: () => _close(WelcomeDismissMethod.button),
+                      child: Text(strings.t('welcomeStart')),
                     ),
                   ),
-                  onPressed: () => _close(WelcomeDismissMethod.button),
-                  child: Text(strings.t('welcomeStart')),
-                ),
+                ],
               ),
             ),
           ],

@@ -15,6 +15,7 @@ const Key _scrollKey = Key('welcome_dialog_scroll');
 const Key _titleKey = Key('welcome_dialog_title');
 const Key _subtitleKey = Key('welcome_dialog_subtitle');
 const Key _startKey = Key('welcome_dialog_start');
+const Key _configureAiKey = Key('welcome_dialog_configure_ai');
 
 /// 打开弹窗并返回「关闭时才会完成」的 Future。
 Future<Future<WelcomeDismissMethod?>> openWelcome(
@@ -23,6 +24,7 @@ Future<Future<WelcomeDismissMethod?>> openWelcome(
   ThemeData? theme,
   Size logicalSize = const Size(360, 800),
   double textScale = 1.0,
+  bool showConfigureAi = false,
   String? heroAssetOverride,
 }) async {
   tester.view.devicePixelRatio = 1.0;
@@ -55,8 +57,10 @@ Future<Future<WelcomeDismissMethod?>> openWelcome(
                 closing = showDialog<WelcomeDismissMethod>(
                   context: context,
                   barrierDismissible: false,
-                  builder: (_) =>
-                      WelcomeDialog(heroAssetOverride: heroAssetOverride),
+                  builder: (_) => WelcomeDialog(
+                    showConfigureAi: showConfigureAi,
+                    heroAssetOverride: heroAssetOverride,
+                  ),
                 );
               },
               child: const Text('打开弹窗'),
@@ -99,6 +103,13 @@ ScrollableState scrollState(WidgetTester tester) {
       matching: find.byType(Scrollable),
     ),
   );
+}
+
+/// footer 高度 = 弹窗底边 - 滚动区底边（滚动区下方紧接固定 footer）。
+double footerHeight(WidgetTester tester) {
+  final dialogRect = dialogSurfaceRect(tester);
+  final scrollRect = tester.getRect(find.byKey(_scrollKey));
+  return dialogRect.bottom - scrollRect.bottom;
 }
 
 /// 读取 PNG 的 IHDR 宽高。
@@ -437,6 +448,149 @@ void main() {
     await tester.tap(find.text('开始使用'));
     await tester.pumpAndSettle();
     expect(await closing, WelcomeDismissMethod.button);
+  });
+
+  testWidgets('未配置：双按钮纵向全宽，副在上、主在下、间距 8', (tester) async {
+    await openWelcome(tester, showConfigureAi: true);
+
+    expect(tester.takeException(), isNull);
+    expect(find.byKey(_configureAiKey), findsOneWidget);
+    expect(find.byKey(_startKey), findsOneWidget);
+    expect(find.text('去配置AI'), findsOneWidget);
+
+    final dialogRect = dialogSurfaceRect(tester);
+    final secondaryRect = tester.getRect(find.byKey(_configureAiKey));
+    final primaryRect = tester.getRect(find.byKey(_startKey));
+
+    // 上副下主、不重叠，间距 8
+    expect(secondaryRect.bottom, lessThanOrEqualTo(primaryRect.top));
+    expect(primaryRect.top - secondaryRect.bottom, closeTo(8, 0.5));
+
+    // 全宽：等于弹窗内容宽度（左右各 20 内边距），两按钮等宽
+    expect(secondaryRect.width, closeTo(dialogRect.width - 40, 0.5));
+    expect(primaryRect.width, closeTo(secondaryRect.width, 0.5));
+    expect(secondaryRect.left, closeTo(dialogRect.left + 20, 0.5));
+    expect(secondaryRect.right, closeTo(dialogRect.right - 20, 0.5));
+
+    // 都在弹窗内且高度 >= 48（不重叠、不裁切）
+    for (final rect in [secondaryRect, primaryRect]) {
+      expect(rect.top, greaterThanOrEqualTo(dialogRect.top));
+      expect(rect.bottom, lessThanOrEqualTo(dialogRect.bottom));
+      expect(rect.height, greaterThanOrEqualTo(48));
+    }
+
+    // footer 高度 = 上 12 + 48 + 8 + 48 + 下 20 = 136
+    expect(footerHeight(tester), closeTo(136, 0.5));
+
+    // 次要样式：OutlinedButton + 主题 outline 描边 / primary 文字，主按钮仍是 FilledButton
+    final secondary = tester.widget<OutlinedButton>(find.byKey(_configureAiKey));
+    expect(tester.widget(find.byKey(_startKey)), isA<FilledButton>());
+    final scheme = AppTheme.light().colorScheme;
+    final side = secondary.style?.side?.resolve(const <WidgetState>{});
+    expect(side, isNotNull);
+    expect(side!.color, scheme.outline);
+    expect(side.width, 1);
+    expect(
+      secondary.style?.foregroundColor?.resolve(const <WidgetState>{}),
+      scheme.primary,
+    );
+    expect(
+      secondary.style?.shape?.resolve(const <WidgetState>{}),
+      isA<StadiumBorder>(),
+    );
+  });
+
+  testWidgets('已配置：无次要按钮、无额外占位（footer 仍 80）', (tester) async {
+    await openWelcome(tester, showConfigureAi: false);
+
+    final dialogRect = dialogSurfaceRect(tester);
+    final primaryRect = tester.getRect(find.byKey(_startKey));
+
+    expect(find.byKey(_configureAiKey), findsNothing);
+    expect(find.text('去配置AI'), findsNothing);
+    // 未配置时 footer 为 136（多一个 48 按钮 + 8 间距），已配置必须回到 80
+    expect(footerHeight(tester), closeTo(80, 0.5));
+    // 主按钮贴底：48 + 下内边距 20
+    expect(primaryRect.bottom, closeTo(dialogRect.bottom - 20, 0.5));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('英文：次要按钮显示 Set up AI', (tester) async {
+    await openWelcome(
+      tester,
+      locale: const Locale('en'),
+      showConfigureAi: true,
+    );
+
+    expect(find.text('Set up AI'), findsOneWidget);
+    expect(find.text('去配置AI'), findsNothing);
+    expect(find.text('Get started'), findsOneWidget);
+  });
+
+  testWidgets('点击「去配置AI」：关闭弹窗并返回 configureAi', (tester) async {
+    final closing = await openWelcome(tester, showConfigureAi: true);
+
+    await tester.tap(find.byKey(_configureAiKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(WelcomeDialog), findsNothing);
+    expect(find.text('打开弹窗'), findsOneWidget);
+    expect(await closing, WelcomeDismissMethod.configureAi);
+  });
+
+  testWidgets('连点「去配置AI」只关闭一次', (tester) async {
+    final closing = await openWelcome(tester, showConfigureAi: true);
+
+    await tester.tap(find.byKey(_configureAiKey));
+    await tester.tap(find.byKey(_configureAiKey), warnIfMissed: false);
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(WelcomeDialog), findsNothing);
+    expect(await closing, WelcomeDismissMethod.configureAi);
+  });
+
+  testWidgets('深色主题：双按钮存在、取主题描边与文字色', (tester) async {
+    await openWelcome(tester, theme: AppTheme.dark(), showConfigureAi: true);
+
+    expect(find.byKey(_configureAiKey), findsOneWidget);
+    expect(find.byKey(_startKey), findsOneWidget);
+    final scheme = AppTheme.dark().colorScheme;
+    final secondary = tester.widget<OutlinedButton>(find.byKey(_configureAiKey));
+    expect(
+      secondary.style?.side?.resolve(const <WidgetState>{})?.color,
+      scheme.outline,
+    );
+    expect(
+      secondary.style?.foregroundColor?.resolve(const <WidgetState>{}),
+      scheme.primary,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('320dp 英文双按钮：不溢出、完整可点', (tester) async {
+    final closing = await openWelcome(
+      tester,
+      locale: const Locale('en'),
+      logicalSize: const Size(320, 640),
+      showConfigureAi: true,
+    );
+
+    expect(tester.takeException(), isNull);
+
+    final dialogRect = dialogSurfaceRect(tester);
+    final secondaryRect = tester.getRect(find.byKey(_configureAiKey));
+    final primaryRect = tester.getRect(find.byKey(_startKey));
+    for (final rect in [secondaryRect, primaryRect]) {
+      expect(rect.left, greaterThanOrEqualTo(dialogRect.left - 0.5));
+      expect(rect.right, lessThanOrEqualTo(dialogRect.right + 0.5));
+      expect(rect.height, greaterThanOrEqualTo(48));
+    }
+    expect(primaryRect.top - secondaryRect.bottom, closeTo(8, 0.5));
+
+    await tester.tap(find.byKey(_configureAiKey));
+    await tester.pumpAndSettle();
+    expect(await closing, WelcomeDismissMethod.configureAi);
   });
 
   test('两张欢迎图均为 1280×640（2:1）', () {

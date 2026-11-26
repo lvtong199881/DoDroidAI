@@ -1,0 +1,8 @@
+﻿--------- beginning of main
+11-26 08:45:02.583 E/flutter ( 7778): [ERROR:flutter/runtime/dart_vm_initializer.cc(40)] Unhandled Exception: Unsupported operation: Cannot add to an unmodifiable list
+11-26 08:45:02.583 E/flutter ( 7778): #0      UnmodifiableListMixin.add (dart:_internal/list.dart:112:5)
+11-26 08:45:02.583 E/flutter ( 7778): #1      AiConfigStore.saveActive (package:dodroidai/ai/ai_config.dart:286:15)
+11-26 08:45:02.583 E/flutter ( 7778): <asynchronous suspension>
+11-26 08:45:02.583 E/flutter ( 7778): #2      _ApiConfigScreenState._save (package:dodroidai/screens/settings/api_config_screen.dart:216:5)
+11-26 08:45:02.583 E/flutter ( 7778): <asynchronous suspension>
+11-26 08:45:02.583 E/flutter ( 7778): 

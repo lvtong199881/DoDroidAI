@@ -9,9 +9,19 @@ import '../chat/chat_provider.dart';
 
 /// API 配置页（对齐原生 fragment_ai_config.xml）
 class ApiConfigScreen extends ConsumerStatefulWidget {
-  const ApiConfigScreen({super.key, this.config});
+  const ApiConfigScreen({super.key, this.config, this.initialProvider})
+      : assert(
+          config == null || initialProvider == null,
+          '编辑已有配置时不应再传 initialProvider',
+        );
 
   final AiConfig? config;
+
+  /// 新建态预设的服务商（欢迎弹窗「去配置AI」用）。
+  ///
+  /// 仅在 [config] 为 null 时生效：用它铺默认值，页面仍是「新建配置」，
+  /// 不出现删除/设为激活。
+  final AiProvider? initialProvider;
 
   @override
   ConsumerState<ApiConfigScreen> createState() => _ApiConfigScreenState();
@@ -43,7 +53,11 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
   @override
   void initState() {
     super.initState();
-    final config = widget.config;
+    // 编辑态用已有配置；新建态可带服务商预设铺默认值（仍不是编辑态）。
+    final config = widget.config ??
+        (widget.initialProvider != null
+            ? AiConfig.defaultFor(widget.initialProvider!)
+            : null);
     _provider = config?.provider ?? AiProvider.custom;
     _apiFormat = config?.apiFormat ?? ApiFormat.anthropicMessages;
     _supportsVision = config?.supportsVision ?? true;
@@ -242,6 +256,7 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
   Widget _field({
     required TextEditingController controller,
     required String hint,
+    Key? fieldKey,
     bool obscure = false,
     int maxLines = 1,
     bool withPasswordToggle = false,
@@ -250,6 +265,7 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
     return Padding(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 12),
       child: TextField(
+        key: fieldKey,
         controller: controller,
         obscureText: obscure,
         maxLines: obscure ? 1 : maxLines,
@@ -379,6 +395,7 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
                 Padding(
                   padding: const EdgeInsets.only(left: 16, right: 16, top: 8),
                   child: TextField(
+                    key: const Key('api_config_api_key'),
                     controller: _apiKeyController,
                     obscureText: _obscureKey,
                     decoration: InputDecoration(
@@ -395,6 +412,7 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
                   ),
                 ),
                 _field(
+                  fieldKey: const Key('api_config_base_url'),
                   controller: _baseUrlController,
                   hint: '接口地址',
                   keyboardType: TextInputType.url,
@@ -433,6 +451,7 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
                     children: [
                       Expanded(
                         child: DropdownMenu<String>(
+                          key: const Key('api_config_main_model'),
                           controller: _mainModelController,
                           hintText: '主模型',
                           width: double.infinity,
@@ -566,6 +585,7 @@ class _ApiConfigScreenState extends ConsumerState<ApiConfigScreen> {
                 Expanded(
                   flex: _isEditing ? 1 : 2,
                   child: FilledButton(
+                    key: const Key('api_config_save'),
                     onPressed: _save,
                     child: Text(strings.save),
                   ),

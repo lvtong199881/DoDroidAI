@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_strings.dart';
+import '../../ai/ai_config.dart';
 import '../../ai/sherpa_tts.dart';
 import '../../models/chat_message.dart';
 import '../../settings/welcome_contract.dart';
@@ -11,6 +12,7 @@ import '../../settings/welcome_providers.dart';
 import '../../widgets/app_toast.dart';
 import '../../widgets/welcome_dialog.dart';
 import '../../quick_actions_handler.dart';
+import '../settings/api_config_screen.dart';
 import '../settings/settings_screen.dart';
 import 'chat_provider.dart';
 import 'widgets/app_drawer.dart';
@@ -50,6 +52,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     await ref.read(welcomeControllerProvider).runOnce(
           locale: locale,
           presenter: _presentWelcome,
+          onConfigureAi: _openApiConfig,
         );
   }
 
@@ -58,12 +61,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (!mounted) {
       throw StateError('首页已销毁，跳过欢迎弹窗');
     }
+    // 展示前先判定一次，弹窗只以最终状态出现；读取耗时不计入 visibleMs。
+    final showConfigureAi =
+        await ref.read(welcomeAiGateProvider).shouldShowConfigureAi();
+    if (!mounted) {
+      throw StateError('首页已销毁，跳过欢迎弹窗');
+    }
     final startedAt = DateTime.now();
     final closing = showDialog<WelcomeDismissMethod>(
       context: context,
       barrierDismissible: false,
       useRootNavigator: true,
-      builder: (_) => const WelcomeDialog(),
+      builder: (_) => WelcomeDialog(showConfigureAi: showConfigureAi),
     );
     // showDialog 已 push 路由，此时记录 welcome_shown。
     onShown();
@@ -72,6 +81,22 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       method: method ?? WelcomeDismissMethod.back,
       visibleMs: DateTime.now().difference(startedAt).inMilliseconds,
     );
+  }
+
+  /// 「去配置AI」：弹窗已由 presenter 关闭，这里打开带 DeepSeek 预设的新建配置页。
+  ///
+  /// 异常交给控制器记 `welcome_error(stage=render)`，用户停留首页。
+  Future<void> _openApiConfig() async {
+    if (!mounted) return;
+    await Navigator.of(context, rootNavigator: true).push(
+      MaterialPageRoute(
+        builder: (_) => const ApiConfigScreen(
+          initialProvider: AiProvider.deepseek,
+        ),
+      ),
+    );
+    if (!mounted) return;
+    await ref.read(chatProvider.notifier).reloadConfig();
   }
 
   @override

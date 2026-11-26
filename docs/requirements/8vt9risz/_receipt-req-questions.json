@@ -1,0 +1,78 @@
+{
+  "status": "done",
+  "summary": "完成欢迎弹窗新增「去配置AI」按钮的需求澄清：核对现有欢迎弹窗与 AI 配置实现后，产出 7 条会影响范围/验收/数据契约的待提问清单。",
+  "artifacts": [
+    {
+      "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\8vt9risz\\待提问清单.md",
+      "action": "created"
+    }
+  ],
+  "selfCheck": "回合 A 准出：1) 每条疑点均写了「会改变什么」与「推荐答案」——通过；2) 未混入只影响实现细节的问题——通过（读取失败、返回后不恢复弹窗、平台适配等已放入「不问、按推荐值推进」）；3) 未替用户回答问题，7 条均保留为待确认——通过；4) 本回合只产出待提问清单，未写 PRD/需求卡片——通过。",
+  "decisions": [
+    {
+      "q": "「还没配置 AI」以哪一层为准？",
+      "options": [
+        { "text": "以激活配置的 Base URL/API Key/主模型三者均非空为准，缺任一项或没有配置都算未配置（不做连通性探测）", "recommended": true },
+        { "text": "只要存在任意一条完整配置就算已配置，即使它不是激活配置" },
+        { "text": "只看有没有配置记录，不看字段是否填全" }
+      ]
+    },
+    {
+      "q": "「去配置AI」跳转到哪一页？",
+      "options": [
+        { "text": "直接进入新建 AI 配置编辑页（默认服务商预设），保存后回首页", "recommended": true },
+        { "text": "进入现有 AI 配置列表页，与设置入口一致" },
+        { "text": "进入列表页，但空列表时自动展开新建表单" }
+      ]
+    },
+    {
+      "q": "未配置时「开始使用」和「去配置AI」谁主谁次？",
+      "options": [
+        { "text": "「开始使用」保持主按钮，「去配置AI」为次要按钮，上下排列", "recommended": true },
+        { "text": "「去配置AI」为主按钮，「开始使用」降为文字按钮" },
+        { "text": "两按钮并排等宽，靠样式区分主次" }
+      ]
+    },
+    {
+      "q": "已看过弹窗的老用户（含升级且未配置 AI）要不要补弹？",
+      "options": [
+        { "text": "不补弹，保持现有一次性逻辑", "recommended": true },
+        { "text": "未配置 AI 时每次冷启动都弹，直到配置完成" },
+        { "text": "仅对「升级且未配置」的用户补弹一次" }
+      ]
+    },
+    {
+      "q": "英文环境下按钮文案用什么？",
+      "options": [
+        { "text": "Set up AI", "recommended": true },
+        { "text": "Configure AI" },
+        { "text": "Go to AI settings" }
+      ]
+    },
+    {
+      "q": "英文用户会进入中文的 AI 配置页，本需求是否一并处理该页中英化？",
+      "options": [
+        { "text": "不在本需求范围，AI 配置页本地化另立需求", "recommended": true },
+        { "text": "本需求一并把 AI 配置列表页和编辑页中英化" }
+      ]
+    },
+    {
+      "q": "要不要单独统计「去配置AI」的点击？",
+      "options": [
+        { "text": "新增关闭方式 method=configure_ai，现有 button/back 不变", "recommended": true },
+        { "text": "复用 method=button，不新增取值" },
+        { "text": "不记录关闭方式，另起独立点击事件" }
+      ]
+    }
+  ],
+  "blockers": [
+    {
+      "reason": "当前 checkout 根目录没有工程工作区（只有 .qq-bot-scratch），根目录不存在 AGENTS.md；本轮是读取主仓库 worktree 的 AGENTS.md 与 flutter_app 源码完成核对的。后续开发/测试阶段若仍在无源码的 checkout 里执行，将无法构建和验证。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "平台命令给的是 Android Gradle（./gradlew assembleDebug / testDebugUnitTest），但仓库实际是 Flutter 工程（AGENTS.md：flutter build apk --debug / flutter test / flutter analyze）。后续阶段需按 Flutter 命令执行，否则会直接失败。",
+      "severity": "suggestion"
+    }
+  ]
+}

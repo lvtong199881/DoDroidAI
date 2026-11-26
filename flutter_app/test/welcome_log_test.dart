@@ -82,6 +82,23 @@ void main() {
     expect(lines, ['[welcome] welcome_dismissed method=back visible_ms=1234']);
   });
 
+  test('welcome_dismissed 去配置AI：method=configure_ai', () {
+    const DebugWelcomeLog().dismissed(
+      method: WelcomeDismissMethod.configureAi,
+      visibleMs: 88,
+    );
+    expect(
+      lines,
+      ['[welcome] welcome_dismissed method=configure_ai visible_ms=88'],
+    );
+  });
+
+  test('三种关闭方式的 wire 取值稳定', () {
+    expect(WelcomeDismissMethod.button.wire, 'button');
+    expect(WelcomeDismissMethod.back.wire, 'back');
+    expect(WelcomeDismissMethod.configureAi.wire, 'configure_ai');
+  });
+
   test('welcome_error 字段', () {
     const DebugWelcomeLog().error(
       stage: WelcomeErrorStage.render,

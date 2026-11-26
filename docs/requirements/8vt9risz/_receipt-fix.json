@@ -1,0 +1,39 @@
+{
+  "status": "done",
+  "summary": "处理评审唯一应修项 R-1：把第三轮已验证的 3 个测试修复提交为 `632e0f3`，把 Flutter 3.50.1 要求的 pubspec.lock 同步单独提交为 `579aaed`，工作区收尾后为空；随后复跑 `flutter test` 173/173 通过、`flutter analyze` 0 error/0 warning，并按规程重出 debug 包 0.1.0.2（versionCode 6）。评审 4 条建议按判定不动。",
+  "artifacts": [
+    { "path": "flutter_app/test/api_config_screen_test.dart", "action": "modified" },
+    { "path": "flutter_app/test/welcome_app_test.dart", "action": "modified" },
+    { "path": "flutter_app/test/welcome_dialog_test.dart", "action": "modified" },
+    { "path": "flutter_app/pubspec.lock", "action": "modified" },
+    { "path": "docs/requirements/8vt9risz/技术方案.md", "action": "modified" },
+    { "path": "docs/requirements/8vt9risz/_receipt-fix.json", "action": "created" }
+  ],
+  "selfCheck": "准出清单逐项（本回合=评审修正）：\n1) 只处理判定为「要修」的条目：R-1（应修）已修，S-1~S-4（建议）未动，理由写在技术方案 §13.5 与回执 blockers。\n2) R-1 修复：`632e0f3 test: 修复欢迎弹窗/配置页测试的视口、首帧与重复打开问题（8vt9risz）`（api_config_screen_test / welcome_app_test / welcome_dialog_test 三处）、`579aaed chore: 同步 pubspec.lock 到 Flutter 3.50.1`（仅 `test_api 0.7.12→0.7.14` 与传递依赖 `listen 1.0.1`，因项目主线已是 Flutter 3.50.1，保留 lock 可避免下游 `pub get` 再次污染工作区）。提交后 `git status --short` 仅剩文档/回执，随本回合文档提交一起收尾。\n3) 编译：**通过**。`cd flutter_app && flutter build apk --debug --build-name=0.1.0.2 --build-number=6` → `√ Built build\\app\\outputs\\flutter-apk\\app-debug.apk`（75.9s，127.4 MB）；`aapt2 dump badging` 确认 `versionName=0.1.0.2 / versionCode=6 / native-code: arm64-v8a`。已写入技术方案 §7.3（0.1.0.2 当前有效，0.1.0.1 标否），未改任何版本文件。\n4) 单元测试：**173/173 通过**（`flutter test`，末行 `All tests passed!`），在修正后的 HEAD 上真实跑通；含本需求新增的 gate/dialog/controller/app/config/log/strings 用例。\n5) 静态检查：`flutter analyze` **0 error / 0 warning**（46 条 info 均为既有 `package:flutter/material.dart` 弃用提示与 `welcome_controller.dart` 既有 `prefer_initializing_formals`）。\n6) 测试框架：未引入新框架。\n7) debug 包：0.1.0.2（versionCode 6）已产出并登记到技术方案 §7.3；源码在本回合未改动（R-1 只涉及测试与 lockfile），因此 0.1.0.2 与 0.1.0.1 应用代码等价，重出包是执行「修正后必须出新包」规程。**本轮任务包未分配设备**，故未装机；0.1.0.1 已在上轮于 emulator-5554 装机冒烟验证（双按钮 / `Set up AI` / 预设页 / `welcome_dismissed method=configure_ai`）。\n8) 遗留 TODO：无。\n9) 符合 AGENTS.md：未改 applicationId/Manifest/Gradle/资源/pubspec 版本；测试改动仅修正视口、首帧 pump 与重复开弹窗写法，未削弱断言（footer 80/136、双按钮几何、预设字段、点击链路断言均保留）。\n10) 改动文件与 REQ 映射：REQ-1（welcome_ai_gate、ai_config、welcome_providers、chat_screen）；REQ-2（chat_screen、api_config_screen、welcome_controller）；REQ-3/REQ-5（welcome_dialog、app_strings）；REQ-4（welcome_contract、welcome_controller）；REQ-6（门控/标记/遮罩/返回键未改）。本回合未新增源码改动。\n11) 提交：`feature/8vt9risz`，新增 `632e0f3`、`579aaed`，另加本回合文档/回执提交（见 git log）；未切分支、未 merge、未触碰主分支。\n12) rebase：`git fetch origin` 因无 HTTPS 凭证（schannel SEC_E_NO_CREDENTIALS）失败，无法取远端主分支；本地 `main`(1ca44ee) 为 HEAD 祖先且无落后提交，本地无需 rebase。\n13) push：`git push origin feature/8vt9risz` 同样因无凭证失败，按规范不算阻塞；代码已在本地 feature 分支。",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "S-1（建议，未修）：同一次保存/返回路径上 `reloadConfig` 执行两次（`api_config_screen.dart` 的 `_save` 内一次、`chat_screen.dart` 的 `_openApiConfig` 返回后又一次，且未使用 `Navigator.push` 的保存结果）。收敛会改变 `_save` 的 `pop` 时机与编辑页返回语义，超出本需求验收必要性，已记录待后续优化。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "S-2（建议，未修）：预设 seed（initState 的 `AiConfig.defaultFor(initialProvider)`）与保存基线（`_save` 的 `AiConfig.defaultFor(_provider)`）各自推导；当前结果一致，统一基线属重构，避免扩大本需求 diff。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "S-3（建议，未修）：缺「预设页填 Key → 保存 → 断言激活配置」的自动化用例；属测试覆盖增强，AC-9 由测试阶段实跑验证，留待按需补。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "S-4（建议，未修）：`runOnce` 的 Future 会跨越整个配置页生命周期（技术方案 §3.3 明确定稿「等待导航」）；改语义会与方案冲突，已在 `runOnce` 文档注明回调时机。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "平台命令仍给 Gradle 口径（`./gradlew assembleDebug` / `testDebugUnitTest`），但仓库是 Flutter 工程且没有 gradlew wrapper；本回合按 Flutter 口径执行（`flutter build apk --debug` / `flutter test`）。建议后续把平台命令改为 Flutter 命令。",
+      "severity": "suggestion"
+    }
+  ],
+  "deliverables": {
+    "debugPackage": "flutter_app/build/app/outputs/flutter-apk/app-debug.apk#0.1.0.2（versionCode 6，arm64-v8a，debug，127.4 MB）"
+  }
+}
