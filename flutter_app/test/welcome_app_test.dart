@@ -87,6 +87,39 @@ void main() {
     expect(log.events.any((event) => event.startsWith('dismissed:button')), isTrue);
   });
 
+  testWidgets('点右上角角标：关闭弹窗，日志 dismissed:close_button:<非负>', (tester) async {
+    final store = FakeWelcomeFlagStore();
+    final log = RecordingWelcomeLog();
+    final controller = WelcomeController(
+      store: store,
+      log: log,
+      entryResolver: fixedEntryResolver(WelcomeEntry.coldStart),
+    );
+
+    await tester.pumpWidget(appWith(controller: controller));
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    expect(find.byType(WelcomeDialog), findsOneWidget);
+    expect(find.byKey(welcomeDialogCloseKey), findsOneWidget);
+
+    await tester.tap(find.byKey(welcomeDialogCloseKey));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(WelcomeDialog), findsNothing);
+    expect(find.byType(ChatScreen), findsOneWidget);
+    expect(store.writeCount, 1);
+    expect(log.events.where((event) => event.startsWith('shown')).length, 1);
+
+    final dismissed =
+        log.events.where((event) => event.startsWith('dismissed:')).toList();
+    expect(dismissed, hasLength(1));
+    expect(dismissed.single, startsWith('dismissed:close_button:'));
+    final visibleMs = int.parse(dismissed.single.split(':').last);
+    expect(visibleMs, greaterThanOrEqualTo(0));
+  });
+
   testWidgets('已展示标记存在时不弹窗、不写标记', (tester) async {
     final store = FakeWelcomeFlagStore(flagged: true);
     final log = RecordingWelcomeLog();

@@ -1,0 +1,53 @@
+{
+  "status": "needs_input",
+  "summary": "完成欢迎弹窗关闭按钮的歧义扫描，产出 5 条待提问：卡边几何口径、关闭后再展示语义、关闭方式日志契约、无欢迎图时的位置、滚动时是否钉住。",
+  "artifacts": [
+    {
+      "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\qj7pdv9x\\待提问清单.md",
+      "action": "created"
+    }
+  ],
+  "selfCheck": "回合 A 准出清单逐项：1) 5 个疑点均写了「问题/会改变什么/选项/推荐答案」——通过；2) 不混入只影响实现的细节——视觉样式、48dp 触摸目标、连点保护已归入设计阶段或默认采用，未作为提问；3) 未替用户回答——5 项均待用户选择，只有「只改欢迎弹窗、保留开始使用、点击不二次确认」等由原文直接确定的项未提问。本回合按要求只写待提问清单，未写 PRD/需求卡片。",
+  "decisionsTitle": "欢迎弹窗右上角关闭按钮：5 个需要拍板的点",
+  "decisions": [
+    {
+      "q": "Q1「卡在边缘」的几何口径：按钮与弹窗右上角的关系是哪一种？",
+      "options": [
+        { "text": "A. 按钮圆心落在弹窗右上角，约一半露出弹窗外，露出部分也可点击", "recommended": true },
+        { "text": "B. 按钮整体在弹窗内，外侧边缘与弹窗上边/右边对齐" },
+        { "text": "C. 按钮整体悬在弹窗外侧，与弹窗边缘留间距" }
+      ]
+    },
+    {
+      "q": "Q2 点 X 关闭后，下次启动还展示欢迎弹窗吗？",
+      "options": [
+        { "text": "A. 与「开始使用」等价，关闭后不再展示，沿用现有一次性标记", "recommended": true },
+        { "text": "B. 只关闭本次，下次冷启动仍展示（需新增会话级状态）" }
+      ]
+    },
+    {
+      "q": "Q3 点 X 是否作为独立关闭方式写入 welcome_dismissed 日志？",
+      "options": [
+        { "text": "A. 新增 method=close_button，与 button/back 并列", "recommended": true },
+        { "text": "B. 归入 method=button，不区分入口" },
+        { "text": "C. 不动 welcome_dismissed，另发一条独立事件" }
+      ]
+    },
+    {
+      "q": "Q4 欢迎图缺失/加载失败时，关闭按钮放在哪？",
+      "options": [
+        { "text": "A. 仍固定弹窗右上角保持卡边效果，内容顶部预留空间不压标题", "recommended": true },
+        { "text": "B. 仍在右上角但完全收进弹窗内" },
+        { "text": "C. 无图时隐藏关闭按钮" }
+      ]
+    },
+    {
+      "q": "Q5 内容滚动时（小屏/2 倍字号），关闭按钮跟着滚还是钉住？",
+      "options": [
+        { "text": "A. 钉在弹窗右上角，不随内容滚动", "recommended": true },
+        { "text": "B. 随内容滚动，滚出可视区后不可见" }
+      ]
+    }
+  ],
+  "blockers": []
+}

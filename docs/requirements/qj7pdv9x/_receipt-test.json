@@ -1,0 +1,28 @@
+{
+  "status": "done",
+  "summary": "用例 21 条，通过 20，失败 0，未覆盖 1（AC-8 无图折叠，黑盒无法注入缺失资源）；关闭按钮几何（中心偏差 0.18dp、50% 外露、48dp 命中）、外露点击、连点、close_button 日志、320dp、640×400+2 倍字号滚动、深浅色、中英文、切后台/进程被杀均实测通过，未发现缺陷。",
+  "artifacts": [
+    { "path": "C:/Users/mohanshang/.qq-bot/worktrees/qj7pdv9x/docs/requirements/qj7pdv9x/测试报告.md", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/worktrees/qj7pdv9x/docs/ui-screenshots/welcome/qa-01-first-show-en-light.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/worktrees/qj7pdv9x/docs/ui-screenshots/welcome/qa-02-first-show-en-dark.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/worktrees/qj7pdv9x/docs/ui-screenshots/welcome/qa-03-first-show-zh-light.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/worktrees/qj7pdv9x/docs/ui-screenshots/welcome/qa-04-first-show-320dp.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/worktrees/qj7pdv9x/docs/ui-screenshots/welcome/qa-05-small-640x400-2x-before-scroll.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/worktrees/qj7pdv9x/docs/ui-screenshots/welcome/qa-06-small-640x400-2x-scrolled.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/worktrees/qj7pdv9x/docs/ui-screenshots/welcome/qa-07-closed-by-close.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/worktrees/qj7pdv9x/docs/ui-screenshots/welcome/qa-08-home-interactive.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/worktrees/qj7pdv9x/docs/ui-screenshots/welcome/qa-09-restart-no-dialog.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/worktrees/qj7pdv9x/docs/ui-screenshots/welcome/qa-10-double-tap.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/worktrees/qj7pdv9x/docs/ui-screenshots/welcome/qa-11-barrier-tap-still-open.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/worktrees/qj7pdv9x/docs/ui-screenshots/welcome/qa-12-closed-by-back.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/worktrees/qj7pdv9x/docs/ui-screenshots/welcome/qa-13-closed-by-start-button.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/worktrees/qj7pdv9x/docs/ui-screenshots/welcome/qa-14-closed-320dp.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/worktrees/qj7pdv9x/docs/ui-screenshots/welcome/qa-15-closed-small.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/worktrees/qj7pdv9x/docs/ui-screenshots/welcome/qa-16-talkback-focus-title.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/worktrees/qj7pdv9x/docs/ui-screenshots/welcome/qa-17-talkback-activated-closed.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/worktrees/qj7pdv9x/docs/ui-screenshots/welcome/qa-18-restart-after-kill.png", "action": "created" }
+  ],
+  "selfCheck": "1) 未读源码/git diff/代码评审报告，未构建，未跑单元测试。2) 包路径/版本/安装启动命令已登记，与技术方案 §13 一致（app-debug.apk#0.1.0.1，versionName 0.1.0 / versionCode 1，SHA-256 见报告）。3) 关键路径证据：uiautomator dump、像素测量、logcat、18 张截图。4) PRD REQ-1～7 与 AC-1～18 对照表已填全，每项有结论或未覆盖原因。5) 21 条用例均标注 REQ/AC。6) 监测事件与 M-1～M-4 逐条校验并留日志证据。7) 截图按页面归档到 docs/ui-screenshots/welcome/。8) 无缺陷需退回开发；AC-8 未覆盖原因已写明（黑盒无法注入缺失资源）。9) 范围外发现仅记录（locale 日志口径、界面语言混排、动态改分辨率首帧空白、集成测试 ABI 限制）。10) 仅使用分配设备 emulator-5554；显示/字号/TalkBack 已恢复，应用数据已清理。",
+  "decisions": [],
+  "blockers": []
+}

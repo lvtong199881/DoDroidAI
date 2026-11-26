@@ -1,0 +1,31 @@
+{
+  "status": "done",
+  "summary": "验收标准 18 条：实测通过 17，偏差/失败 0，未验证 1（AC-8 欢迎图缺失，真机不可构造）；关闭按钮位置/半露出/外露可点/连点/日志/语义与三个既有出口回归均通过，截图已更新。",
+  "artifacts": [
+    {
+      "path": "C:\\Users\\mohanshang\\.qq-bot\\worktrees\\qj7pdv9x\\docs\\requirements\\qj7pdv9x\\验收文档.md",
+      "action": "created"
+    },
+    {
+      "path": "C:\\Users\\mohanshang\\.qq-bot\\worktrees\\qj7pdv9x\\docs\\ui-screenshots\\welcome",
+      "action": "modified"
+    }
+  ],
+  "selfCheck": "准出清单逐项：①追溯矩阵完整——18/18 条 AC 均映射到需求卡片声明的模块、PRD 验证方式、本轮 ACC-xx 用例和截图/日志/语义树证据；②有界面变化，已在 emulator-5554 安装 debug 包（0.1.0/1）亲手跑并逐状态留证；③未读源码、未构建、未跑单测、未评价代码风格；④设计 F01-F08 逐状态对照——已实测 F01(关闭按钮部分)/F02/F03/F04/F05/F07 无实现偏差，F06 无图与 F08 按压态未验证；⑤每条 AC 有明确结论：17 通过、0 失败、1 未验证（AC-8）；⑥截图库 17/18 张 qa 图本轮重拍，qa-17（TalkBack 实际激活关闭）未重拍并注明原因；⑦偏差与未验证项已显式列出（AC-8、F08、读屏实际语音、locale 口径、英文界面残留中文）；⑧待决策事项已集中，均为不阻塞建议；平台能力类无失败项，读屏仅部分验证已单列。",
+  "decisionsTitle": "残余风险与后续建议（不阻塞）",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "AC-8 未验证：欢迎图缺失/加载失败的真机状态无法在不修改安装包的前提下构造（图片仍从 APK 内读取，app_flutter/flutter_assets 未解包图片），本轮未实测无图时的 56dp 顶部预留与标题不遮挡；建议以测试阶段缺失资源注入用例兜底或补一次注入测试，不影响已实测的 17 条 AC。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "AC-14 实际语音播报未听测：语义树已确认英文 Close / 中文 关闭、class=android.widget.Button、clickable/focusable 均正确；但自动化手势未能把 TalkBack 焦点移到关闭按钮，且硬件键盘 Tab 顺序为 标题→去配置AI→开始使用→循环，建议无障碍专项复核。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "中文界面下欢迎弹窗实际显示中文，但 welcome 日志仍输出 locale=en（系统 en-US），与显示语言不一致；属既有日志口径问题，非本需求引入，建议另开修复，不影响 AC-13/AC-14 判定。",
+      "severity": "suggestion"
+    }
+  ]
+}

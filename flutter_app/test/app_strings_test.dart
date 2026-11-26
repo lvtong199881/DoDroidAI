@@ -27,4 +27,10 @@ void main() {
     expect(AppStrings(const Locale('en')).t('welcomeConfigureAi'), 'Set up AI');
     expect(AppStrings(const Locale('fr')).t('welcomeConfigureAi'), '去配置AI');
   });
+
+  test('welcomeClose：中英定稿，其他语言回退中文', () {
+    expect(AppStrings(const Locale('zh')).t('welcomeClose'), '关闭');
+    expect(AppStrings(const Locale('en')).t('welcomeClose'), 'Close');
+    expect(AppStrings(const Locale('fr')).t('welcomeClose'), '关闭');
+  });
 }

@@ -1,0 +1,42 @@
+{
+  "status": "done",
+  "summary": "完成首次代码评审：阻断 0 条、应修 0 条、建议 7 条（6 条代码/测试 + 1 条范围外仓库卫生）；覆盖 diff、直接调用方与 AGENTS.md，未跑构建/测试。",
+  "artifacts": [
+    {
+      "path": "C:/Users/mohanshang/.qq-bot/worktrees/qj7pdv9x/docs/requirements/qj7pdv9x/代码评审报告.md",
+      "action": "created"
+    }
+  ],
+  "selfCheck": "准出清单逐项：1) 覆盖本次 diff 8 个代码文件、直接调用方 chat_screen/welcome_controller/welcome_log/fakes 与 AGENTS.md，通过；2) 未以 PRD 做需求覆盖核对，只按技术方案的接口/影响面/风险与代码本身评审，通过；3) 未执行 flutter analyze、flutter test、构建或设备操作，未改任何源码，通过；4) 每条建议均有位置/证据/风险/改法，通过；5) 无阻断/应修，故无回开发项，通过；6) 范围外仓库卫生只记录未修改，通过；7) 本轮为首次评审（回合 A），无复审编号，通过。",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "welcome_dialog.dart:244-246 硬编码 right:-4，由 welcomeCloseHitSize/2 - welcomeDialogInset 推导；改卡片内边距或命中尺寸会静默破坏圆心与 50% 露出。建议改为 -(welcomeCloseHitSize/2 - welcomeDialogInset) 或命名常量并注释推导。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "welcome_dialog_test.dart:646-650 AC-4 只断言 48dp 渲染盒；360dp 下命中盒右侧 4dp 在屏幕外（320dp 同理），实际可点宽度约 44dp，测试未覆盖真实命中的可见边缘。建议补最右侧可见像素点击或矩形求交断言，或在该测试注明 4dp 出屏为设计接受项。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "welcome_dialog_test.dart:780-800 AC-14 只断言 SemanticsAction.tap 存在，未真正执行语义激活；Semantics.onTap 接错时现有测试仍会通过。建议对 getSemantics(...).id 执行 tap，并断言弹窗关闭且结果为 closeButton。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "welcome_flow_test.dart:80-114 新 AC-12 用例与 36-78 首个用例几乎逐行重复，且 81 行 SharedPreferences.setMockInitialValues 与文件标记无关。建议抽 runWelcomeFlow(dismissTarget) 公共流程，并删除无关 mock 或注释其用途。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "welcome_flow_test.dart:90,108（旧用例 46,71 同）pumpAndSettle(Duration) 的第一个参数是每次 pump 的步长而非超时；写成 1s/2s 会误导等待上限。建议改用 tester.pump(Duration) 或 pumpAndSettle(timeout: ...)。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "welcome_dialog.dart:13-14 注释「屏宽 − 卡片宽 的一半」缺括号易被误读；242-243「屏幕右侧外 4dp」在 DialogRoute 的 SafeArea 水平内边距下不成立（4dp 可能在屏幕内但超出 Stack）。建议补全括号，并改为「超出 Stack 4dp；窄屏/安全区以可见像素为准」。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "范围外（文档/仓库卫生）：docs/requirements/qj7pdv9x/design/.render/node_modules 含平台相关 .node 二进制，且 design.zip 被提交；AGENTS.md §6 明确不提交构建产物。建议忽略或移除 node_modules 与 design.zip，保留 SVG/PNG/JSON 交付物，不影响本轮代码判定。",
+      "severity": "suggestion"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "status": "done",
+  "summary": "已产出欢迎弹窗右上角关闭按钮的技术方案：定稿透明外壳+内层卡片+角标兄弟节点的布局、32/48dp 几何与 50% 露出的可量测口径、close_button 契约与日志、welcomeClose 文案、键位与语义，并拆出 D1–D7 可独立验证步骤与回滚方案。",
+  "artifacts": [
+    { "path": "技术方案.md", "action": "created" }
+  ],
+  "selfCheck": "接口定稿无待定：枚举/wire、日志精确行、welcomeClose 中英文、3 个 Key、几何常量、组件规格、语义与空值语义全部给出。影响面列全：外观承载下移、尺寸/居中、遮罩、返回键、footer、滚动、无图、主题、日志、门控、TalkBack 共 11 项，另含调用方与测试资产。PRD↔设计逐条核对 K1–K10：K1 为 PRD §6.5/§11.1 日志表遗漏既有 configure_ai，方案按现状保留、只新增 close_button，并写入 blockers；K5 为设计文档内部 11dp 字形/16dp 画布表述差异，已按 16dp 画布内 11dp 字形消解，其余一致。风险均配对策并含 revert 回滚（无数据/配置/权限迁移）。开发步骤 D1–D7 标明依赖、REQ/AC、完成标准、估时与状态。模块改动 M1–M11 均追到 REQ。未修改项目任何源码/配置/资源/测试，仅写本需求目录。",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "PRD §6.5.1 与 §11.1 的 welcome_dismissed 取值表只列 button/back（外加本需求 close_button），但主仓库 lib/settings/welcome_contract.dart 现有枚举已含 configureAi（wire=configure_ai），设计说明 §9.6/F07 也按现状保留该出口。方案按现状保留 configure_ai、只新增 close_button，不修改 PRD。建议需求 agent 在 PRD 日志表中补一行 configure_ai，避免验收时把既有取值误判为本需求新增。",
+      "severity": "suggestion"
+    }
+  ]
+}

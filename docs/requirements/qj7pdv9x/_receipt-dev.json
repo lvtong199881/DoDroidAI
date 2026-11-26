@@ -1,0 +1,31 @@
+{
+  "status": "done",
+  "summary": "按技术方案实现欢迎弹窗右上角半露出关闭角标：透明外壳 + 内层卡片 Material 重构、32dp 视觉/48dp 命中、无图时顶部预留 76dp、新增 closeButton/close_button 契约与 welcomeClose 中英文案；flutter analyze 无 error/warning，flutter test 189 全绿，debug APK 已出包并在 emulator-5554 实机验证角标外露点击关闭及 method=close_button 日志。",
+  "artifacts": [
+    { "path": "flutter_app/lib/settings/welcome_contract.dart", "action": "modified" },
+    { "path": "flutter_app/lib/l10n/app_strings.dart", "action": "modified" },
+    { "path": "flutter_app/lib/widgets/welcome_dialog.dart", "action": "modified" },
+    { "path": "flutter_app/test/welcome_dialog_test.dart", "action": "modified" },
+    { "path": "flutter_app/test/welcome_log_test.dart", "action": "modified" },
+    { "path": "flutter_app/test/app_strings_test.dart", "action": "modified" },
+    { "path": "flutter_app/test/welcome_app_test.dart", "action": "modified" },
+    { "path": "flutter_app/integration_test/welcome_flow_test.dart", "action": "modified" },
+    { "path": "docs/requirements/qj7pdv9x/技术方案.md", "action": "modified" },
+    { "path": "docs/requirements/qj7pdv9x/_receipt-dev.json", "action": "created" }
+  ],
+  "selfCheck": "1) 开发内容状态：技术方案 §7 D1–D7 已改为已完成（D7 的深浅色逐帧对照与 TalkBack 手工验证留测试阶段）。\n2) 编译：flutter_app 下 `flutter build apk --debug`（ANDROID_HOME=ANDROID_SDK_ROOT）exit 0，输出 `✓ Built build/app/outputs/flutter-apk/app-debug.apk`，133,613,915 bytes；集成测试构建曾污染 APK，已 flutter clean 后重建确认干净。\n3) 单测：`flutter test` → 189 passed / 0 failed；定向欢迎套件 73 passed（welcome_dialog/log/app_strings/app/controller/flag_store/launch_entry/copy/ai_gate）。\n4) 静态检查：`flutter analyze` → 0 error / 0 warning，46 条既有 info（flutter/material 弃用提示等），未引入新告警。\n5) 测试框架：未引入新框架，沿用 flutter_test/integration_test。\n6) debug 包：技术方案 §13 已登记，文档版本 0.1.0.1（第 1 次出包），包内 versionName=0.1.0 / versionCode=1（本需求未改版本号），安装/启动命令齐全。\n7) 设备验证（emulator-5554）：卸载旧包后安装，首启弹窗右上角角标半露出且层级在欢迎图之上；uiautomator 中角标为 Button、content-desc=Close；点击外露部分 (1050,545) 关闭成功，logcat `[welcome] welcome_dismissed method=close_button visible_ms=80062`，关闭后首页正常、无黑屏。\n8) TODO：无遗留。\n9) AGENTS.md：文案走 AppStrings 的 welcomeClose；未改包名/权限/依赖/pubspec 版本；只改本需求 4 个源码文件与 4 个测试文件。\n10) 提交/分支：5f58394 在 feature/qj7pdv9x；`git fetch origin` 后 origin/main 与分支基线一致（0 ahead / 0 behind），无需 rebase；push 成功（origin/feature/qj7pdv9x = 5f58394）；技术方案与回执的文档提交随后在同一分支 push。未切分支、未 merge 到主分支。\n11) 集成测试：见 blockers（x86_64 模拟器 + 工程 arm64-only ABI 无法运行）。\n12) REQ 映射：welcome_contract.dart→REQ-5；app_strings.dart→REQ-6；welcome_dialog.dart→REQ-1/2/3/4/6/7；welcome_dialog_test→AC-1/2/3/4/5/6/7/8/9/10/11/14；welcome_log_test→AC-13、REQ-5；app_strings_test→REQ-6；welcome_app_test→REQ-4/5/7（AC-10/13/16 回归）；integration_test/welcome_flow_test→AC-12。",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "集成测试无法在 emulator-5554 执行：工程 android/app/build.gradle.kts 锁定 abiFilters 仅 arm64-v8a，而该模拟器为 x86_64。`flutter test integration_test/welcome_flow_test.dart -d emulator-5554` 构建的测试包缺少 libflutter.so（logcat: MissingLibraryException, Looked for [x86_64, arm64-v8a], only found []），已停止该命令。已在模拟器用 debug 包手工验证弹窗展示、角标外露点击、welcome_dismissed method=close_button；AC-12 的完整集成用例（角标关闭→标记写入→重建不再弹）需 arm64 真机或放开 x86_64 ABI 后由测试阶段执行。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "PRD §6.5/§11.1 的 welcome_dismissed 日志表仍只列 button/back，遗漏既有 configure_ai（主仓库 welcome_contract.dart 本就有 configureAi/configure_ai，设计说明 F07 也按现状出帧）。实现按现状保留 configure_ai 并新增 close_button，请需求 agent 在 PRD 日志表补一行以消除验收歧义。",
+      "severity": "suggestion"
+    }
+  ],
+  "deliverables": {
+    "debugPackage": "flutter_app/build/app/outputs/flutter-apk/app-debug.apk#0.1.0.1（包内 versionName 0.1.0 / versionCode 1）"
+  }
+}

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -79,12 +80,28 @@ Future<Future<WelcomeDismissMethod?>> openWelcome(
   return closing!;
 }
 
-/// Dialog 自身的布局盒是全屏的，视觉弹窗矩形取内部 Material。
+/// 「弹窗矩形」= 可见的卡片 Material（AC-1/2/6/8 的几何基准）。
 Rect dialogSurfaceRect(WidgetTester tester) {
-  final material = find
-      .descendant(of: find.byType(Dialog), matching: find.byType(Material))
-      .first;
-  return tester.getRect(material);
+  return tester.getRect(find.byKey(welcomeDialogCardKey));
+}
+
+/// 关闭按钮 32dp 视觉圆。
+Rect closeVisualRect(WidgetTester tester) {
+  return tester.getRect(find.byKey(welcomeDialogCloseVisualKey));
+}
+
+/// 关闭按钮 48dp 命中盒。
+Rect closeHitRect(WidgetTester tester) {
+  return tester.getRect(find.byKey(welcomeDialogCloseKey));
+}
+
+/// WCAG 相对亮度对比度。
+double contrastRatio(Color a, Color b) {
+  final la = a.computeLuminance();
+  final lb = b.computeLuminance();
+  final hi = la > lb ? la : lb;
+  final lo = la > lb ? lb : la;
+  return (hi + 0.05) / (lo + 0.05);
 }
 
 String heroAssetName(WidgetTester tester) {
@@ -183,8 +200,9 @@ void main() {
     // AC-14：浅色主题选浅色素材
     expect(heroAssetName(tester), welcomeHeroLightAsset);
 
-    // 没有右上角关闭按钮，底部按钮仍在
-    expect(find.byIcon(Icons.close), findsNothing);
+    // 右上角新增角标（AC-1），底部主按钮仍在
+    expect(find.byKey(welcomeDialogCloseKey), findsOneWidget);
+    expect(find.byKey(welcomeDialogCloseVisualKey), findsOneWidget);
     expect(find.text(strings.t('welcomeStart')), findsOneWidget);
   });
 
@@ -200,7 +218,7 @@ void main() {
     expect(heroRect.height / heroRect.width, closeTo(0.5, 0.005));
   });
 
-  testWidgets('欢迎图仅顶部 16dp 圆角，弹窗按圆角裁切', (tester) async {
+  testWidgets('卡片承载背景/圆角/阴影/裁切，路由外壳透明', (tester) async {
     await openWelcome(tester);
 
     final clip = tester.widget<ClipRRect>(find.byKey(_heroKey));
@@ -209,13 +227,24 @@ void main() {
       const BorderRadius.vertical(top: Radius.circular(16)),
     );
 
-    final dialog = tester.widget<Dialog>(find.byType(Dialog));
-    expect(dialog.clipBehavior, Clip.antiAlias);
-    expect(dialog.shape, isA<RoundedRectangleBorder>());
+    // AC-1/2/7：可见弹窗矩形是卡片 Material，背景/圆角/阴影/裁切都在这里。
+    final card = tester.widget<Material>(find.byKey(welcomeDialogCardKey));
+    final scheme = AppTheme.light().colorScheme;
+    expect(card.color, scheme.surface);
+    expect(card.elevation, 6);
+    expect(card.clipBehavior, Clip.antiAlias);
+    expect(card.shape, isA<RoundedRectangleBorder>());
     expect(
-      (dialog.shape as RoundedRectangleBorder).borderRadius,
+      (card.shape as RoundedRectangleBorder).borderRadius,
       BorderRadius.circular(16),
     );
+
+    // 外壳透明、不裁切，角标才能画到卡片圆角之外。
+    final dialog = tester.widget<Dialog>(find.byType(Dialog));
+    expect(dialog.backgroundColor, Colors.transparent);
+    expect(dialog.elevation, 0);
+    expect(dialog.clipBehavior, Clip.none);
+    expect(dialog.insetPadding, EdgeInsets.zero);
   });
 
   testWidgets('英文文案完整且居中', (tester) async {
@@ -327,19 +356,19 @@ void main() {
     expect(find.text('打开弹窗'), findsOneWidget);
   });
 
-  testWidgets('浅色主题弹窗背景为 #FFFFFF', (tester) async {
+  testWidgets('浅色主题卡片背景为 #FFFFFF', (tester) async {
     await openWelcome(tester, theme: AppTheme.light());
 
-    final dialog = tester.widget<Dialog>(find.byType(Dialog));
-    expect(dialog.backgroundColor, const Color(0xFFFFFFFF));
-    expect(dialog.shape, isA<RoundedRectangleBorder>());
+    final card = tester.widget<Material>(find.byKey(welcomeDialogCardKey));
+    expect(card.color, const Color(0xFFFFFFFF));
+    expect(card.shape, isA<RoundedRectangleBorder>());
   });
 
-  testWidgets('深色主题弹窗背景为 #161920', (tester) async {
+  testWidgets('深色主题卡片背景为 #161920', (tester) async {
     await openWelcome(tester, theme: AppTheme.dark());
 
-    final dialog = tester.widget<Dialog>(find.byType(Dialog));
-    expect(dialog.backgroundColor, const Color(0xFF161920));
+    final card = tester.widget<Material>(find.byKey(welcomeDialogCardKey));
+    expect(card.color, const Color(0xFF161920));
   });
 
   testWidgets('文字不设 maxLines/ellipsis，不覆盖系统字号', (tester) async {
@@ -434,7 +463,9 @@ void main() {
     expect(tester.takeException(), isNull);
 
     final dialogRect = dialogSurfaceRect(tester);
-    expect(dialogRect.width, lessThanOrEqualTo(320));
+    expect(dialogRect.width, closeTo(280, 1.0));
+    expect(dialogRect.left, greaterThanOrEqualTo(0));
+    expect(dialogRect.right, lessThanOrEqualTo(320));
 
     final heroRect = tester.getRect(find.byKey(_heroKey));
     expect(heroRect.width, closeTo(dialogRect.width, 1.0));
@@ -591,6 +622,272 @@ void main() {
     await tester.tap(find.byKey(_configureAiKey));
     await tester.pumpAndSettle();
     expect(await closing, WelcomeDismissMethod.configureAi);
+  });
+
+  testWidgets('AC-1/2/4：角标钉在卡片右上角，露出 50%，命中 48', (tester) async {
+    await openWelcome(tester);
+
+    final card = dialogSurfaceRect(tester);
+    final visual = closeVisualRect(tester);
+    final hit = closeHitRect(tester);
+
+    // 圆心与卡片矩形右上角重合（偏差 ≤ 1dp）
+    expect(visual.center.dx, closeTo(card.right, 1.0));
+    expect(visual.center.dy, closeTo(card.top, 1.0));
+
+    // 32dp 视觉圆，右/上各露出 16dp = 50%（AC-2 要求 45%–55%）
+    expect(visual.width, closeTo(welcomeCloseVisualSize, 0.5));
+    expect(visual.height, closeTo(welcomeCloseVisualSize, 0.5));
+    final exposedX = (visual.right - card.right) / visual.width;
+    final exposedY = (card.top - visual.top) / visual.height;
+    expect(exposedX, closeTo(0.5, 0.02));
+    expect(exposedY, closeTo(0.5, 0.02));
+
+    // 命中盒 48dp（AC-4），且 48 盒中心与视觉圆心同心
+    expect(hit.width, closeTo(welcomeCloseHitSize, 0.5));
+    expect(hit.height, closeTo(welcomeCloseHitSize, 0.5));
+    expect(hit.center.dx, closeTo(visual.center.dx, 0.5));
+    expect(hit.center.dy, closeTo(visual.center.dy, 0.5));
+
+    // 视觉圆完整落在 360dp 屏幕内，渲染无异常（不被裁切）
+    expect(visual.left, greaterThanOrEqualTo(0));
+    expect(visual.right, lessThanOrEqualTo(360));
+    expect(visual.top, greaterThanOrEqualTo(0));
+    expect(visual.bottom, lessThanOrEqualTo(800));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('AC-3：点卡片外露出的部分可关闭，返回 closeButton', (tester) async {
+    final closing = await openWelcome(tester);
+    final card = dialogSurfaceRect(tester);
+    final outsidePoint = Offset(card.right + 10, card.top - 10);
+
+    // 该点已在卡片矩形外（外露的半圆上），但仍在 48dp 命中盒内
+    expect(outsidePoint.dx, greaterThan(card.right));
+    expect(outsidePoint.dy, lessThan(card.top));
+    expect(closeHitRect(tester).contains(outsidePoint), isTrue);
+
+    await tester.tapAt(outsidePoint);
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(WelcomeDialog), findsNothing);
+    expect(await closing, WelcomeDismissMethod.closeButton);
+  });
+
+  testWidgets('AC-6：角标不与标题/副标题/主按钮矩形相交', (tester) async {
+    await openWelcome(tester);
+
+    final visual = closeVisualRect(tester);
+    for (final key in [_titleKey, _subtitleKey, _startKey]) {
+      final rect = tester.getRect(find.byKey(key));
+      expect(
+        visual.overlaps(rect),
+        isFalse,
+        reason: '角标与 ${key.toString()} 相交: $visual vs $rect',
+      );
+    }
+  });
+
+  testWidgets('AC-7：小屏 + 2 倍字号滚动后角标仍钉角、仍可点', (tester) async {
+    final closing = await openWelcome(
+      tester,
+      logicalSize: const Size(640, 400),
+      textScale: 2.0,
+    );
+
+    final card = dialogSurfaceRect(tester);
+    final state = scrollState(tester);
+    expect(state.position.maxScrollExtent, greaterThan(0));
+
+    final before = closeVisualRect(tester).center;
+    await tester.drag(find.byKey(_scrollKey), const Offset(0, -300));
+    await tester.pumpAndSettle();
+
+    final after = closeVisualRect(tester).center;
+    expect(after.dx, closeTo(before.dx, 0.5));
+    expect(after.dy, closeTo(before.dy, 0.5));
+    expect(after.dx, closeTo(card.right, 1.0));
+    expect(after.dy, closeTo(card.top, 1.0));
+
+    await tester.tapAt(Offset(card.right + 10, card.top - 10));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.byType(WelcomeDialog), findsNothing);
+    expect(await closing, WelcomeDismissMethod.closeButton);
+  });
+
+  testWidgets('AC-8：无欢迎图时角标仍在原位，且不压标题/副标题', (tester) async {
+    final closing = await openWelcome(tester, heroAssetOverride: '');
+
+    expect(find.byKey(_heroKey), findsNothing);
+
+    final card = dialogSurfaceRect(tester);
+    final visual = closeVisualRect(tester);
+    expect(visual.center.dx, closeTo(card.right, 1.0));
+    expect(visual.center.dy, closeTo(card.top, 1.0));
+
+    for (final key in [_titleKey, _subtitleKey]) {
+      final rect = tester.getRect(find.byKey(key));
+      expect(
+        visual.overlaps(rect),
+        isFalse,
+        reason: '无图时角标与 ${key.toString()} 相交',
+      );
+      // 内容顶部为角标预留空间：标题/副标题都在角标视觉下边缘之下
+      expect(rect.top, greaterThan(visual.bottom));
+    }
+    expect(
+      tester.getRect(find.byKey(_titleKey)).top - card.top,
+      greaterThanOrEqualTo(20 + welcomeNoHeroExtraTop - 1),
+    );
+
+    await tester.tapAt(Offset(card.right + 10, card.top - 10));
+    await tester.pumpAndSettle();
+    expect(await closing, WelcomeDismissMethod.closeButton);
+  });
+
+  testWidgets('AC-9：320dp 窄屏视觉圆完整在屏幕内', (tester) async {
+    await openWelcome(tester, logicalSize: const Size(320, 640));
+
+    final card = dialogSurfaceRect(tester);
+    final visual = closeVisualRect(tester);
+
+    expect(card.width, closeTo(280, 1.0));
+    expect(visual.center.dx, closeTo(card.right, 1.0));
+    expect(visual.center.dy, closeTo(card.top, 1.0));
+    expect(visual.left, greaterThanOrEqualTo(0));
+    expect(visual.right, lessThanOrEqualTo(320));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('AC-10/11：点角标只关闭一次，返回 closeButton，首页可交互', (tester) async {
+    final closing = await openWelcome(tester);
+
+    await tester.tap(find.byKey(welcomeDialogCloseKey));
+    await tester.tap(
+      find.byKey(welcomeDialogCloseKey),
+      warnIfMissed: false,
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(WelcomeDialog), findsNothing);
+    expect(find.text('打开弹窗'), findsOneWidget);
+    expect(await closing, WelcomeDismissMethod.closeButton);
+  });
+
+  testWidgets('AC-14：角标语义为按钮，中文名「关闭」且可激活', (tester) async {
+    final handle = tester.ensureSemantics();
+
+    final closing = await openWelcome(tester);
+    final data = tester
+        .getSemantics(find.byKey(welcomeDialogCloseKey))
+        .getSemanticsData();
+
+    expect(data.label, '关闭');
+    expect(data.flagsCollection.isButton, isTrue);
+    expect(data.hasAction(SemanticsAction.tap), isTrue);
+
+    // 语义节点覆盖 48dp 命中盒
+    expect(data.rect.width, closeTo(welcomeCloseHitSize, 1.0));
+    expect(data.rect.height, closeTo(welcomeCloseHitSize, 1.0));
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(await closing, isNull);
+
+    handle.dispose();
+  });
+
+  testWidgets('AC-14：英文可访问名称为 Close', (tester) async {
+    final handle = tester.ensureSemantics();
+
+    await openWelcome(tester, locale: const Locale('en'));
+    final data = tester
+        .getSemantics(find.byKey(welcomeDialogCloseKey))
+        .getSemanticsData();
+
+    expect(data.label, 'Close');
+    expect(data.flagsCollection.isButton, isTrue);
+    expect(data.hasAction(SemanticsAction.tap), isTrue);
+    expect(find.text('Close'), findsNothing);
+
+    handle.dispose();
+  });
+
+  testWidgets('按压态：底色切换并缩至 0.94，取消后复位', (tester) async {
+    await openWelcome(tester);
+
+    final scheme = AppTheme.light().colorScheme;
+    final hitCenter = closeHitRect(tester).center;
+    final gesture = await tester.startGesture(hitCenter);
+    await tester.pump(const Duration(milliseconds: 150));
+
+    BoxDecoration? decoration() => tester
+        .widget<Container>(find.byKey(welcomeDialogCloseVisualKey))
+        .decoration as BoxDecoration?;
+    AnimatedScale scale() => tester.widget<AnimatedScale>(
+          find.descendant(
+            of: find.byKey(welcomeDialogCloseKey),
+            matching: find.byType(AnimatedScale),
+          ),
+        );
+
+    expect(decoration()?.color, scheme.surfaceContainer);
+    expect(scale().scale, 0.94);
+    // 圆心不动：位置只由布局决定，缩放不改变矩形
+    final card = dialogSurfaceRect(tester);
+    expect(closeVisualRect(tester).center.dx, closeTo(card.right, 1.0));
+    expect(closeVisualRect(tester).center.dy, closeTo(card.top, 1.0));
+
+    await gesture.cancel();
+    await tester.pumpAndSettle();
+
+    expect(decoration()?.color, scheme.surface);
+    expect(scale().scale, 1.0);
+    expect(find.byType(WelcomeDialog), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  test('AC-5：角标图标与底色对比度均 ≥ 3:1（浅/深/按压）', () {
+    for (final theme in [AppTheme.light(), AppTheme.dark()]) {
+      final scheme = theme.colorScheme;
+      final fill = theme.brightness == Brightness.dark
+          ? scheme.surfaceContainerHigh
+          : scheme.surface;
+      expect(
+        contrastRatio(scheme.onSurface, fill),
+        greaterThanOrEqualTo(3.0),
+        reason: 'default fill ${theme.brightness}',
+      );
+      expect(
+        contrastRatio(scheme.onSurface, scheme.surfaceContainer),
+        greaterThanOrEqualTo(3.0),
+        reason: 'pressed fill ${theme.brightness}',
+      );
+    }
+  });
+
+  testWidgets('浅色角标底色取 surface（#FFFFFF）', (tester) async {
+    await openWelcome(tester);
+    final decoration = tester
+        .widget<Container>(find.byKey(welcomeDialogCloseVisualKey))
+        .decoration as BoxDecoration?;
+    expect(decoration?.color, AppTheme.light().colorScheme.surface);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('深色角标底色取 surfaceContainerHigh（#262B36）', (tester) async {
+    await openWelcome(tester, theme: AppTheme.dark());
+    final decoration = tester
+        .widget<Container>(find.byKey(welcomeDialogCloseVisualKey))
+        .decoration as BoxDecoration?;
+    expect(
+      decoration?.color,
+      AppTheme.dark().colorScheme.surfaceContainerHigh,
+    );
+    expect(tester.takeException(), isNull);
   });
 
   test('两张欢迎图均为 1280×640（2:1）', () {

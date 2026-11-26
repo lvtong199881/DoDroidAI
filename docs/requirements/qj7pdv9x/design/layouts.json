@@ -1,0 +1,194 @@
+{
+  "meta": {
+    "requirement": "qj7pdv9x",
+    "title": "欢迎弹窗右上角关闭按钮",
+    "platform": "Android（Flutter）",
+    "generatedFrom": "PRD.md + 需求卡片.md + 项目主题 app_theme.dart / welcome_dialog.dart + 真实截图库 docs/ui-screenshots/welcome",
+    "notes": "老页面局部改动：只新增弹窗右上角 32dp 关闭按钮（中心钉在弹窗右上角，50% 露出）与无图时 56dp 顶部预留；其余弹窗内容、底部按钮、遮罩、返回键行为不变。"
+  },
+  "designTokens": {
+    "colors": {
+      "light": {
+        "primary": "#4D6BFE",
+        "onPrimary": "#FFFFFF",
+        "primaryContainer": "#DCE4FF",
+        "onPrimaryContainer": "#0A1F5C",
+        "background": "#F7F8FA",
+        "onBackground": "#171A1F",
+        "surface": "#FFFFFF",
+        "onSurface": "#171A1F",
+        "onSurfaceVariant": "#5B6270",
+        "surfaceContainer": "#F1F3F7",
+        "surfaceContainerHigh": "#E9ECF2",
+        "outline": "#C6CBD4",
+        "outlineVariant": "#E1E4EA",
+        "scrim": "rgba(0,0,0,0.54)",
+        "closeFill": "#FFFFFF",
+        "closeFillPressed": "#F1F3F7",
+        "closeBorder": "#C6CBD4",
+        "closeIcon": "#171A1F",
+        "closeShadowOpacity": 0.18
+      },
+      "dark": {
+        "primary": "#8FA6FF",
+        "onPrimary": "#0A1F5C",
+        "primaryContainer": "#1F2B66",
+        "onPrimaryContainer": "#DDE2FF",
+        "background": "#0F1115",
+        "onBackground": "#E6E8EC",
+        "surface": "#161920",
+        "onSurface": "#E6E8EC",
+        "onSurfaceVariant": "#A6ADBB",
+        "surfaceContainer": "#1E222B",
+        "surfaceContainerHigh": "#262B36",
+        "outline": "#3A404C",
+        "outlineVariant": "#2A2F39",
+        "scrim": "rgba(0,0,0,0.60)",
+        "closeFill": "#262B36",
+        "closeFillPressed": "#1E222B",
+        "closeBorder": "#3A404C",
+        "closeIcon": "#E6E8EC",
+        "closeShadowOpacity": 0.50
+      }
+    },
+    "typography": {
+      "dialogTitle": { "fontSize": 20, "fontWeight": 600, "lineHeight": 1.3, "colorToken": "onSurface" },
+      "dialogSubtitle": { "fontSize": 15, "fontWeight": 400, "lineHeight": 1.4, "colorToken": "onSurfaceVariant" },
+      "buttonLabel": { "fontSize": 15, "fontWeight": 600, "lineHeight": 1.2, "colorToken": "onPrimary" },
+      "buttonLabelSecondary": { "fontSize": 15, "fontWeight": 600, "lineHeight": 1.2, "colorToken": "primary" }
+    },
+    "fonts": {
+      "preview": {
+        "stack": "'Microsoft YaHei', 'Noto Sans SC', 'PingFang SC', sans-serif",
+        "note": "出图环境近似字体：中文 Microsoft YaHei / 英文 Microsoft YaHei；真机 Android 为 Roboto + Noto Sans SC。"
+      }
+    },
+    "assets": {
+      "light": { "hero": "../assets/welcome_hero_light.png" },
+      "dark": { "hero": "../assets/welcome_hero_dark.png" }
+    },
+    "spacing": {
+      "dialogInset": 20,
+      "dialogRadius": 16,
+      "maxHeightRatio": 0.8,
+      "headerPadding": [20, 24, 8, 24],
+      "footerPadding": [12, 20, 20, 20],
+      "buttonHeight": 48,
+      "buttonRadius": 24,
+      "titleSubtitleGap": 8,
+      "footerGap": 8,
+      "noHeroTopInset": 56,
+      "closeVisualSize": 32,
+      "closeHitSize": 48,
+      "closeIconSize": 16,
+      "closeIconStroke": 2,
+      "closeBorderWidth": 1
+    }
+  },
+  "copy": {
+    "zh": {
+      "title": "欢迎使用 DoDroidAI",
+      "intro": "说一句话，让手机替你做事。",
+      "start": "开始使用",
+      "configure": "去配置AI",
+      "close": "关闭"
+    },
+    "en": {
+      "title": "Welcome to DoDroidAI",
+      "intro": "Say it, and let your phone do it.",
+      "start": "Get started",
+      "configure": "Set up AI",
+      "close": "Close"
+    }
+  },
+  "components": {
+    "welcomeDialog": {
+      "type": "frame",
+      "name": "welcome_dialog",
+      "inset": 20,
+      "maxHeightRatio": 0.8,
+      "radius": 16,
+      "noHeroTopInset": 56,
+      "closeButton": {
+        "name": "close",
+        "size": 32,
+        "hitSize": 48,
+        "iconSize": 16,
+        "strokeWidth": 2,
+        "fill": "closeFill",
+        "pressedFill": "closeFillPressed",
+        "border": "closeBorder",
+        "borderWidth": 1,
+        "iconColor": "closeIcon",
+        "shadowOpacity": "closeShadowOpacity",
+        "pressedScale": 0.94,
+        "position": "center = dialog top-right corner"
+      },
+      "children": [
+        { "type": "image", "name": "hero", "if": "showHero", "srcRef": "hero", "aspectRatio": 2.0 },
+        {
+          "type": "frame",
+          "name": "header",
+          "layout": { "padding": [20, 24, 8, 24] },
+          "children": [
+            { "type": "text", "name": "title", "typography": "dialogTitle", "textRef": "{{LOCALE}}.title", "align": "center" },
+            { "type": "spacer", "name": "title_gap", "height": 8 },
+            { "type": "text", "name": "subtitle", "typography": "dialogSubtitle", "textRef": "{{LOCALE}}.intro", "align": "center" }
+          ]
+        },
+        {
+          "type": "frame",
+          "name": "footer",
+          "layout": { "padding": [12, 20, 20, 20], "spacing": 8 },
+          "children": [
+            {
+              "type": "frame",
+              "name": "secondary_button",
+              "if": "showConfigureAi",
+              "height": 48,
+              "radius": 24,
+              "fill": "transparent",
+              "stroke": "outline",
+              "strokeWidth": 1,
+              "layout": { "justify": "center", "padding": [0, 16, 0, 16] },
+              "children": [
+                { "type": "text", "name": "secondary_label", "typography": "buttonLabelSecondary", "textRef": "{{LOCALE}}.configure", "align": "center" }
+              ]
+            },
+            {
+              "type": "frame",
+              "name": "primary_button",
+              "height": 48,
+              "radius": 24,
+              "fill": "primary",
+              "layout": { "justify": "center", "padding": [0, 16, 0, 16] },
+              "children": [
+                { "type": "text", "name": "primary_label", "typography": "buttonLabel", "textRef": "{{LOCALE}}.start", "align": "center" }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "frames": [
+    {
+      "id": "F01_welcome_normal_light_zh",
+      "theme": "light",
+      "locale": "zh",
+      "canvas": { "width": 360, "height": 800 },
+      "background": { "fill": "background" },
+      "scrim": true,
+      "contentRef": "welcomeDialog",
+      "variants": [
+        { "id": "F02_welcome_normal_dark_zh", "theme": "dark" },
+        { "id": "F03_welcome_normal_light_en", "locale": "en" },
+        { "id": "F04_welcome_narrow_320_en", "canvas": { "width": 320, "height": 640 }, "locale": "en" },
+        { "id": "F05_welcome_scroll_2x_zh", "canvas": { "width": 640, "height": 400 }, "textScale": 2, "scrollOffset": 210 },
+        { "id": "F06_welcome_no_hero_zh", "showHero": false },
+        { "id": "F07_welcome_two_buttons_zh", "showConfigureAi": true },
+        { "id": "F08_welcome_pressed_zh", "closeState": "pressed" }
+      ]
+    }
+  ]
+}

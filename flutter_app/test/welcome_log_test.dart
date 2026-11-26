@@ -93,10 +93,22 @@ void main() {
     );
   });
 
-  test('三种关闭方式的 wire 取值稳定', () {
+  test('welcome_dismissed 角标关闭：method=close_button 精确行', () {
+    const DebugWelcomeLog().dismissed(
+      method: WelcomeDismissMethod.closeButton,
+      visibleMs: 0,
+    );
+    expect(
+      lines,
+      ['[welcome] welcome_dismissed method=close_button visible_ms=0'],
+    );
+  });
+
+  test('四种关闭方式的 wire 取值稳定', () {
     expect(WelcomeDismissMethod.button.wire, 'button');
     expect(WelcomeDismissMethod.back.wire, 'back');
     expect(WelcomeDismissMethod.configureAi.wire, 'configure_ai');
+    expect(WelcomeDismissMethod.closeButton.wire, 'close_button');
   });
 
   test('welcome_error 字段', () {

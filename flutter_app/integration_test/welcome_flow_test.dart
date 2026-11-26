@@ -76,4 +76,40 @@ void main() {
       await flag.delete();
     }
   });
+
+  testWidgets('角标关闭 → 标记为 1 → 再次进入不弹（AC-12）', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final flag = await _flagFile();
+    if (await flag.exists()) {
+      await flag.delete();
+    }
+
+    await tester.pumpWidget(const ProviderScope(child: DoDroidApp()));
+    await tester.pump();
+    await _pumpUntil(tester, find.byType(WelcomeDialog));
+    await tester.pumpAndSettle(const Duration(seconds: 1));
+
+    expect(find.byType(WelcomeDialog), findsOneWidget);
+    expect(find.byKey(welcomeDialogCloseKey), findsOneWidget);
+
+    await tester.tap(find.byKey(welcomeDialogCloseKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(WelcomeDialog), findsNothing);
+    expect((await flag.readAsString()).trim(), '1');
+
+    await tester.pumpWidget(
+      const ProviderScope(
+        key: ValueKey('welcome-close-second-launch'),
+        child: DoDroidApp(),
+      ),
+    );
+    await tester.pump();
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+    expect(find.byType(WelcomeDialog), findsNothing);
+
+    if (await flag.exists()) {
+      await flag.delete();
+    }
+  });
 }

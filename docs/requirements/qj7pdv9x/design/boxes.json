@@ -1,0 +1,955 @@
+{
+  "F01_welcome_normal_light_zh": [
+    {
+      "name": "close_button",
+      "type": "close_button",
+      "x": 324,
+      "y": 222.5,
+      "width": 32,
+      "height": 32,
+      "centerX": 340,
+      "centerY": 238.5,
+      "visualSize": 32,
+      "outsideDialog": {
+        "width": 16,
+        "height": 16
+      },
+      "exposedPercent": {
+        "width": 50,
+        "height": 50
+      },
+      "state": "default",
+      "z": "above-dialog-clip"
+    },
+    {
+      "name": "close_hit_area",
+      "type": "hit",
+      "x": 316,
+      "y": 214.5,
+      "width": 48,
+      "height": 48,
+      "offCanvasRight": 4,
+      "note": "命中盒 48×48 居中于视觉按钮；右侧可越出屏幕 4dp（PRD 风险表已接受），可见部分可点"
+    },
+    {
+      "name": "dialog",
+      "type": "dialog",
+      "x": 20,
+      "y": 238.5,
+      "width": 320,
+      "height": 323,
+      "naturalHeight": 323,
+      "overflow": false,
+      "scrollOffset": 0,
+      "scrolled": null
+    },
+    {
+      "name": "hero",
+      "type": "image",
+      "x": 20,
+      "y": 238.5,
+      "width": 320,
+      "height": 160,
+      "src": "../assets/welcome_hero_light.png"
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "x": 44,
+      "y": 418.5,
+      "width": 272,
+      "height": 26,
+      "fontSize": 20,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ],
+      "text": "欢迎使用 DoDroidAI"
+    },
+    {
+      "name": "subtitle",
+      "type": "text",
+      "x": 44,
+      "y": 452.5,
+      "width": 272,
+      "height": 21,
+      "fontSize": 15,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ],
+      "text": "说一句话，让手机替你做事。"
+    },
+    {
+      "name": "header",
+      "type": "frame",
+      "x": 20,
+      "y": 398.5,
+      "width": 320,
+      "height": 83
+    },
+    {
+      "name": "primary_label",
+      "type": "text",
+      "x": 56,
+      "y": 508.5,
+      "width": 248,
+      "height": 18,
+      "fontSize": 15,
+      "lines": [
+        "开始使用"
+      ],
+      "text": "开始使用"
+    },
+    {
+      "name": "primary_button",
+      "type": "frame",
+      "x": 40,
+      "y": 493.5,
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "x": 20,
+      "y": 481.5,
+      "width": 320,
+      "height": 80
+    }
+  ],
+  "F02_welcome_normal_dark_zh": [
+    {
+      "name": "close_button",
+      "type": "close_button",
+      "x": 324,
+      "y": 222.5,
+      "width": 32,
+      "height": 32,
+      "centerX": 340,
+      "centerY": 238.5,
+      "visualSize": 32,
+      "outsideDialog": {
+        "width": 16,
+        "height": 16
+      },
+      "exposedPercent": {
+        "width": 50,
+        "height": 50
+      },
+      "state": "default",
+      "z": "above-dialog-clip"
+    },
+    {
+      "name": "close_hit_area",
+      "type": "hit",
+      "x": 316,
+      "y": 214.5,
+      "width": 48,
+      "height": 48,
+      "offCanvasRight": 4,
+      "note": "命中盒 48×48 居中于视觉按钮；右侧可越出屏幕 4dp（PRD 风险表已接受），可见部分可点"
+    },
+    {
+      "name": "dialog",
+      "type": "dialog",
+      "x": 20,
+      "y": 238.5,
+      "width": 320,
+      "height": 323,
+      "naturalHeight": 323,
+      "overflow": false,
+      "scrollOffset": 0,
+      "scrolled": null
+    },
+    {
+      "name": "hero",
+      "type": "image",
+      "x": 20,
+      "y": 238.5,
+      "width": 320,
+      "height": 160,
+      "src": "../assets/welcome_hero_dark.png"
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "x": 44,
+      "y": 418.5,
+      "width": 272,
+      "height": 26,
+      "fontSize": 20,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ],
+      "text": "欢迎使用 DoDroidAI"
+    },
+    {
+      "name": "subtitle",
+      "type": "text",
+      "x": 44,
+      "y": 452.5,
+      "width": 272,
+      "height": 21,
+      "fontSize": 15,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ],
+      "text": "说一句话，让手机替你做事。"
+    },
+    {
+      "name": "header",
+      "type": "frame",
+      "x": 20,
+      "y": 398.5,
+      "width": 320,
+      "height": 83
+    },
+    {
+      "name": "primary_label",
+      "type": "text",
+      "x": 56,
+      "y": 508.5,
+      "width": 248,
+      "height": 18,
+      "fontSize": 15,
+      "lines": [
+        "开始使用"
+      ],
+      "text": "开始使用"
+    },
+    {
+      "name": "primary_button",
+      "type": "frame",
+      "x": 40,
+      "y": 493.5,
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "x": 20,
+      "y": 481.5,
+      "width": 320,
+      "height": 80
+    }
+  ],
+  "F03_welcome_normal_light_en": [
+    {
+      "name": "close_button",
+      "type": "close_button",
+      "x": 324,
+      "y": 222.5,
+      "width": 32,
+      "height": 32,
+      "centerX": 340,
+      "centerY": 238.5,
+      "visualSize": 32,
+      "outsideDialog": {
+        "width": 16,
+        "height": 16
+      },
+      "exposedPercent": {
+        "width": 50,
+        "height": 50
+      },
+      "state": "default",
+      "z": "above-dialog-clip"
+    },
+    {
+      "name": "close_hit_area",
+      "type": "hit",
+      "x": 316,
+      "y": 214.5,
+      "width": 48,
+      "height": 48,
+      "offCanvasRight": 4,
+      "note": "命中盒 48×48 居中于视觉按钮；右侧可越出屏幕 4dp（PRD 风险表已接受），可见部分可点"
+    },
+    {
+      "name": "dialog",
+      "type": "dialog",
+      "x": 20,
+      "y": 238.5,
+      "width": 320,
+      "height": 323,
+      "naturalHeight": 323,
+      "overflow": false,
+      "scrollOffset": 0,
+      "scrolled": null
+    },
+    {
+      "name": "hero",
+      "type": "image",
+      "x": 20,
+      "y": 238.5,
+      "width": 320,
+      "height": 160,
+      "src": "../assets/welcome_hero_light.png"
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "x": 44,
+      "y": 418.5,
+      "width": 272,
+      "height": 26,
+      "fontSize": 20,
+      "lines": [
+        "Welcome to DoDroidAI"
+      ],
+      "text": "Welcome to DoDroidAI"
+    },
+    {
+      "name": "subtitle",
+      "type": "text",
+      "x": 44,
+      "y": 452.5,
+      "width": 272,
+      "height": 21,
+      "fontSize": 15,
+      "lines": [
+        "Say it, and let your phone do it."
+      ],
+      "text": "Say it, and let your phone do it."
+    },
+    {
+      "name": "header",
+      "type": "frame",
+      "x": 20,
+      "y": 398.5,
+      "width": 320,
+      "height": 83
+    },
+    {
+      "name": "primary_label",
+      "type": "text",
+      "x": 56,
+      "y": 508.5,
+      "width": 248,
+      "height": 18,
+      "fontSize": 15,
+      "lines": [
+        "Get started"
+      ],
+      "text": "Get started"
+    },
+    {
+      "name": "primary_button",
+      "type": "frame",
+      "x": 40,
+      "y": 493.5,
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "x": 20,
+      "y": 481.5,
+      "width": 320,
+      "height": 80
+    }
+  ],
+  "F04_welcome_narrow_320_en": [
+    {
+      "name": "close_button",
+      "type": "close_button",
+      "x": 284,
+      "y": 142,
+      "width": 32,
+      "height": 32,
+      "centerX": 300,
+      "centerY": 158,
+      "visualSize": 32,
+      "outsideDialog": {
+        "width": 16,
+        "height": 16
+      },
+      "exposedPercent": {
+        "width": 50,
+        "height": 50
+      },
+      "state": "default",
+      "z": "above-dialog-clip"
+    },
+    {
+      "name": "close_hit_area",
+      "type": "hit",
+      "x": 276,
+      "y": 134,
+      "width": 48,
+      "height": 48,
+      "offCanvasRight": 4,
+      "note": "命中盒 48×48 居中于视觉按钮；右侧可越出屏幕 4dp（PRD 风险表已接受），可见部分可点"
+    },
+    {
+      "name": "dialog",
+      "type": "dialog",
+      "x": 20,
+      "y": 158,
+      "width": 280,
+      "height": 324,
+      "naturalHeight": 324,
+      "overflow": false,
+      "scrollOffset": 0,
+      "scrolled": null
+    },
+    {
+      "name": "hero",
+      "type": "image",
+      "x": 20,
+      "y": 158,
+      "width": 280,
+      "height": 140,
+      "src": "../assets/welcome_hero_light.png"
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "x": 44,
+      "y": 318,
+      "width": 232,
+      "height": 26,
+      "fontSize": 20,
+      "lines": [
+        "Welcome to DoDroidAI"
+      ],
+      "text": "Welcome to DoDroidAI"
+    },
+    {
+      "name": "subtitle",
+      "type": "text",
+      "x": 44,
+      "y": 352,
+      "width": 232,
+      "height": 42,
+      "fontSize": 15,
+      "lines": [
+        "Say it, and let your phone do",
+        "it."
+      ],
+      "text": "Say it, and let your phone do it."
+    },
+    {
+      "name": "header",
+      "type": "frame",
+      "x": 20,
+      "y": 298,
+      "width": 280,
+      "height": 104
+    },
+    {
+      "name": "primary_label",
+      "type": "text",
+      "x": 56,
+      "y": 429,
+      "width": 208,
+      "height": 18,
+      "fontSize": 15,
+      "lines": [
+        "Get started"
+      ],
+      "text": "Get started"
+    },
+    {
+      "name": "primary_button",
+      "type": "frame",
+      "x": 40,
+      "y": 414,
+      "width": 240,
+      "height": 48
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "x": 20,
+      "y": 402,
+      "width": 280,
+      "height": 80
+    }
+  ],
+  "F05_welcome_scroll_2x_zh": [
+    {
+      "name": "close_button",
+      "type": "close_button",
+      "x": 604,
+      "y": 24,
+      "width": 32,
+      "height": 32,
+      "centerX": 620,
+      "centerY": 40,
+      "visualSize": 32,
+      "outsideDialog": {
+        "width": 16,
+        "height": 16
+      },
+      "exposedPercent": {
+        "width": 50,
+        "height": 50
+      },
+      "state": "default",
+      "z": "above-dialog-clip"
+    },
+    {
+      "name": "close_hit_area",
+      "type": "hit",
+      "x": 596,
+      "y": 16,
+      "width": 48,
+      "height": 48,
+      "offCanvasRight": 4,
+      "note": "命中盒 48×48 居中于视觉按钮；右侧可越出屏幕 4dp（PRD 风险表已接受），可见部分可点"
+    },
+    {
+      "name": "dialog",
+      "type": "dialog",
+      "x": 20,
+      "y": 40,
+      "width": 600,
+      "height": 320,
+      "naturalHeight": 510,
+      "overflow": true,
+      "scrollOffset": 210,
+      "scrolled": {
+        "viewportHeight": 240,
+        "offset": 210
+      }
+    },
+    {
+      "name": "hero",
+      "type": "image",
+      "x": 20,
+      "y": -170,
+      "width": 600,
+      "height": 300,
+      "src": "../assets/welcome_hero_light.png",
+      "clipped": true
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "x": 44,
+      "y": 150,
+      "width": 552,
+      "height": 52,
+      "fontSize": 40,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ],
+      "text": "欢迎使用 DoDroidAI"
+    },
+    {
+      "name": "subtitle",
+      "type": "text",
+      "x": 44,
+      "y": 210,
+      "width": 552,
+      "height": 42,
+      "fontSize": 30,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ],
+      "text": "说一句话，让手机替你做事。"
+    },
+    {
+      "name": "header",
+      "type": "frame",
+      "x": 20,
+      "y": 130,
+      "width": 600,
+      "height": 130
+    },
+    {
+      "name": "primary_label",
+      "type": "text",
+      "x": 56,
+      "y": 298,
+      "width": 528,
+      "height": 36,
+      "fontSize": 30,
+      "lines": [
+        "开始使用"
+      ],
+      "text": "开始使用"
+    },
+    {
+      "name": "primary_button",
+      "type": "frame",
+      "x": 40,
+      "y": 292,
+      "width": 560,
+      "height": 48
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "x": 20,
+      "y": 280,
+      "width": 600,
+      "height": 80
+    }
+  ],
+  "F06_welcome_no_hero_zh": [
+    {
+      "name": "close_button",
+      "type": "close_button",
+      "x": 324,
+      "y": 274.5,
+      "width": 32,
+      "height": 32,
+      "centerX": 340,
+      "centerY": 290.5,
+      "visualSize": 32,
+      "outsideDialog": {
+        "width": 16,
+        "height": 16
+      },
+      "exposedPercent": {
+        "width": 50,
+        "height": 50
+      },
+      "state": "default",
+      "z": "above-dialog-clip"
+    },
+    {
+      "name": "close_hit_area",
+      "type": "hit",
+      "x": 316,
+      "y": 266.5,
+      "width": 48,
+      "height": 48,
+      "offCanvasRight": 4,
+      "note": "命中盒 48×48 居中于视觉按钮；右侧可越出屏幕 4dp（PRD 风险表已接受），可见部分可点"
+    },
+    {
+      "name": "dialog",
+      "type": "dialog",
+      "x": 20,
+      "y": 290.5,
+      "width": 320,
+      "height": 219,
+      "naturalHeight": 219,
+      "overflow": false,
+      "scrollOffset": 0,
+      "scrolled": null
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "x": 44,
+      "y": 366.5,
+      "width": 272,
+      "height": 26,
+      "fontSize": 20,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ],
+      "text": "欢迎使用 DoDroidAI"
+    },
+    {
+      "name": "subtitle",
+      "type": "text",
+      "x": 44,
+      "y": 400.5,
+      "width": 272,
+      "height": 21,
+      "fontSize": 15,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ],
+      "text": "说一句话，让手机替你做事。"
+    },
+    {
+      "name": "header",
+      "type": "frame",
+      "x": 20,
+      "y": 346.5,
+      "width": 320,
+      "height": 83
+    },
+    {
+      "name": "primary_label",
+      "type": "text",
+      "x": 56,
+      "y": 456.5,
+      "width": 248,
+      "height": 18,
+      "fontSize": 15,
+      "lines": [
+        "开始使用"
+      ],
+      "text": "开始使用"
+    },
+    {
+      "name": "primary_button",
+      "type": "frame",
+      "x": 40,
+      "y": 441.5,
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "x": 20,
+      "y": 429.5,
+      "width": 320,
+      "height": 80
+    }
+  ],
+  "F07_welcome_two_buttons_zh": [
+    {
+      "name": "close_button",
+      "type": "close_button",
+      "x": 324,
+      "y": 194.5,
+      "width": 32,
+      "height": 32,
+      "centerX": 340,
+      "centerY": 210.5,
+      "visualSize": 32,
+      "outsideDialog": {
+        "width": 16,
+        "height": 16
+      },
+      "exposedPercent": {
+        "width": 50,
+        "height": 50
+      },
+      "state": "default",
+      "z": "above-dialog-clip"
+    },
+    {
+      "name": "close_hit_area",
+      "type": "hit",
+      "x": 316,
+      "y": 186.5,
+      "width": 48,
+      "height": 48,
+      "offCanvasRight": 4,
+      "note": "命中盒 48×48 居中于视觉按钮；右侧可越出屏幕 4dp（PRD 风险表已接受），可见部分可点"
+    },
+    {
+      "name": "dialog",
+      "type": "dialog",
+      "x": 20,
+      "y": 210.5,
+      "width": 320,
+      "height": 379,
+      "naturalHeight": 379,
+      "overflow": false,
+      "scrollOffset": 0,
+      "scrolled": null
+    },
+    {
+      "name": "hero",
+      "type": "image",
+      "x": 20,
+      "y": 210.5,
+      "width": 320,
+      "height": 160,
+      "src": "../assets/welcome_hero_light.png"
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "x": 44,
+      "y": 390.5,
+      "width": 272,
+      "height": 26,
+      "fontSize": 20,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ],
+      "text": "欢迎使用 DoDroidAI"
+    },
+    {
+      "name": "subtitle",
+      "type": "text",
+      "x": 44,
+      "y": 424.5,
+      "width": 272,
+      "height": 21,
+      "fontSize": 15,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ],
+      "text": "说一句话，让手机替你做事。"
+    },
+    {
+      "name": "header",
+      "type": "frame",
+      "x": 20,
+      "y": 370.5,
+      "width": 320,
+      "height": 83
+    },
+    {
+      "name": "secondary_label",
+      "type": "text",
+      "x": 56,
+      "y": 480.5,
+      "width": 248,
+      "height": 18,
+      "fontSize": 15,
+      "lines": [
+        "去配置AI"
+      ],
+      "text": "去配置AI"
+    },
+    {
+      "name": "secondary_button",
+      "type": "frame",
+      "x": 40,
+      "y": 465.5,
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "primary_label",
+      "type": "text",
+      "x": 56,
+      "y": 536.5,
+      "width": 248,
+      "height": 18,
+      "fontSize": 15,
+      "lines": [
+        "开始使用"
+      ],
+      "text": "开始使用"
+    },
+    {
+      "name": "primary_button",
+      "type": "frame",
+      "x": 40,
+      "y": 521.5,
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "x": 20,
+      "y": 453.5,
+      "width": 320,
+      "height": 136
+    }
+  ],
+  "F08_welcome_pressed_zh": [
+    {
+      "name": "close_button",
+      "type": "close_button",
+      "x": 324.96,
+      "y": 223.46,
+      "width": 30.08,
+      "height": 30.08,
+      "centerX": 340,
+      "centerY": 238.5,
+      "visualSize": 32,
+      "outsideDialog": {
+        "width": 15.04,
+        "height": 15.04
+      },
+      "exposedPercent": {
+        "width": 50,
+        "height": 50
+      },
+      "state": "pressed",
+      "z": "above-dialog-clip"
+    },
+    {
+      "name": "close_hit_area",
+      "type": "hit",
+      "x": 316,
+      "y": 214.5,
+      "width": 48,
+      "height": 48,
+      "offCanvasRight": 4,
+      "note": "命中盒 48×48 居中于视觉按钮；右侧可越出屏幕 4dp（PRD 风险表已接受），可见部分可点"
+    },
+    {
+      "name": "dialog",
+      "type": "dialog",
+      "x": 20,
+      "y": 238.5,
+      "width": 320,
+      "height": 323,
+      "naturalHeight": 323,
+      "overflow": false,
+      "scrollOffset": 0,
+      "scrolled": null
+    },
+    {
+      "name": "hero",
+      "type": "image",
+      "x": 20,
+      "y": 238.5,
+      "width": 320,
+      "height": 160,
+      "src": "../assets/welcome_hero_light.png"
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "x": 44,
+      "y": 418.5,
+      "width": 272,
+      "height": 26,
+      "fontSize": 20,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ],
+      "text": "欢迎使用 DoDroidAI"
+    },
+    {
+      "name": "subtitle",
+      "type": "text",
+      "x": 44,
+      "y": 452.5,
+      "width": 272,
+      "height": 21,
+      "fontSize": 15,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ],
+      "text": "说一句话，让手机替你做事。"
+    },
+    {
+      "name": "header",
+      "type": "frame",
+      "x": 20,
+      "y": 398.5,
+      "width": 320,
+      "height": 83
+    },
+    {
+      "name": "primary_label",
+      "type": "text",
+      "x": 56,
+      "y": 508.5,
+      "width": 248,
+      "height": 18,
+      "fontSize": 15,
+      "lines": [
+        "开始使用"
+      ],
+      "text": "开始使用"
+    },
+    {
+      "name": "primary_button",
+      "type": "frame",
+      "x": 40,
+      "y": 493.5,
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "x": 20,
+      "y": 481.5,
+      "width": 320,
+      "height": 80
+    }
+  ]
+}

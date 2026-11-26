@@ -54,13 +54,15 @@ enum WelcomeErrorStage {
 enum WelcomeDismissMethod {
   button,
   back,
-  configureAi;
+  configureAi,
+  closeButton;
 
   /// 日志字段 `method` 的固定取值。
   String get wire => switch (this) {
         WelcomeDismissMethod.button => 'button',
         WelcomeDismissMethod.back => 'back',
         WelcomeDismissMethod.configureAi => 'configure_ai',
+        WelcomeDismissMethod.closeButton => 'close_button',
       };
 }
 
