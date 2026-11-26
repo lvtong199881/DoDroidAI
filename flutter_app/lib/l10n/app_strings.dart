@@ -76,6 +76,7 @@ class AppStrings {
       'welcomeFeat3Desc': '保存在本机，会话可随时导出；使用 AI 时内容会发送给你配置的服务商。',
       'welcomeStart': '开始使用',
       'welcomeConfigureAi': '去配置AI',
+      'welcomeClose': '关闭',
     },
     'en': {
       'appName': 'DoDroidAI',
@@ -140,6 +141,7 @@ class AppStrings {
       'welcomeFeat3Desc': 'Stored locally; chats can be exported anytime. AI requests go to the provider you configure.',
       'welcomeStart': 'Get started',
       'welcomeConfigureAi': 'Set up AI',
+      'welcomeClose': 'Close',
     },
   };
 
