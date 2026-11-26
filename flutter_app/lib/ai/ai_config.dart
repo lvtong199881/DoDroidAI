@@ -261,7 +261,7 @@ class AiConfigStore {
       await prefs.setString(_kActiveId, migrated.id);
       return [migrated];
     }
-    return const [];
+    return <AiConfig>[];
   }
 
   Future<AiConfig?> loadActive() async {
