@@ -78,6 +78,11 @@ class _SttSettingsScreenState extends State<SttSettingsScreen> {
     } on DioException catch (e) {
       if (!mounted || e.type == DioExceptionType.cancel) return;
       showToast(context, '下载失败，请重试');
+    } catch (e) {
+      // 校验失败（如下载不完整抛的 StateError）不能静默吞掉
+      debugPrint('SttSettings: 下载失败 $e');
+      if (!mounted) return;
+      showToast(context, '下载失败（文件校验未通过），请重试');
     } finally {
       if (mounted) {
         setState(() {
