@@ -203,10 +203,12 @@ class _AssistantMessageViewState
       return _StatusTag(text: '执行中', color: scheme.primary);
     }
     if (tool.isSuccess == true) {
-      return const _StatusTag(text: '成功', color: Color(0xFF1E8E5A));
+      // 成功不展示 tag，保持工具行简洁
+      return null;
     }
     if (tool.isSuccess == false) {
-      return _StatusTag(text: '失败', color: scheme.error);
+      // 失败只显示红色 ✗，失败详情折叠在工具块里
+      return Icon(Icons.close, size: 16, color: scheme.error);
     }
     return const _StatusTag(text: '已取消', color: Color(0xFF5A5F6B));
   }
