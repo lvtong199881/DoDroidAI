@@ -9,7 +9,7 @@ const Map<String, String> _zhCopy = {
   'welcomeIntro': '说一句话，让手机替你做事。',
   'welcomeFeat1Title': '按住说话就行',
   'welcomeFeat1Desc':
-      '语音识别和朗读在手机本地完成；首次使用需联网下载语音模型（默认 Wi-Fi 下自动下载）。',
+      '语音识别和朗读在手机本地完成；首次使用需联网下载语音模型（联网后自动下载，Wi-Fi 与移动网络均可）。',
   'welcomeFeat2Title': '它会动手，不只是聊天',
   'welcomeFeat2Desc': '发短信、记笔记前会先请你确认；闹钟、日历等操作直接执行。',
   'welcomeFeat3Title': '会话和笔记留在本机',
@@ -23,7 +23,7 @@ const Map<String, String> _enCopy = {
   'welcomeIntro': 'Say it, and let your phone do it.',
   'welcomeFeat1Title': 'Just hold to talk',
   'welcomeFeat1Desc':
-      'Speech recognition and read-aloud run on your phone; voice models download once over the network (automatic on Wi-Fi).',
+      'Speech recognition and read-aloud run on your phone; voice models download once over the network (automatic on Wi-Fi or mobile data).',
   'welcomeFeat2Title': 'It acts, not just chats',
   'welcomeFeat2Desc':
       'Sending texts and saving notes ask for your confirmation first; alarms and calendar events run directly.',

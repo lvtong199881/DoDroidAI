@@ -43,7 +43,7 @@ Future<void> _initBackgroundServices() async {
     debugPrint('home widget sync failed: $e');
   }
 
-  // 语音优先：Wi-Fi 下自动下载缺失的 ASR/TTS 模型并预热（不阻塞其它启动任务）
+  // 语音优先：联网后自动下载缺失的 ASR/TTS 模型并预热（不阻塞其它启动任务）
   unawaited(VoiceBootstrap.instance.ensureModels());
 
   try {

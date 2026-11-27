@@ -226,8 +226,8 @@ class _ChatInputBoxState extends State<ChatInputBox> {
         if (boot.phase == VoiceBootstrapPhase.downloading) {
           final percent = (boot.sttProgress * 100).round();
           showToast(context, '语音模型准备中 $percent%');
-        } else if (boot.phase == VoiceBootstrapPhase.needsWifi) {
-          showToast(context, '语音模型未就绪，等待 Wi-Fi 自动下载（或前往 设置 → 语音 手动下载）');
+        } else if (boot.phase == VoiceBootstrapPhase.needsNetwork) {
+          showToast(context, '语音模型未就绪，联网后自动下载（或前往 设置 → 语音 手动下载）');
         } else {
           showToast(context, '语音模型未就绪，前往 设置 → 语音 下载');
         }
@@ -482,8 +482,8 @@ class _VoiceModelBanner extends StatelessWidget {
             ((state.sttProgress + state.ttsProgress) / 2).clamp(0.0, 1.0);
         text = '正在准备语音模型 ${(progress * 100).round()}%';
         break;
-      case VoiceBootstrapPhase.needsWifi:
-        text = '语音模型未就绪，等待 Wi-Fi 自动下载';
+      case VoiceBootstrapPhase.needsNetwork:
+        text = '语音模型未就绪，联网后自动下载';
         break;
       case VoiceBootstrapPhase.failed:
         text = '语音模型下载失败，点此重试';
@@ -501,7 +501,7 @@ class _VoiceModelBanner extends StatelessWidget {
         onTap: () {
           if (state.phase == VoiceBootstrapPhase.failed) {
             VoiceBootstrap.instance.ensureModels();
-          } else if (state.phase == VoiceBootstrapPhase.needsWifi) {
+          } else if (state.phase == VoiceBootstrapPhase.needsNetwork) {
             Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const VoiceSettingsScreen()),
             );

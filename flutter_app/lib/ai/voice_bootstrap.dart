@@ -10,7 +10,7 @@ import 'sherpa_asr.dart';
 import 'sherpa_tts.dart';
 
 /// 语音模型自动准备阶段
-enum VoiceBootstrapPhase { idle, checking, needsWifi, downloading, ready, failed }
+enum VoiceBootstrapPhase { idle, checking, needsNetwork, downloading, ready, failed }
 
 class VoiceBootstrapState {
   const VoiceBootstrapState({
@@ -51,28 +51,26 @@ class VoiceDownloadPlan {
   final bool downloadStt;
   final bool downloadTts;
 
-  /// 'noNetwork' / 'cellular' / null
+  /// 'noNetwork' / null
   final String? blockedReason;
 }
 
 /// 启动时决定要下载哪些模型：
 /// - 都就绪 → 不下载；
-/// - 无网 / 蜂窝 → 阻塞（避免首次启动消耗移动流量）；
-/// - Wi-Fi / 以太网 → 下载缺失项。
+/// - 无网络 → 阻塞，等待联网后再下；
+/// - 有网络（Wi-Fi / 以太网 / 蜂窝）→ 下载缺失项。
 VoiceDownloadPlan resolveVoiceDownloadPlan({
   required bool sttReady,
   required bool ttsReady,
-  required bool onWifi,
   required bool hasNetwork,
 }) {
   if (sttReady && ttsReady) return const VoiceDownloadPlan();
   if (!hasNetwork) return const VoiceDownloadPlan(blockedReason: 'noNetwork');
-  if (!onWifi) return const VoiceDownloadPlan(blockedReason: 'cellular');
   return VoiceDownloadPlan(downloadStt: !sttReady, downloadTts: !ttsReady);
 }
 
-/// 语音优先的启动准备：已就绪直接预热；Wi-Fi 下自动下载缺失模型；
-/// 蜂窝/无网时等待网络恢复（不会在移动网络下自动下载）。
+/// 语音优先的启动准备：已就绪直接预热；只要联网就自动下载缺失模型
+/// （不区分 Wi-Fi 与蜂窝）；完全无网络时等待网络恢复。
 class VoiceBootstrap {
   VoiceBootstrap._();
 
@@ -117,12 +115,12 @@ class VoiceBootstrap {
     final plan = resolveVoiceDownloadPlan(
       sttReady: sttReady,
       ttsReady: ttsReady,
-      onWifi: _isWifi(results),
       hasNetwork: _hasNetwork(results),
     );
 
     if (plan.blockedReason != null) {
-      state.value = state.value.copyWith(phase: VoiceBootstrapPhase.needsWifi);
+      state.value =
+          state.value.copyWith(phase: VoiceBootstrapPhase.needsNetwork);
       _watchNetwork();
       return;
     }
@@ -188,7 +186,7 @@ class VoiceBootstrap {
 
   void _watchNetwork() {
     _networkSub ??= Connectivity().onConnectivityChanged.listen((results) {
-      if (!_isWifi(results)) return;
+      if (!_hasNetwork(results)) return;
       unawaited(ensureModels());
     });
     // 用户可能手动在「设置 → 语音」下载：完成后自动切换到就绪
@@ -201,7 +199,7 @@ class VoiceBootstrap {
 
   Future<void> _checkReadyAfterManualDownload() async {
     final phase = state.value.phase;
-    if (phase != VoiceBootstrapPhase.needsWifi &&
+    if (phase != VoiceBootstrapPhase.needsNetwork &&
         phase != VoiceBootstrapPhase.failed) {
       return;
     }
@@ -219,10 +217,6 @@ class VoiceBootstrap {
       _checkingReady = false;
     }
   }
-
-  bool _isWifi(List<ConnectivityResult> results) =>
-      results.contains(ConnectivityResult.wifi) ||
-      results.contains(ConnectivityResult.ethernet);
 
   bool _hasNetwork(List<ConnectivityResult> results) =>
       results.any((r) => r != ConnectivityResult.none);

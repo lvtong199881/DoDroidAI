@@ -20,7 +20,8 @@ reminders and web search. Speech input and output run fully offline on top of `s
   - ASR: SenseVoice Small (press-and-hold, waveform overlay); the input box starts in voice mode
   - TTS: Matcha (default, ~350 ms first audio) and MeloTTS, gapless playback; assistant replies
     are read aloud automatically (toggle in chat settings, persisted)
-  - Models are prepared automatically on first launch over Wi-Fi (progress shown above the input);
+  - Models are prepared automatically on first launch once the device is online — Wi-Fi or mobile
+    data alike (progress shown above the input);
     downloads continue in the background, and read-aloud can be stopped/replaced at any time
 - **Memory & notes**: long-term facts and notes the agent can write and read
 - **Scheduled tasks**: relative reminders via WorkManager
