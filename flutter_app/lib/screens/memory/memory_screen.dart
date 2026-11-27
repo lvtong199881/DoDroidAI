@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_strings.dart';
 
 import '../../data/memory_database.dart';
+import '../../widgets/prompt_dialog.dart';
 
 class MemoryScreen extends StatefulWidget {
   const MemoryScreen({super.key});
@@ -32,33 +33,20 @@ class _MemoryScreenState extends State<MemoryScreen> {
   }
 
   Future<void> _addFact() async {
-    final controller = TextEditingController();
-    final saved = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(AppStrings.of(context).t('newNote')),
-        content: TextField(
-          controller: controller,
-          maxLines: 3,
-          decoration: InputDecoration(labelText: AppStrings.of(context).t('content')),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(AppStrings.of(context).t('cancel')),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(AppStrings.of(context).save),
-          ),
-        ],
-      ),
+    final strings = AppStrings.of(context);
+    final result = await PromptDialog.show(
+      context,
+      title: strings.t('newNote'),
+      fields: [PromptField(maxLines: 3, label: strings.t('content'))],
+      cancelLabel: strings.t('cancel'),
+      saveLabel: strings.save,
     );
-    if (saved == true && controller.text.trim().isNotEmpty) {
-      await _repository.insert(controller.text.trim());
+    if (result == null) return;
+    final text = result[0];
+    if (text.isNotEmpty) {
+      await _repository.insert(text);
       await _load();
     }
-    controller.dispose();
   }
 
   @override

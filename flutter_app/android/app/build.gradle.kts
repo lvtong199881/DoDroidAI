@@ -28,10 +28,22 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        // 只打 arm64-v8a 单包（线上设备均为 64 位 ARM）
+        // 默认只打 arm64-v8a 单包（线上设备均为 64 位 ARM）；
+        // 模拟器/x86 构建时（flutter run 会传 -Ptarget-platform=android-x64 等）跟随目标平台
         ndk {
             abiFilters.clear()
-            abiFilters.add("arm64-v8a")
+            val abiByPlatform = mapOf(
+                "android-arm" to "armeabi-v7a",
+                "android-arm64" to "arm64-v8a",
+                "android-x86" to "x86",
+                "android-x64" to "x86_64",
+            )
+            val targetPlatform = findProperty("target-platform") as String?
+            val abis = targetPlatform
+                ?.split(',')?.map { it.trim() }?.mapNotNull { abiByPlatform[it] }
+                ?.takeIf { it.isNotEmpty() }
+                ?: listOf("arm64-v8a")
+            abiFilters.addAll(abis)
         }
     }
 

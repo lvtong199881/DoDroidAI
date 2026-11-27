@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_strings.dart';
 
 import '../../data/scheduled_task_database.dart';
+import '../../widgets/prompt_dialog.dart';
 
 class ScheduledTaskScreen extends StatefulWidget {
   const ScheduledTaskScreen({super.key});
@@ -32,62 +33,28 @@ class _ScheduledTaskScreenState extends State<ScheduledTaskScreen> {
   }
 
   Future<void> _createTask() async {
-    final titleController = TextEditingController();
-    final promptController = TextEditingController();
-    final scheduleController = TextEditingController();
     final strings = AppStrings.of(context);
-    final saved = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(strings.t('newTask')),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: InputDecoration(labelText: strings.t('name')),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: promptController,
-                maxLines: 3,
-                decoration: InputDecoration(labelText: strings.t('prompt')),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: scheduleController,
-                decoration: InputDecoration(
-                  labelText: strings.t('schedule'),
-                  hintText: strings.t('scheduleHint'),
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(strings.t('cancel')),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(strings.save),
-          ),
-        ],
-      ),
+    final result = await PromptDialog.show(
+      context,
+      title: strings.t('newTask'),
+      fields: [
+        PromptField(label: strings.t('name')),
+        PromptField(label: strings.t('prompt'), maxLines: 3),
+        PromptField(label: strings.t('schedule'), hintText: strings.t('scheduleHint')),
+      ],
+      cancelLabel: strings.t('cancel'),
+      saveLabel: strings.save,
     );
-    if (saved == true && titleController.text.trim().isNotEmpty) {
+    if (result == null) return;
+    final title = result[0];
+    if (title.isNotEmpty) {
       await _repository.insert(
-        title: titleController.text.trim(),
-        prompt: promptController.text.trim(),
-        schedule: scheduleController.text.trim(),
+        title: title,
+        prompt: result[1],
+        schedule: result[2],
       );
       await _load();
     }
-    titleController.dispose();
-    promptController.dispose();
-    scheduleController.dispose();
   }
 
   @override

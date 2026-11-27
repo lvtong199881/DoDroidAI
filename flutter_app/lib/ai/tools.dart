@@ -439,8 +439,10 @@ class ToolRegistry {
 
   static const Set<String> highRiskTools = {'send_sms', 'add_note'};
 
-  /// forget_memory 的删除阈值：低于该相关性的条目一律不动
-  static const double _forgetScoreThreshold = 0.5;
+  /// forget_memory 的删除阈值：低于该相关性的条目一律不动。
+  /// 0.45：query 只命中长记忆一半词面时（如 'coffee' vs 'User likes coffee'）
+  /// 混合分约 0.49，仍应可删；低于此的匹配基本是误召回。
+  static const double _forgetScoreThreshold = 0.45;
 
   static bool isKnown(String name) =>
       definitions.any((d) => d['function']['name'] == name);

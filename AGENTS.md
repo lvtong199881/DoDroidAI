@@ -154,7 +154,7 @@ class MessageBlock { kind, text, ToolCallInfo? tool, seconds }
 - `web_search` 的 `queries` 接受 1-4 个关键词：串行请求（Brave 免费版约 1 QPS）、
   结果按 query 分节并全局 URL 去重，单个查询失败不影响其他查询；旧 `query` 参数仍兼容
 - 记忆工具：`remember_fact`（语义去重，重复时返回已有条目）、`recall_memory`
-  （相关性检索）、`forget_memory`（检索 score ≥ 0.5 才删，删前列出确认）；执行逻辑
+  （相关性检索）、`forget_memory`（检索 score ≥ 0.45 才删，删前列出确认）；执行逻辑
   在 `lib/ai/tools.dart`，检索/去重在 `lib/data/memory_database.dart`
 
 ### 4.3.1 交互式工具 `ask_user_question`
@@ -181,9 +181,13 @@ class MessageBlock { kind, text, ToolCallInfo? tool, seconds }
 - 合成在常驻 isolate（`SpeechWorker`）里执行，**不要在 UI isolate 直接调 sherpa**
 - 播放策略：首句先播，其余句子合成后合并成一个 wav，整段只切换一次
 - 朗读可打断：`SherpaTts.stop()` 自增 `_speakSeq` 并使进行中的朗读在检查点退出；开始录音前会先停朗读，避免麦克风录入外放
-- 模型不随包；`VoiceBootstrap.ensureModels()` 在启动时自动准备：已就绪直接预热，Wi-Fi/以太网下自动下载缺失模型（ASR 默认 SenseVoice、TTS 默认 Matcha），
-  蜂窝/无网时不下载并在输入区提示等待 Wi-Fi。下载在 `DownloadManager` 全局进行（退出页面不中断），输入区状态条展示进度
-- 下载后校验文件大小（±5% 容差，HF revision 波动不影响），失败清理半成品；仅在无可用激活模型时自动启用
+- 模型不随包；`VoiceBootstrap.ensureModels()` 在启动时自动准备：已就绪直接预热，只要联网就自动下载缺失模型
+  （ASR 默认 SenseVoice、TTS 默认 Matcha），**不区分 Wi-Fi 与蜂窝/移动网络**（原「仅 Wi-Fi 下载」限制已放开）；
+  完全无网络时暂停并在输入区提示联网后自动下载。下载在 `DownloadManager` 全局进行（退出页面不中断），输入区状态条展示进度
+- 下载后校验完整性：优先比对服务器 `Content-Length`（收到的字节数必须相等），拿不到长度时
+  退回清单大小比对（0.1% 容差，下限 4 KiB）；成功后写 `.model_meta.json` 记录每个文件的真实字节数，
+  `isDownloaded()` 据此精确判断（截断/被替换都算未下载 → 自动重下），失败清理半成品；
+  仅在无可用激活模型时自动启用
 - ASR/TTS 启动预热：`SherpaAsr.warmUp()` / `SherpaTts.warmUp()`，失败或模型未就绪时清空缓存，下载完成后可再次预热
 - 模型切换与手动下载仍在「设置 → 语音」页（本页不加新区块）
 
@@ -215,7 +219,11 @@ class MessageBlock { kind, text, ToolCallInfo? tool, seconds }
 4. **`audioplayers` 的 `onPlayerComplete` 不稳定**：改为按 wav 文件头计算时长等待
 5. **Matcha 必须配 vocos-16khz-univ.onnx**（54MB）：模型仓库根目录不含该文件，清单从 `wmghf2023/vocos-16khz-univ-mirror` 拉取；
    缺文件时 `SherpaTts.isReady()` 恒 false，自动朗读会静默失效
-6. **模型文件大小校验用 ±5% 容差**：`model_catalog.dart` 里手写的是实测值，上游 revision 变化时不至于整包失败，同时能识别半截文件
+6. **模型完整性必须按字节数精确判断，不能用宽容差**：曾用 ±5%，真机上 237MB 的
+   `model.int8.onnx` 只剩 225,665,753（-4.83%）仍被判「已下载」，`isDownloaded()` 只查
+   `existsSync` 导致永不重下，sherpa 加载报 `Protobuf parsing failed`。现有两道关：
+   下载时比对 `Content-Length`（收到的字节 == 服务器声明），成功后 `.model_meta.json` 记录真实字节数，
+   `isModelFileIntact()` 要求精确相等；只有老数据（无清单）才回退到清单大小 0.1% 容差
 7. **`onAmplitudeChanged` 是单订阅流**：第二次录音会抛 `Stream has already been listened to`，
    改用定时轮询 `getAmplitude()`
 8. **compileSdk 必须 ≥37**：`permission_handler_android` 的 AAR 元数据要求

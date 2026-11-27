@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_strings.dart';
 
 import '../../data/note_database.dart';
+import '../../widgets/prompt_dialog.dart';
 
 class NoteListScreen extends StatefulWidget {
   const NoteListScreen({super.key});
@@ -32,48 +33,23 @@ class _NoteListScreenState extends State<NoteListScreen> {
   }
 
   Future<void> _createNote() async {
-    final titleController = TextEditingController();
-    final contentController = TextEditingController();
-    final saved = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(AppStrings.of(context).t('newNote')),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: titleController,
-              decoration: InputDecoration(labelText: AppStrings.of(context).t('title')),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: contentController,
-              maxLines: 4,
-              decoration: InputDecoration(labelText: AppStrings.of(context).t('content')),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(AppStrings.of(context).t('cancel')),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(AppStrings.of(context).save),
-          ),
-        ],
-      ),
+    final strings = AppStrings.of(context);
+    final result = await PromptDialog.show(
+      context,
+      title: strings.t('newNote'),
+      fields: [
+        PromptField(label: strings.t('title')),
+        PromptField(label: strings.t('content'), maxLines: 4),
+      ],
+      cancelLabel: strings.t('cancel'),
+      saveLabel: strings.save,
     );
-    if (saved == true && titleController.text.trim().isNotEmpty) {
-      await _repository.insert(
-        titleController.text.trim(),
-        contentController.text.trim(),
-      );
+    if (result == null) return;
+    final title = result[0];
+    if (title.isNotEmpty) {
+      await _repository.insert(title, result[1]);
       await _load();
     }
-    titleController.dispose();
-    contentController.dispose();
   }
 
   Future<void> _deleteNote(Note note) async {
