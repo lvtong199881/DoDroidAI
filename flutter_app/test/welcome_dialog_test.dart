@@ -890,6 +890,194 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  group('主按钮右箭头图标（REQ-1～REQ-4）', () {
+    Icon startIcon(WidgetTester tester) =>
+        tester.widget<Icon>(find.byKey(welcomeDialogStartIconKey));
+
+    Color? startTextColor(WidgetTester tester, String label) =>
+        DefaultTextStyle.of(tester.element(find.text(label))).style.color;
+
+    /// AC-3：图标与文字均在按钮矩形内、不重叠、图标不缩放。
+    void expectStartContentInsideButton(WidgetTester tester, String label) {
+      final buttonRect = tester.getRect(find.byKey(_startKey));
+      final iconRect = tester.getRect(find.byKey(welcomeDialogStartIconKey));
+      final textRect = tester.getRect(find.text(label));
+
+      expect(
+        iconRect.size,
+        const Size(welcomeStartIconSize, welcomeStartIconSize),
+        reason: '图标固定 20dp，不随字号缩放',
+      );
+
+      for (final rect in [iconRect, textRect]) {
+        expect(rect.left, greaterThanOrEqualTo(buttonRect.left - 0.5));
+        expect(rect.right, lessThanOrEqualTo(buttonRect.right + 0.5));
+        expect(rect.top, greaterThanOrEqualTo(buttonRect.top - 0.5));
+        expect(rect.bottom, lessThanOrEqualTo(buttonRect.bottom + 0.5));
+      }
+
+      // 不重叠：图标在文字左侧，间距 8dp
+      expect(iconRect.right, lessThanOrEqualTo(textRect.left + 0.5));
+      expect(textRect.left - iconRect.right, closeTo(welcomeStartIconGap, 0.5));
+      // 垂直居中（多行时图标随文字块居中）
+      expect(
+        (iconRect.center.dy - textRect.center.dy).abs(),
+        lessThanOrEqualTo(1.0),
+      );
+    }
+
+    testWidgets('AC-1/AC-2：20dp 实心右箭头位于文字左侧，同色、垂直居中、整组居中', (
+      tester,
+    ) async {
+      await openWelcome(tester);
+
+      final icon = startIcon(tester);
+      expect(icon.icon, Icons.arrow_forward);
+      expect(icon.size, welcomeStartIconSize);
+      expect(icon.color, AppTheme.light().colorScheme.onPrimary);
+      expect(icon.color, const Color(0xFFFFFFFF));
+
+      final iconRect = tester.getRect(find.byKey(welcomeDialogStartIconKey));
+      final textRect = tester.getRect(find.text('开始使用'));
+      final buttonRect = tester.getRect(find.byKey(_startKey));
+
+      expect(iconRect.size, const Size(20, 20));
+      expect(iconRect.right, lessThanOrEqualTo(textRect.left));
+      expect(textRect.left - iconRect.right, closeTo(welcomeStartIconGap, 0.5));
+      expect(
+        (iconRect.center.dy - textRect.center.dy).abs(),
+        lessThanOrEqualTo(1.0),
+      );
+
+      // 图标+文字作为一组在按钮内容区居中
+      final groupCenter = (iconRect.left + textRect.right) / 2;
+      expect(
+        (groupCenter - buttonRect.center.dx).abs(),
+        lessThanOrEqualTo(1.0),
+        reason: '图标+文字整组未居中',
+      );
+
+      // 图标与文字同色（AC-2）
+      expect(startTextColor(tester, '开始使用'), icon.color);
+
+      // 1x 下按钮高度仍为 48（A-3 / AC-10）
+      expect(buttonRect.height, closeTo(48, 1.0));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('AC-4：深色主题图标取 onPrimary（#0A1F5C），与文字同色', (tester) async {
+      await openWelcome(tester, theme: AppTheme.dark());
+
+      final icon = startIcon(tester);
+      expect(icon.color, AppTheme.dark().colorScheme.onPrimary);
+      expect(icon.color, const Color(0xFF0A1F5C));
+      expect(startTextColor(tester, '开始使用'), icon.color);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('AC-9：英文下箭头同样在文字左侧，文案为 Get started', (tester) async {
+      await openWelcome(tester, locale: const Locale('en'));
+
+      final icon = startIcon(tester);
+      expect(icon.icon, Icons.arrow_forward);
+      expect(icon.color, const Color(0xFFFFFFFF));
+      expect(find.text('Get started'), findsOneWidget);
+
+      final iconRect = tester.getRect(find.byKey(welcomeDialogStartIconKey));
+      final textRect = tester.getRect(find.text('Get started'));
+      final buttonRect = tester.getRect(find.byKey(_startKey));
+
+      expect(iconRect.right, lessThanOrEqualTo(textRect.left));
+      expect(textRect.left - iconRect.right, closeTo(welcomeStartIconGap, 0.5));
+      expect(
+        (iconRect.center.dy - textRect.center.dy).abs(),
+        lessThanOrEqualTo(1.0),
+      );
+      expect(
+        (((iconRect.left + textRect.right) / 2) - buttonRect.center.dx).abs(),
+        lessThanOrEqualTo(1.0),
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('AC-8：图标不进语义树，按钮可访问名称仍为「开始使用」', (tester) async {
+      final handle = tester.ensureSemantics();
+      await openWelcome(tester);
+
+      final buttonNode = tester.getSemantics(find.byKey(_startKey));
+      expect(buttonNode.getSemanticsData().label, '开始使用');
+      expect(buttonNode.getSemanticsData().flagsCollection.isButton, isTrue);
+
+      // 图标没有独立语义节点：查询图标命中的是最近的祖先（按钮）节点
+      final iconNode = tester.getSemantics(
+        find.byKey(welcomeDialogStartIconKey),
+      );
+      expect(
+        identical(iconNode, buttonNode),
+        isTrue,
+        reason: '图标产生了独立语义节点',
+      );
+      expect(
+        find.bySemanticsLabel(RegExp('arrow', caseSensitive: false)),
+        findsNothing,
+        reason: '箭头不应被读屏朗读',
+      );
+
+      handle.dispose();
+    });
+
+    testWidgets('AC-8：英文下可访问名称仍为 Get started', (tester) async {
+      final handle = tester.ensureSemantics();
+      await openWelcome(tester, locale: const Locale('en'));
+
+      final data = tester
+          .getSemantics(find.byKey(_startKey))
+          .getSemanticsData();
+      expect(data.label, 'Get started');
+
+      handle.dispose();
+    });
+
+    testWidgets('AC-5：点图标中心即点按钮，返回 button 且只关闭一次', (tester) async {
+      final closing = await openWelcome(tester);
+      final iconCenter = tester.getCenter(
+        find.byKey(welcomeDialogStartIconKey),
+      );
+
+      await tester.tapAt(iconCenter);
+      await tester.tapAt(iconCenter);
+      await tester.pumpAndSettle();
+
+      expect(await closing, WelcomeDismissMethod.button);
+      expect(find.byType(WelcomeDialog), findsNothing);
+      expect(find.text('打开弹窗'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('AC-3：320dp + 2x 中文，图标与文字不截断、不重叠、不越界', (tester) async {
+      await openWelcome(
+        tester,
+        logicalSize: const Size(320, 640),
+        textScale: 2.0,
+      );
+
+      expect(tester.takeException(), isNull);
+      expectStartContentInsideButton(tester, '开始使用');
+    });
+
+    testWidgets('AC-3：320dp + 2x 英文，图标与文字不截断、不重叠、不越界', (tester) async {
+      await openWelcome(
+        tester,
+        logicalSize: const Size(320, 640),
+        textScale: 2.0,
+        locale: const Locale('en'),
+      );
+
+      expect(tester.takeException(), isNull);
+      expectStartContentInsideButton(tester, 'Get started');
+    });
+  });
+
   test('两张欢迎图均为 1280×640（2:1）', () {
     for (final name in const [
       'welcome_hero_light.png',

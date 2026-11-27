@@ -37,6 +37,15 @@ const Key welcomeDialogCloseKey = Key('welcome_dialog_close');
 /// 关闭按钮 32×32 视觉圆。
 const Key welcomeDialogCloseVisualKey = Key('welcome_dialog_close_visual');
 
+/// 主按钮文字左侧的右箭头图标（纯装饰，仅测试定位用）。
+const Key welcomeDialogStartIconKey = Key('welcome_dialog_start_icon');
+
+/// 主按钮图标边长（dp）；固定值，不随系统字号缩放。
+const double welcomeStartIconSize = 20.0;
+
+/// 主按钮图标与文字之间的间距（dp）。
+const double welcomeStartIconGap = 8.0;
+
 /// 一次性欢迎弹窗（模态）。
 ///
 /// 结构：透明外壳（路由/遮罩/居中）→ 内层卡片 Material（背景/圆角/阴影/裁切）
@@ -228,7 +237,25 @@ class _WelcomeDialogState extends State<WelcomeDialog> {
                               ),
                               onPressed: () =>
                                   _close(WelcomeDismissMethod.button),
-                              child: Text(strings.t('welcomeStart')),
+                              // 图标+文字作为一组居中；文字空间不足时换行，
+                              // 图标固定 20dp 不缩放。图标纯装饰：不绑手势、不进语义树。
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  ExcludeSemantics(
+                                    child: Icon(
+                                      Icons.arrow_forward,
+                                      key: welcomeDialogStartIconKey,
+                                      size: welcomeStartIconSize,
+                                      color: scheme.onPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(width: welcomeStartIconGap),
+                                  Flexible(
+                                    child: Text(strings.t('welcomeStart')),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
