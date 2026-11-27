@@ -1,0 +1,49 @@
+{
+  "status": "needs_input",
+  "summary": "完成欢迎弹窗主按钮加右箭头的歧义扫描，产出 4 条待用户拍板的问题（范围、图标位置、图标素材风格、读屏语义）；本回合按澄清阶段要求未写 PRD 与需求卡片。",
+  "artifacts": [
+    {
+      "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\m94psibp\\待提问清单.md",
+      "action": "created"
+    }
+  ],
+  "selfCheck": "回合 A 准出清单：1) 每个疑点都写了「会改变什么」与「推荐答案」——通过；2) 未混入只影响实现细节的问题——通过（未问间距/颜色具体值、组件实现、测试改法）；3) 未替用户回答问题——通过（推荐答案仅作备选，等待用户确认）。已核对现有弹窗代码、文案 key 与支持语言；本回合未运行构建或测试，故「代码可运行性」未验证（不属于本阶段产物）。",
+  "decisionsTitle": "欢迎弹窗「开始使用」加右箭头的 4 个待确认点",
+  "decisions": [
+    {
+      "q": "本需求是只给按钮加箭头，还是欢迎弹窗整体按新页面重做？",
+      "options": [
+        { "text": "只加箭头，弹窗结构/文案/配图/关闭逻辑都不变（推荐）", "recommended": true },
+        { "text": "整体重做欢迎弹窗，按新设计稿重新实现" }
+      ]
+    },
+    {
+      "q": "箭头放在按钮内部文字左侧（同一个点击区域），还是按钮整体左侧（按钮外）？",
+      "options": [
+        { "text": "按钮内部、文字左侧，点箭头等同点按钮（推荐）", "recommended": true },
+        { "text": "按钮外左侧，需另行定义箭头点击行为" }
+      ]
+    },
+    {
+      "q": "箭头图标用哪种素材/风格？（无参考截图）",
+      "options": [
+        { "text": "Material 实心右箭头 arrow_forward，不引入新素材（推荐）", "recommended": true },
+        { "text": "细线 chevron_right" },
+        { "text": "由用户提供指定图标素材或设计稿" }
+      ]
+    },
+    {
+      "q": "新增箭头是否要被读屏软件单独朗读？",
+      "options": [
+        { "text": "纯装饰不朗读，按钮可访问名称仍为「开始使用/Get started」（推荐）", "recommended": true },
+        { "text": "朗读包含箭头语义，需确定朗读文案" }
+      ]
+    }
+  ],
+  "blockers": [
+    {
+      "reason": "平台命令给的是 Gradle（./gradlew assembleDebug），但仓库 AGENTS.md 明确当前实现为 Flutter（flutter_app/，构建命令为 flutter build apk --debug、单测为 flutter test）。开发/构建阶段应以 AGENTS.md 为准，否则按 Gradle 命令会找不到工程；本阶段仅记录，不阻塞需求澄清。",
+      "severity": "suggestion"
+    }
+  ]
+}

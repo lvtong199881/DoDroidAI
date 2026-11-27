@@ -1,0 +1,1646 @@
+{
+  "requirement": "m94psibp 欢迎弹窗主按钮「开始使用 / Get started」左侧新增 Material arrow_forward 右箭头（20×20dp，间距 8dp，与文字同色、垂直居中）；弹窗其余内容与交互不变。",
+  "designTokens": {
+    "fonts": {
+      "android": {
+        "latin": "Roboto（Material 默认）",
+        "cjk": "系统默认中文字体（Noto Sans CJK SC / MiSans 等）",
+        "stack": "Roboto, 'Noto Sans SC', 'Noto Sans CJK SC', sans-serif"
+      },
+      "preview": {
+        "stack": "'Segoe UI', 'Microsoft YaHei', 'Noto Sans SC', sans-serif",
+        "reason": "Windows 出图环境无 Roboto/Noto Sans CJK，用系统字体近似；Android 真机以系统字体为准"
+      },
+      "iconFont": "MaterialIcons-Regular（Icons.arrow_forward），随 Flutter 打包，不新增资源"
+    },
+    "colors": {
+      "light": {
+        "surface": "#FFFFFF",
+        "surfaceContainer": "#F3F5F9",
+        "onSurface": "#171A1F",
+        "onSurfaceVariant": "#5B6270",
+        "outline": "#DDE1E9",
+        "primary": "#4D6BFE",
+        "onPrimary": "#FFFFFF",
+        "scrim": "rgba(0, 0, 0, 0.54)",
+        "shadow": "0 8px 24px rgba(0, 0, 0, 0.18)"
+      },
+      "dark": {
+        "surface": "#161920",
+        "surfaceContainer": "#1E222B",
+        "onSurface": "#E6E8EC",
+        "onSurfaceVariant": "#A6ADBB",
+        "outline": "#2B303B",
+        "primary": "#8FA6FF",
+        "onPrimary": "#0A1F5C",
+        "scrim": "rgba(0, 0, 0, 0.54)",
+        "shadow": "0 8px 24px rgba(0, 0, 0, 0.55)"
+      }
+    },
+    "typography": {
+      "title": {
+        "fontSize": 20,
+        "fontWeight": 600,
+        "lineHeight": 1.3,
+        "colorToken": "onSurface"
+      },
+      "intro": {
+        "fontSize": 15,
+        "fontWeight": 400,
+        "lineHeight": 1.4,
+        "colorToken": "onSurfaceVariant"
+      },
+      "featureTitle": {
+        "fontSize": 15,
+        "fontWeight": 600,
+        "lineHeight": 1.35,
+        "colorToken": "onSurface"
+      },
+      "featureDesc": {
+        "fontSize": 13,
+        "fontWeight": 400,
+        "lineHeight": 1.45,
+        "colorToken": "onSurfaceVariant"
+      },
+      "button": {
+        "fontSize": 15,
+        "fontWeight": 600,
+        "lineHeight": 1.2,
+        "colorToken": "onPrimary"
+      },
+      "caption": {
+        "fontSize": 12,
+        "fontWeight": 400,
+        "lineHeight": 1.4,
+        "colorToken": "onSurfaceVariant"
+      },
+      "annotation2x": {
+        "fontSize": 6,
+        "fontWeight": 400,
+        "lineHeight": 1.4,
+        "colorToken": "onSurfaceVariant"
+      },
+      "specTitle": {
+        "fontSize": 18,
+        "fontWeight": 600,
+        "lineHeight": 1.3,
+        "colorToken": "onSurface"
+      },
+      "specLabel": {
+        "fontSize": 13,
+        "fontWeight": 600,
+        "lineHeight": 1.35,
+        "colorToken": "onSurface"
+      },
+      "specChip": {
+        "fontSize": 13,
+        "fontWeight": 600,
+        "lineHeight": 1.2,
+        "colorToken": "onPrimary"
+      }
+    },
+    "radius": {
+      "dialog": 16,
+      "pill": 999,
+      "box": 12
+    },
+    "icons": {
+      "size": 22,
+      "strokeWidth": 1.75,
+      "viewport": 24,
+      "colorToken": "primary",
+      "items": {
+        "arrow_forward": {
+          "materialName": "Icons.arrow_forward",
+          "svg": "<path d=\"M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z\" fill=\"currentColor\" stroke=\"none\"/>"
+        },
+        "mic": {
+          "materialName": "Icons.mic_none",
+          "svg": "<path d=\"M12 3.2a2.8 2.8 0 0 0-2.8 2.8v6a2.8 2.8 0 0 0 5.6 0V6A2.8 2.8 0 0 0 12 3.2Z\"/><path d=\"M5.5 11.2a6.5 6.5 0 0 0 13 0\"/><path d=\"M12 17.7v3.1\"/><path d=\"M8.6 20.8h6.8\"/>"
+        },
+        "phone": {
+          "materialName": "Icons.phone_android",
+          "svg": "<path d=\"M8.4 2.4h7.2a2.2 2.2 0 0 1 2.2 2.2v14.8a2.2 2.2 0 0 1-2.2 2.2H8.4a2.2 2.2 0 0 1-2.2-2.2V4.6a2.2 2.2 0 0 1 2.2-2.2Z\"/><path d=\"M10.4 4.9h3.2\"/><path d=\"M11 19.2h2\"/>"
+        },
+        "lock": {
+          "materialName": "Icons.lock_outline",
+          "svg": "<path d=\"M7.2 10.2h9.6a2 2 0 0 1 2 2v6.6a2 2 0 0 1-2 2H7.2a2 2 0 0 1-2-2v-6.6a2 2 0 0 1 2-2Z\"/><path d=\"M8.4 10.2V7.4a3.6 3.6 0 0 1 7.2 0v2.8\"/><circle cx=\"12\" cy=\"15\" r=\"1.05\" fill=\"currentColor\" stroke=\"none\"/>"
+        }
+      }
+    }
+  },
+  "copy": {
+    "zh": {
+      "title": "欢迎使用 DoDroidAI",
+      "intro": "说一句话，让手机替你做事。",
+      "features": [
+        {
+          "title": "按住说话就行",
+          "desc": "语音识别和朗读在手机本地完成；首次使用需联网下载语音模型（默认 Wi-Fi 下自动下载）。"
+        },
+        {
+          "title": "它会动手，不只是聊天",
+          "desc": "发短信、记笔记前会先请你确认；闹钟、日历等操作直接执行。"
+        },
+        {
+          "title": "会话和笔记留在本机",
+          "desc": "保存在本机，会话可随时导出；使用 AI 时内容会发送给你配置的服务商。"
+        }
+      ],
+      "button": "开始使用"
+    },
+    "en": {
+      "title": "Welcome to DoDroidAI",
+      "intro": "Say it, and let your phone do it.",
+      "features": [
+        {
+          "title": "Just hold to talk",
+          "desc": "Speech recognition and read-aloud run on your phone; voice models download once over the network (automatic on Wi-Fi)."
+        },
+        {
+          "title": "It acts, not just chats",
+          "desc": "Sending texts and saving notes ask for your confirmation first; alarms and calendar events run directly."
+        },
+        {
+          "title": "Chats and notes stay on this phone",
+          "desc": "Stored locally; chats can be exported anytime. AI requests go to the provider you configure."
+        }
+      ],
+      "button": "Get started"
+    }
+  },
+  "components": {
+    "page": {
+      "type": "frame",
+      "name": "page",
+      "height": 800,
+      "layout": {
+        "mode": "vertical",
+        "padding": [
+          0,
+          20
+        ],
+        "align": "stretch",
+        "justify": "center"
+      },
+      "children": [
+        {
+          "type": "frame",
+          "name": "dialog",
+          "width": 320,
+          "radius": 16,
+          "fill": "surface",
+          "layout": {
+            "mode": "vertical",
+            "padding": 0,
+            "spacing": 0,
+            "align": "stretch"
+          },
+          "children": [
+            {
+              "type": "frame",
+              "name": "body",
+              "layout": {
+                "mode": "vertical",
+                "padding": [
+                  20,
+                  24,
+                  8,
+                  24
+                ],
+                "align": "stretch"
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "name": "title",
+                  "textRef": "{{LOCALE}}.title",
+                  "typography": "title"
+                },
+                {
+                  "type": "text",
+                  "name": "intro",
+                  "textRef": "{{LOCALE}}.intro",
+                  "typography": "intro",
+                  "margin": [
+                    8,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "name": "features",
+                  "layout": {
+                    "mode": "vertical",
+                    "padding": 0,
+                    "align": "stretch"
+                  },
+                  "margin": [
+                    20,
+                    0,
+                    0,
+                    0
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "name": "feature.1",
+                      "layout": {
+                        "mode": "horizontal",
+                        "padding": 0,
+                        "align": "start"
+                      },
+                      "children": [
+                        {
+                          "type": "icon",
+                          "name": "feature.1.icon",
+                          "icon": "mic",
+                          "width": 22,
+                          "height": 22,
+                          "margin": [
+                            2,
+                            0,
+                            0,
+                            0
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "name": "feature.1.text",
+                          "layout": {
+                            "mode": "vertical",
+                            "padding": 0
+                          },
+                          "margin": [
+                            0,
+                            0,
+                            0,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "name": "feature.1.title",
+                              "textRef": "{{LOCALE}}.features[0].title",
+                              "typography": "featureTitle"
+                            },
+                            {
+                              "type": "text",
+                              "name": "feature.1.desc",
+                              "textRef": "{{LOCALE}}.features[0].desc",
+                              "typography": "featureDesc",
+                              "margin": [
+                                4,
+                                0,
+                                0,
+                                0
+                              ]
+                            }
+                          ],
+                          "width": 238
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "name": "feature.2",
+                      "layout": {
+                        "mode": "horizontal",
+                        "padding": 0,
+                        "align": "start"
+                      },
+                      "margin": [
+                        16,
+                        0,
+                        0,
+                        0
+                      ],
+                      "children": [
+                        {
+                          "type": "icon",
+                          "name": "feature.2.icon",
+                          "icon": "phone",
+                          "width": 22,
+                          "height": 22,
+                          "margin": [
+                            2,
+                            0,
+                            0,
+                            0
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "name": "feature.2.text",
+                          "layout": {
+                            "mode": "vertical",
+                            "padding": 0
+                          },
+                          "margin": [
+                            0,
+                            0,
+                            0,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "name": "feature.2.title",
+                              "textRef": "{{LOCALE}}.features[1].title",
+                              "typography": "featureTitle"
+                            },
+                            {
+                              "type": "text",
+                              "name": "feature.2.desc",
+                              "textRef": "{{LOCALE}}.features[1].desc",
+                              "typography": "featureDesc",
+                              "margin": [
+                                4,
+                                0,
+                                0,
+                                0
+                              ]
+                            }
+                          ],
+                          "width": 238
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "name": "feature.3",
+                      "layout": {
+                        "mode": "horizontal",
+                        "padding": 0,
+                        "align": "start"
+                      },
+                      "margin": [
+                        16,
+                        0,
+                        0,
+                        0
+                      ],
+                      "children": [
+                        {
+                          "type": "icon",
+                          "name": "feature.3.icon",
+                          "icon": "lock",
+                          "width": 22,
+                          "height": 22,
+                          "margin": [
+                            2,
+                            0,
+                            0,
+                            0
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "name": "feature.3.text",
+                          "layout": {
+                            "mode": "vertical",
+                            "padding": 0
+                          },
+                          "margin": [
+                            0,
+                            0,
+                            0,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "name": "feature.3.title",
+                              "textRef": "{{LOCALE}}.features[2].title",
+                              "typography": "featureTitle"
+                            },
+                            {
+                              "type": "text",
+                              "name": "feature.3.desc",
+                              "textRef": "{{LOCALE}}.features[2].desc",
+                              "typography": "featureDesc",
+                              "margin": [
+                                4,
+                                0,
+                                0,
+                                0
+                              ]
+                            }
+                          ],
+                          "width": 238
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "name": "footer",
+              "layout": {
+                "mode": "vertical",
+                "padding": [
+                  12,
+                  20,
+                  20,
+                  20
+                ],
+                "align": "stretch"
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "name": "button",
+                  "radius": 999,
+                  "fill": "primary",
+                  "layout": {
+                    "mode": "vertical",
+                    "padding": [
+                      14,
+                      24
+                    ],
+                    "align": "center",
+                    "justify": "center"
+                  },
+                  "children": [
+                    {
+                      "type": "frame",
+                      "name": "button.content",
+                      "layout": {
+                        "mode": "horizontal",
+                        "padding": 0,
+                        "spacing": 8,
+                        "align": "center",
+                        "justify": "center"
+                      },
+                      "children": [
+                        {
+                          "type": "icon",
+                          "name": "button.icon",
+                          "icon": "arrow_forward",
+                          "width": 20,
+                          "height": 20,
+                          "fill": "onPrimary"
+                        },
+                        {
+                          "type": "text",
+                          "name": "button.label",
+                          "textRef": "{{LOCALE}}.button",
+                          "typography": "button",
+                          "fill": "onPrimary"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "pageNarrow": {
+      "type": "frame",
+      "name": "pageNarrow",
+      "height": 800,
+      "layout": {
+        "mode": "vertical",
+        "padding": [
+          0,
+          20
+        ],
+        "align": "stretch",
+        "justify": "center"
+      },
+      "children": [
+        {
+          "type": "frame",
+          "name": "dialog",
+          "width": 280,
+          "radius": 16,
+          "fill": "surface",
+          "layout": {
+            "mode": "vertical",
+            "padding": 0,
+            "spacing": 0,
+            "align": "stretch"
+          },
+          "children": [
+            {
+              "type": "frame",
+              "name": "body",
+              "layout": {
+                "mode": "vertical",
+                "padding": [
+                  20,
+                  24,
+                  8,
+                  24
+                ],
+                "align": "stretch"
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "name": "title",
+                  "textRef": "{{LOCALE}}.title",
+                  "typography": "title"
+                },
+                {
+                  "type": "text",
+                  "name": "intro",
+                  "textRef": "{{LOCALE}}.intro",
+                  "typography": "intro",
+                  "margin": [
+                    8,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "name": "features",
+                  "layout": {
+                    "mode": "vertical",
+                    "padding": 0,
+                    "align": "stretch"
+                  },
+                  "margin": [
+                    20,
+                    0,
+                    0,
+                    0
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "name": "feature.1",
+                      "layout": {
+                        "mode": "horizontal",
+                        "padding": 0,
+                        "align": "start"
+                      },
+                      "children": [
+                        {
+                          "type": "icon",
+                          "name": "feature.1.icon",
+                          "icon": "mic",
+                          "width": 22,
+                          "height": 22,
+                          "margin": [
+                            2,
+                            0,
+                            0,
+                            0
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "name": "feature.1.text",
+                          "layout": {
+                            "mode": "vertical",
+                            "padding": 0
+                          },
+                          "margin": [
+                            0,
+                            0,
+                            0,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "name": "feature.1.title",
+                              "textRef": "{{LOCALE}}.features[0].title",
+                              "typography": "featureTitle"
+                            },
+                            {
+                              "type": "text",
+                              "name": "feature.1.desc",
+                              "textRef": "{{LOCALE}}.features[0].desc",
+                              "typography": "featureDesc",
+                              "margin": [
+                                4,
+                                0,
+                                0,
+                                0
+                              ]
+                            }
+                          ],
+                          "width": 198
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "name": "feature.2",
+                      "layout": {
+                        "mode": "horizontal",
+                        "padding": 0,
+                        "align": "start"
+                      },
+                      "margin": [
+                        16,
+                        0,
+                        0,
+                        0
+                      ],
+                      "children": [
+                        {
+                          "type": "icon",
+                          "name": "feature.2.icon",
+                          "icon": "phone",
+                          "width": 22,
+                          "height": 22,
+                          "margin": [
+                            2,
+                            0,
+                            0,
+                            0
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "name": "feature.2.text",
+                          "layout": {
+                            "mode": "vertical",
+                            "padding": 0
+                          },
+                          "margin": [
+                            0,
+                            0,
+                            0,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "name": "feature.2.title",
+                              "textRef": "{{LOCALE}}.features[1].title",
+                              "typography": "featureTitle"
+                            },
+                            {
+                              "type": "text",
+                              "name": "feature.2.desc",
+                              "textRef": "{{LOCALE}}.features[1].desc",
+                              "typography": "featureDesc",
+                              "margin": [
+                                4,
+                                0,
+                                0,
+                                0
+                              ]
+                            }
+                          ],
+                          "width": 198
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "name": "feature.3",
+                      "layout": {
+                        "mode": "horizontal",
+                        "padding": 0,
+                        "align": "start"
+                      },
+                      "margin": [
+                        16,
+                        0,
+                        0,
+                        0
+                      ],
+                      "children": [
+                        {
+                          "type": "icon",
+                          "name": "feature.3.icon",
+                          "icon": "lock",
+                          "width": 22,
+                          "height": 22,
+                          "margin": [
+                            2,
+                            0,
+                            0,
+                            0
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "name": "feature.3.text",
+                          "layout": {
+                            "mode": "vertical",
+                            "padding": 0
+                          },
+                          "margin": [
+                            0,
+                            0,
+                            0,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "name": "feature.3.title",
+                              "textRef": "{{LOCALE}}.features[2].title",
+                              "typography": "featureTitle"
+                            },
+                            {
+                              "type": "text",
+                              "name": "feature.3.desc",
+                              "textRef": "{{LOCALE}}.features[2].desc",
+                              "typography": "featureDesc",
+                              "margin": [
+                                4,
+                                0,
+                                0,
+                                0
+                              ]
+                            }
+                          ],
+                          "width": 198
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "name": "footer",
+              "layout": {
+                "mode": "vertical",
+                "padding": [
+                  12,
+                  20,
+                  20,
+                  20
+                ],
+                "align": "stretch"
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "name": "button",
+                  "radius": 999,
+                  "fill": "primary",
+                  "layout": {
+                    "mode": "vertical",
+                    "padding": [
+                      14,
+                      24
+                    ],
+                    "align": "center",
+                    "justify": "center"
+                  },
+                  "children": [
+                    {
+                      "type": "frame",
+                      "name": "button.content",
+                      "layout": {
+                        "mode": "horizontal",
+                        "padding": 0,
+                        "spacing": 8,
+                        "align": "center",
+                        "justify": "center"
+                      },
+                      "children": [
+                        {
+                          "type": "icon",
+                          "name": "button.icon",
+                          "icon": "arrow_forward",
+                          "width": 20,
+                          "height": 20,
+                          "fill": "onPrimary"
+                        },
+                        {
+                          "type": "text",
+                          "name": "button.label",
+                          "textRef": "{{LOCALE}}.button",
+                          "typography": "button",
+                          "fill": "onPrimary"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "baseNote": {
+      "type": "frame",
+      "name": "baseNote",
+      "layout": {
+        "mode": "vertical",
+        "padding": 16,
+        "align": "start"
+      },
+      "children": [
+        {
+          "type": "frame",
+          "name": "note.card",
+          "width": 300,
+          "radius": 12,
+          "fill": "surfaceContainer",
+          "stroke": "outline",
+          "strokeWidth": 1,
+          "layout": {
+            "mode": "vertical",
+            "padding": [
+              12,
+              14
+            ],
+            "spacing": 4
+          },
+          "children": [
+            {
+              "type": "text",
+              "name": "note.title",
+              "text": "F00 · 空态基准",
+              "typography": "specLabel"
+            },
+            {
+              "type": "text",
+              "name": "note.text1",
+              "text": "弹窗未展示；关闭后停留首页。",
+              "typography": "caption"
+            },
+            {
+              "type": "text",
+              "name": "note.text2",
+              "text": "首页界面不在本需求范围，未重绘。",
+              "typography": "caption",
+              "margin": [
+                -4,
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "extremeZh": {
+      "type": "frame",
+      "name": "extreme",
+      "width": 320,
+      "height": 240,
+      "fill": "surface",
+      "layout": {
+        "mode": "vertical",
+        "padding": 24,
+        "align": "center",
+        "spacing": 0
+      },
+      "children": [
+        {
+          "type": "text",
+          "name": "ext.caption",
+          "text": "320dp · 2x 字号 · 真实按钮宽度 240dp",
+          "typography": "annotation2x",
+          "align": "center"
+        },
+        {
+          "type": "frame",
+          "name": "ext.button",
+          "width": 240,
+          "radius": 999,
+          "fill": "primary",
+          "layout": {
+            "mode": "vertical",
+            "padding": [
+              14,
+              24
+            ],
+            "align": "center",
+            "justify": "center"
+          },
+          "margin": [
+            24,
+            0,
+            0,
+            0
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "name": "ext.button.content",
+              "layout": {
+                "mode": "horizontal",
+                "padding": 0,
+                "spacing": 8,
+                "align": "center",
+                "justify": "center"
+              },
+              "children": [
+                {
+                  "type": "icon",
+                  "name": "ext.button.icon",
+                  "icon": "arrow_forward",
+                  "width": 20,
+                  "height": 20,
+                  "fill": "onPrimary"
+                },
+                {
+                  "type": "text",
+                  "name": "ext.button.label",
+                  "textRef": "zh.button",
+                  "typography": "button",
+                  "fill": "onPrimary"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "name": "ext.note",
+          "text": "图标 20×20dp 固定；文字单行，按钮高 64dp",
+          "typography": "annotation2x",
+          "align": "center",
+          "margin": [
+            20,
+            0,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    "extremeEn": {
+      "type": "frame",
+      "name": "extreme",
+      "width": 320,
+      "height": 300,
+      "fill": "surface",
+      "layout": {
+        "mode": "vertical",
+        "padding": 24,
+        "align": "center",
+        "spacing": 0
+      },
+      "children": [
+        {
+          "type": "text",
+          "name": "ext.caption",
+          "text": "320dp · 2x 字号 · 真实按钮宽度 240dp",
+          "typography": "annotation2x",
+          "align": "center"
+        },
+        {
+          "type": "frame",
+          "name": "ext.button",
+          "width": 240,
+          "radius": 999,
+          "fill": "primary",
+          "layout": {
+            "mode": "vertical",
+            "padding": [
+              14,
+              24
+            ],
+            "align": "center",
+            "justify": "center"
+          },
+          "margin": [
+            24,
+            0,
+            0,
+            0
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "name": "ext.button.content",
+              "layout": {
+                "mode": "horizontal",
+                "padding": 0,
+                "spacing": 8,
+                "align": "center",
+                "justify": "center"
+              },
+              "children": [
+                {
+                  "type": "icon",
+                  "name": "ext.button.icon",
+                  "icon": "arrow_forward",
+                  "width": 20,
+                  "height": 20,
+                  "fill": "onPrimary"
+                },
+                {
+                  "type": "text",
+                  "name": "ext.button.label",
+                  "textRef": "en.button",
+                  "typography": "button",
+                  "fill": "onPrimary",
+                  "width": 164
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "name": "ext.note",
+          "text": "文字换行 → 按钮增高至 100dp；图标与文字块垂直居中",
+          "typography": "annotation2x",
+          "align": "center",
+          "margin": [
+            20,
+            0,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    "specSheet": {
+      "type": "frame",
+      "name": "spec",
+      "width": 360,
+      "height": 800,
+      "layout": {
+        "mode": "vertical",
+        "padding": 24,
+        "align": "stretch",
+        "spacing": 0
+      },
+      "children": [
+        {
+          "type": "text",
+          "name": "spec.title",
+          "text": "主按钮规格 · 欢迎弹窗",
+          "typography": "specTitle"
+        },
+        {
+          "type": "text",
+          "name": "spec.sub",
+          "text": "本次仅新增左箭头；按钮宽高、文案、点击行为均不变",
+          "typography": "caption",
+          "margin": [
+            6,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "frame",
+          "name": "spec.button",
+          "width": 280,
+          "radius": 999,
+          "fill": "primary",
+          "layout": {
+            "mode": "vertical",
+            "padding": [
+              14,
+              24
+            ],
+            "align": "center",
+            "justify": "center"
+          },
+          "margin": [
+            20,
+            0,
+            0,
+            0
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "name": "spec.button.content",
+              "layout": {
+                "mode": "horizontal",
+                "padding": 0,
+                "spacing": 8,
+                "align": "center",
+                "justify": "center"
+              },
+              "children": [
+                {
+                  "type": "icon",
+                  "name": "spec.button.icon",
+                  "icon": "arrow_forward",
+                  "width": 20,
+                  "height": 20,
+                  "fill": "onPrimary"
+                },
+                {
+                  "type": "text",
+                  "name": "spec.button.label",
+                  "text": "开始使用",
+                  "typography": "button",
+                  "fill": "onPrimary"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "name": "spec.button.dim",
+          "text": "1:1 · 全宽 280dp（弹窗 320 − 左右各 20dp），最小高 48dp，胶囊圆角",
+          "typography": "caption",
+          "margin": [
+            8,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "rect",
+          "name": "spec.divider.1",
+          "height": 1,
+          "fill": "outline",
+          "margin": [
+            20,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "text",
+          "name": "spec.icon.title",
+          "text": "图标",
+          "typography": "specLabel",
+          "margin": [
+            18,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "frame",
+          "name": "spec.icon.row",
+          "layout": {
+            "mode": "horizontal",
+            "padding": 0,
+            "align": "center"
+          },
+          "margin": [
+            12,
+            0,
+            0,
+            0
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "name": "spec.icon.box",
+              "width": 96,
+              "height": 96,
+              "radius": 12,
+              "fill": "surfaceContainer",
+              "stroke": "outline",
+              "strokeWidth": 1,
+              "layout": {
+                "mode": "vertical",
+                "padding": 8,
+                "align": "center",
+                "justify": "center"
+              },
+              "children": [
+                {
+                  "type": "icon",
+                  "name": "spec.icon.big",
+                  "icon": "arrow_forward",
+                  "width": 80,
+                  "height": 80,
+                  "fill": "primary"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "name": "spec.icon.text",
+              "width": 200,
+              "layout": {
+                "mode": "vertical",
+                "padding": 0
+              },
+              "margin": [
+                0,
+                0,
+                0,
+                16
+              ],
+              "children": [
+                {
+                  "type": "text",
+                  "name": "spec.icon.name",
+                  "text": "arrow_forward（Material Icons 实心）",
+                  "typography": "specLabel"
+                },
+                {
+                  "type": "text",
+                  "name": "spec.icon.size",
+                  "text": "20×20dp；左图为 4× 放大示意",
+                  "typography": "caption",
+                  "margin": [
+                    4,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "name": "spec.list",
+          "layout": {
+            "mode": "vertical",
+            "padding": 0,
+            "spacing": 8,
+            "align": "stretch"
+          },
+          "margin": [
+            16,
+            0,
+            0,
+            0
+          ],
+          "children": [
+            {
+              "type": "text",
+              "name": "spec.item.1",
+              "text": "颜色：onPrimary，与按钮文字同色（浅色 #FFFFFF / 深色 #0A1F5C）",
+              "typography": "caption"
+            },
+            {
+              "type": "text",
+              "name": "spec.item.2",
+              "text": "间距：与文字 8dp；与文字垂直居中，中心偏差 ≤1dp",
+              "typography": "caption"
+            },
+            {
+              "type": "text",
+              "name": "spec.item.3",
+              "text": "排列：图标在文字左侧，整组水平居中；文字换行时图标随文字块居中",
+              "typography": "caption"
+            },
+            {
+              "type": "text",
+              "name": "spec.item.4",
+              "text": "缩放：图标固定 20×20dp，不随系统字号放大",
+              "typography": "caption"
+            },
+            {
+              "type": "text",
+              "name": "spec.item.5",
+              "text": "触控：图标不单独响应手势，点击任意位置均触发按钮 onPressed",
+              "typography": "caption"
+            },
+            {
+              "type": "text",
+              "name": "spec.item.6",
+              "text": "无障碍：纯装饰，不进语义树；朗读名仍为「开始使用」",
+              "typography": "caption"
+            }
+          ]
+        },
+        {
+          "type": "rect",
+          "name": "spec.divider.2",
+          "height": 1,
+          "fill": "outline",
+          "margin": [
+            20,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "text",
+          "name": "spec.theme.title",
+          "text": "浅色 / 深色对照",
+          "typography": "specLabel",
+          "margin": [
+            16,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "frame",
+          "name": "spec.theme.row",
+          "layout": {
+            "mode": "horizontal",
+            "padding": 0,
+            "spacing": 12,
+            "align": "start"
+          },
+          "margin": [
+            12,
+            0,
+            0,
+            0
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "name": "spec.theme.light",
+              "width": 150,
+              "layout": {
+                "mode": "vertical",
+                "padding": 0,
+                "spacing": 6,
+                "align": "center"
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "name": "spec.chip.light",
+                  "width": 148,
+                  "height": 44,
+                  "radius": 999,
+                  "fill": "primary",
+                  "layout": {
+                    "mode": "horizontal",
+                    "padding": [
+                      0,
+                      16
+                    ],
+                    "spacing": 8,
+                    "align": "center",
+                    "justify": "center"
+                  },
+                  "children": [
+                    {
+                      "type": "icon",
+                      "name": "spec.chip.light.icon",
+                      "icon": "arrow_forward",
+                      "width": 16,
+                      "height": 16,
+                      "fill": "onPrimary"
+                    },
+                    {
+                      "type": "text",
+                      "name": "spec.chip.light.label",
+                      "text": "开始使用",
+                      "typography": "specChip",
+                      "fill": "onPrimary"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "name": "spec.theme.light.label",
+                  "text": "浅色 #4D6BFE / 文字 #FFFFFF",
+                  "typography": "caption"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "name": "spec.theme.dark",
+              "width": 150,
+              "layout": {
+                "mode": "vertical",
+                "padding": 0,
+                "spacing": 6,
+                "align": "center"
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "name": "spec.chip.dark",
+                  "width": 148,
+                  "height": 44,
+                  "radius": 999,
+                  "fill": "#8FA6FF",
+                  "layout": {
+                    "mode": "horizontal",
+                    "padding": [
+                      0,
+                      16
+                    ],
+                    "spacing": 8,
+                    "align": "center",
+                    "justify": "center"
+                  },
+                  "children": [
+                    {
+                      "type": "icon",
+                      "name": "spec.chip.dark.icon",
+                      "icon": "arrow_forward",
+                      "width": 16,
+                      "height": 16,
+                      "fill": "#0A1F5C"
+                    },
+                    {
+                      "type": "text",
+                      "name": "spec.chip.dark.label",
+                      "text": "开始使用",
+                      "typography": "specChip",
+                      "fill": "#0A1F5C"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "name": "spec.theme.dark.label",
+                  "text": "深色 #8FA6FF / 文字 #0A1F5C",
+                  "typography": "caption"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "name": "spec.foot",
+          "text": "单位 dp / sp。此帧为标注层（含说明文字），不是产品 UI。",
+          "typography": "caption",
+          "margin": [
+            16,
+            0,
+            0,
+            0
+          ]
+        }
+      ]
+    }
+  },
+  "frames": [
+    {
+      "id": "F00_dialog_hidden_zh",
+      "name": "F00 弹窗未展示（空态基准）",
+      "theme": "light",
+      "locale": "zh",
+      "fontScale": 1,
+      "canvas": {
+        "width": 360,
+        "height": 800,
+        "deviceScale": 3
+      },
+      "background": {
+        "type": "color",
+        "fill": "surface"
+      },
+      "contentRef": "baseNote",
+      "changeScope": "none",
+      "ac": [
+        "AC-6"
+      ],
+      "notes": "空态：弹窗未展示 / 点击关闭后停留首页。截图库无首页基线，背景用纯色占位（首页内容不在本需求范围）；左上角为标注卡，非产品 UI。"
+    },
+    {
+      "id": "F01_dialog_zh_light",
+      "name": "F01 常规 · 中文 · 浅色 · 1x · 360dp",
+      "theme": "light",
+      "locale": "zh",
+      "fontScale": 1,
+      "canvas": {
+        "width": 360,
+        "height": 800,
+        "deviceScale": 3
+      },
+      "background": {
+        "type": "color",
+        "fill": "surface"
+      },
+      "scrim": true,
+      "contentRef": "page",
+      "changeScope": "dialog-only",
+      "ac": [
+        "AC-1",
+        "AC-2",
+        "AC-10"
+      ],
+      "notes": "正常态（主帧）：弹窗与改动前一致，仅主按钮文字左侧新增 20×20dp 右箭头。",
+      "variants": [
+        {
+          "id": "F02_dialog_zh_dark",
+          "name": "F02 常规 · 中文 · 深色 · 1x · 360dp",
+          "theme": "dark"
+        },
+        {
+          "id": "F03_dialog_en_light",
+          "name": "F03 常规 · 英文 · 浅色 · 1x · 360dp",
+          "locale": "en"
+        },
+        {
+          "id": "F04_dialog_en_dark",
+          "name": "F04 常规 · 英文 · 深色 · 1x · 360dp",
+          "theme": "dark",
+          "locale": "en"
+        }
+      ]
+    },
+    {
+      "id": "F05_dialog_zh_light_320",
+      "name": "F05 窄屏 · 中文 · 浅色 · 1x · 320dp",
+      "theme": "light",
+      "locale": "zh",
+      "fontScale": 1,
+      "canvas": {
+        "width": 320,
+        "height": 800,
+        "deviceScale": 3
+      },
+      "background": {
+        "type": "color",
+        "fill": "surface"
+      },
+      "scrim": true,
+      "contentRef": "pageNarrow",
+      "changeScope": "dialog-only",
+      "ac": [
+        "AC-3"
+      ],
+      "notes": "320dp 窄屏：弹窗宽 280dp（左右各 20dp），主按钮内容区收窄，箭头与文字仍单行居中。",
+      "variants": [
+        {
+          "id": "F06_dialog_en_light_320",
+          "name": "F06 窄屏 · 英文 · 浅色 · 1x · 320dp",
+          "locale": "en"
+        }
+      ]
+    },
+    {
+      "id": "F07_font2x_zh_320",
+      "name": "F07 极端 · 2x 字号 · 中文 · 320dp（按钮区裁切）",
+      "theme": "light",
+      "locale": "zh",
+      "fontScale": 2,
+      "canvas": {
+        "width": 320,
+        "height": 240,
+        "deviceScale": 3
+      },
+      "background": {
+        "type": "color",
+        "fill": "surface"
+      },
+      "contentRef": "extremeZh",
+      "changeScope": "component-crop",
+      "ac": [
+        "AC-3"
+      ],
+      "notes": "2x 字号 + 320dp：按钮真实宽度 240dp；字体 30sp 时中文仍单行，按钮高 64dp，图标 20dp 固定不缩放。"
+    },
+    {
+      "id": "F08_font2x_en_320",
+      "name": "F08 极端 · 2x 字号 · 英文 · 320dp（按钮区裁切）",
+      "theme": "light",
+      "locale": "en",
+      "fontScale": 2,
+      "canvas": {
+        "width": 320,
+        "height": 300,
+        "deviceScale": 3
+      },
+      "background": {
+        "type": "color",
+        "fill": "surface"
+      },
+      "contentRef": "extremeEn",
+      "changeScope": "component-crop",
+      "ac": [
+        "AC-3",
+        "AC-9"
+      ],
+      "notes": "最不利组合：Get started 在 30sp 下超出一行，文字换行、按钮增高至 100dp，箭头随文字块居中且不截断。"
+    },
+    {
+      "id": "F09_spec_button",
+      "name": "F09 主按钮规格标注（1:1 + 4x 图标细节）",
+      "theme": "light",
+      "locale": "zh",
+      "fontScale": 1,
+      "canvas": {
+        "width": 360,
+        "height": 800,
+        "deviceScale": 3
+      },
+      "background": {
+        "type": "color",
+        "fill": "surface"
+      },
+      "contentRef": "specSheet",
+      "changeScope": "annotation",
+      "ac": [
+        "AC-2",
+        "AC-8"
+      ],
+      "notes": "标注帧：20×20dp、间距 8dp、onPrimary 同色、垂直居中、纯装饰语义；浅/深色对照。文字为标注层，不是产品 UI。"
+    }
+  ]
+}

@@ -1,0 +1,1532 @@
+{
+  "F00_dialog_hidden_zh": [
+    {
+      "name": "note.card",
+      "type": "frame",
+      "width": 300,
+      "height": 79.15
+    },
+    {
+      "name": "note.title",
+      "type": "text",
+      "width": 87.88,
+      "height": 17.55,
+      "lines": [
+        "F00 · 空态基准"
+      ]
+    },
+    {
+      "name": "note.text1",
+      "type": "text",
+      "width": 168,
+      "height": 16.8,
+      "lines": [
+        "弹窗未展示；关闭后停留首页。"
+      ]
+    },
+    {
+      "name": "note.text2",
+      "type": "text",
+      "width": 192,
+      "height": 16.8,
+      "lines": [
+        "首页界面不在本需求范围，未重绘。"
+      ]
+    }
+  ],
+  "F01_dialog_zh_light": [
+    {
+      "name": "dialog",
+      "type": "frame",
+      "width": 320,
+      "height": 419.7
+    },
+    {
+      "name": "body",
+      "type": "frame",
+      "width": 320,
+      "height": 339.7
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 272,
+      "height": 26,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ]
+    },
+    {
+      "name": "intro",
+      "type": "text",
+      "width": 272,
+      "height": 21,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ]
+    },
+    {
+      "name": "features",
+      "type": "frame",
+      "width": 272,
+      "height": 236.7
+    },
+    {
+      "name": "feature.1",
+      "type": "frame",
+      "width": 272,
+      "height": 80.8
+    },
+    {
+      "name": "feature.1.icon",
+      "type": "icon",
+      "width": 22,
+      "height": 22
+    },
+    {
+      "name": "feature.1.text",
+      "type": "frame",
+      "width": 238,
+      "height": 80.8
+    },
+    {
+      "name": "feature.1.title",
+      "type": "text",
+      "width": 90,
+      "height": 20.25,
+      "lines": [
+        "按住说话就行"
+      ]
+    },
+    {
+      "name": "feature.1.desc",
+      "type": "text",
+      "width": 234,
+      "height": 56.55,
+      "lines": [
+        "语音识别和朗读在手机本地完成；首次使",
+        "用需联网下载语音模型（默认 Wi-Fi ",
+        "下自动下载）。"
+      ]
+    },
+    {
+      "name": "feature.2",
+      "type": "frame",
+      "width": 272,
+      "height": 61.95
+    },
+    {
+      "name": "feature.2.icon",
+      "type": "icon",
+      "width": 22,
+      "height": 22
+    },
+    {
+      "name": "feature.2.text",
+      "type": "frame",
+      "width": 238,
+      "height": 61.95
+    },
+    {
+      "name": "feature.2.title",
+      "type": "text",
+      "width": 150,
+      "height": 20.25,
+      "lines": [
+        "它会动手，不只是聊天"
+      ]
+    },
+    {
+      "name": "feature.2.desc",
+      "type": "text",
+      "width": 234,
+      "height": 37.7,
+      "lines": [
+        "发短信、记笔记前会先请你确认；闹钟、",
+        "日历等操作直接执行。"
+      ]
+    },
+    {
+      "name": "feature.3",
+      "type": "frame",
+      "width": 272,
+      "height": 61.95
+    },
+    {
+      "name": "feature.3.icon",
+      "type": "icon",
+      "width": 22,
+      "height": 22
+    },
+    {
+      "name": "feature.3.text",
+      "type": "frame",
+      "width": 238,
+      "height": 61.95
+    },
+    {
+      "name": "feature.3.title",
+      "type": "text",
+      "width": 135,
+      "height": 20.25,
+      "lines": [
+        "会话和笔记留在本机"
+      ]
+    },
+    {
+      "name": "feature.3.desc",
+      "type": "text",
+      "width": 229.58,
+      "height": 37.7,
+      "lines": [
+        "保存在本机，会话可随时导出；使用 AI ",
+        "时内容会发送给你配置的服务商。"
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 320,
+      "height": 80
+    },
+    {
+      "name": "button",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "button.content",
+      "type": "frame",
+      "width": 88,
+      "height": 20
+    },
+    {
+      "name": "button.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "button.label",
+      "type": "text",
+      "width": 60,
+      "height": 18,
+      "lines": [
+        "开始使用"
+      ]
+    }
+  ],
+  "F02_dialog_zh_dark": [
+    {
+      "name": "dialog",
+      "type": "frame",
+      "width": 320,
+      "height": 419.7
+    },
+    {
+      "name": "body",
+      "type": "frame",
+      "width": 320,
+      "height": 339.7
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 272,
+      "height": 26,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ]
+    },
+    {
+      "name": "intro",
+      "type": "text",
+      "width": 272,
+      "height": 21,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ]
+    },
+    {
+      "name": "features",
+      "type": "frame",
+      "width": 272,
+      "height": 236.7
+    },
+    {
+      "name": "feature.1",
+      "type": "frame",
+      "width": 272,
+      "height": 80.8
+    },
+    {
+      "name": "feature.1.icon",
+      "type": "icon",
+      "width": 22,
+      "height": 22
+    },
+    {
+      "name": "feature.1.text",
+      "type": "frame",
+      "width": 238,
+      "height": 80.8
+    },
+    {
+      "name": "feature.1.title",
+      "type": "text",
+      "width": 90,
+      "height": 20.25,
+      "lines": [
+        "按住说话就行"
+      ]
+    },
+    {
+      "name": "feature.1.desc",
+      "type": "text",
+      "width": 234,
+      "height": 56.55,
+      "lines": [
+        "语音识别和朗读在手机本地完成；首次使",
+        "用需联网下载语音模型（默认 Wi-Fi ",
+        "下自动下载）。"
+      ]
+    },
+    {
+      "name": "feature.2",
+      "type": "frame",
+      "width": 272,
+      "height": 61.95
+    },
+    {
+      "name": "feature.2.icon",
+      "type": "icon",
+      "width": 22,
+      "height": 22
+    },
+    {
+      "name": "feature.2.text",
+      "type": "frame",
+      "width": 238,
+      "height": 61.95
+    },
+    {
+      "name": "feature.2.title",
+      "type": "text",
+      "width": 150,
+      "height": 20.25,
+      "lines": [
+        "它会动手，不只是聊天"
+      ]
+    },
+    {
+      "name": "feature.2.desc",
+      "type": "text",
+      "width": 234,
+      "height": 37.7,
+      "lines": [
+        "发短信、记笔记前会先请你确认；闹钟、",
+        "日历等操作直接执行。"
+      ]
+    },
+    {
+      "name": "feature.3",
+      "type": "frame",
+      "width": 272,
+      "height": 61.95
+    },
+    {
+      "name": "feature.3.icon",
+      "type": "icon",
+      "width": 22,
+      "height": 22
+    },
+    {
+      "name": "feature.3.text",
+      "type": "frame",
+      "width": 238,
+      "height": 61.95
+    },
+    {
+      "name": "feature.3.title",
+      "type": "text",
+      "width": 135,
+      "height": 20.25,
+      "lines": [
+        "会话和笔记留在本机"
+      ]
+    },
+    {
+      "name": "feature.3.desc",
+      "type": "text",
+      "width": 229.58,
+      "height": 37.7,
+      "lines": [
+        "保存在本机，会话可随时导出；使用 AI ",
+        "时内容会发送给你配置的服务商。"
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 320,
+      "height": 80
+    },
+    {
+      "name": "button",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "button.content",
+      "type": "frame",
+      "width": 88,
+      "height": 20
+    },
+    {
+      "name": "button.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "button.label",
+      "type": "text",
+      "width": 60,
+      "height": 18,
+      "lines": [
+        "开始使用"
+      ]
+    }
+  ],
+  "F03_dialog_en_light": [
+    {
+      "name": "dialog",
+      "type": "frame",
+      "width": 320,
+      "height": 496.5
+    },
+    {
+      "name": "body",
+      "type": "frame",
+      "width": 320,
+      "height": 416.5
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 272,
+      "height": 26,
+      "lines": [
+        "Welcome to DoDroidAI"
+      ]
+    },
+    {
+      "name": "intro",
+      "type": "text",
+      "width": 272,
+      "height": 21,
+      "lines": [
+        "Say it, and let your phone do it."
+      ]
+    },
+    {
+      "name": "features",
+      "type": "frame",
+      "width": 272,
+      "height": 313.5
+    },
+    {
+      "name": "feature.1",
+      "type": "frame",
+      "width": 272,
+      "height": 99.65
+    },
+    {
+      "name": "feature.1.icon",
+      "type": "icon",
+      "width": 22,
+      "height": 22
+    },
+    {
+      "name": "feature.1.text",
+      "type": "frame",
+      "width": 238,
+      "height": 99.65
+    },
+    {
+      "name": "feature.1.title",
+      "type": "text",
+      "width": 128.1,
+      "height": 20.25,
+      "lines": [
+        "Just hold to talk"
+      ]
+    },
+    {
+      "name": "feature.1.desc",
+      "type": "text",
+      "width": 229.06,
+      "height": 75.4,
+      "lines": [
+        "Speech recognition and read-aloud ",
+        "run on your phone; voice models ",
+        "download once over the network ",
+        "(automatic on Wi-Fi)."
+      ]
+    },
+    {
+      "name": "feature.2",
+      "type": "frame",
+      "width": 272,
+      "height": 80.8
+    },
+    {
+      "name": "feature.2.icon",
+      "type": "icon",
+      "width": 22,
+      "height": 22
+    },
+    {
+      "name": "feature.2.text",
+      "type": "frame",
+      "width": 238,
+      "height": 80.8
+    },
+    {
+      "name": "feature.2.title",
+      "type": "text",
+      "width": 173.55,
+      "height": 20.25,
+      "lines": [
+        "It acts, not just chats"
+      ]
+    },
+    {
+      "name": "feature.2.desc",
+      "type": "text",
+      "width": 236.21,
+      "height": 56.55,
+      "lines": [
+        "Sending texts and saving notes ask ",
+        "for your confirmation first; alarms",
+        "and calendar events run directly."
+      ]
+    },
+    {
+      "name": "feature.3",
+      "type": "frame",
+      "width": 272,
+      "height": 101.05
+    },
+    {
+      "name": "feature.3.icon",
+      "type": "icon",
+      "width": 22,
+      "height": 22
+    },
+    {
+      "name": "feature.3.text",
+      "type": "frame",
+      "width": 238,
+      "height": 101.05
+    },
+    {
+      "name": "feature.3.title",
+      "type": "text",
+      "width": 214.95,
+      "height": 40.5,
+      "lines": [
+        "Chats and notes stay on this ",
+        "phone"
+      ]
+    },
+    {
+      "name": "feature.3.desc",
+      "type": "text",
+      "width": 236.34,
+      "height": 56.55,
+      "lines": [
+        "Stored locally; chats can be ",
+        "exported anytime. AI requests go to ",
+        "the provider you configure."
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 320,
+      "height": 80
+    },
+    {
+      "name": "button",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "button.content",
+      "type": "frame",
+      "width": 114.7,
+      "height": 20
+    },
+    {
+      "name": "button.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "button.label",
+      "type": "text",
+      "width": 86.7,
+      "height": 18,
+      "lines": [
+        "Get started"
+      ]
+    }
+  ],
+  "F04_dialog_en_dark": [
+    {
+      "name": "dialog",
+      "type": "frame",
+      "width": 320,
+      "height": 496.5
+    },
+    {
+      "name": "body",
+      "type": "frame",
+      "width": 320,
+      "height": 416.5
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 272,
+      "height": 26,
+      "lines": [
+        "Welcome to DoDroidAI"
+      ]
+    },
+    {
+      "name": "intro",
+      "type": "text",
+      "width": 272,
+      "height": 21,
+      "lines": [
+        "Say it, and let your phone do it."
+      ]
+    },
+    {
+      "name": "features",
+      "type": "frame",
+      "width": 272,
+      "height": 313.5
+    },
+    {
+      "name": "feature.1",
+      "type": "frame",
+      "width": 272,
+      "height": 99.65
+    },
+    {
+      "name": "feature.1.icon",
+      "type": "icon",
+      "width": 22,
+      "height": 22
+    },
+    {
+      "name": "feature.1.text",
+      "type": "frame",
+      "width": 238,
+      "height": 99.65
+    },
+    {
+      "name": "feature.1.title",
+      "type": "text",
+      "width": 128.1,
+      "height": 20.25,
+      "lines": [
+        "Just hold to talk"
+      ]
+    },
+    {
+      "name": "feature.1.desc",
+      "type": "text",
+      "width": 229.06,
+      "height": 75.4,
+      "lines": [
+        "Speech recognition and read-aloud ",
+        "run on your phone; voice models ",
+        "download once over the network ",
+        "(automatic on Wi-Fi)."
+      ]
+    },
+    {
+      "name": "feature.2",
+      "type": "frame",
+      "width": 272,
+      "height": 80.8
+    },
+    {
+      "name": "feature.2.icon",
+      "type": "icon",
+      "width": 22,
+      "height": 22
+    },
+    {
+      "name": "feature.2.text",
+      "type": "frame",
+      "width": 238,
+      "height": 80.8
+    },
+    {
+      "name": "feature.2.title",
+      "type": "text",
+      "width": 173.55,
+      "height": 20.25,
+      "lines": [
+        "It acts, not just chats"
+      ]
+    },
+    {
+      "name": "feature.2.desc",
+      "type": "text",
+      "width": 236.21,
+      "height": 56.55,
+      "lines": [
+        "Sending texts and saving notes ask ",
+        "for your confirmation first; alarms",
+        "and calendar events run directly."
+      ]
+    },
+    {
+      "name": "feature.3",
+      "type": "frame",
+      "width": 272,
+      "height": 101.05
+    },
+    {
+      "name": "feature.3.icon",
+      "type": "icon",
+      "width": 22,
+      "height": 22
+    },
+    {
+      "name": "feature.3.text",
+      "type": "frame",
+      "width": 238,
+      "height": 101.05
+    },
+    {
+      "name": "feature.3.title",
+      "type": "text",
+      "width": 214.95,
+      "height": 40.5,
+      "lines": [
+        "Chats and notes stay on this ",
+        "phone"
+      ]
+    },
+    {
+      "name": "feature.3.desc",
+      "type": "text",
+      "width": 236.34,
+      "height": 56.55,
+      "lines": [
+        "Stored locally; chats can be ",
+        "exported anytime. AI requests go to ",
+        "the provider you configure."
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 320,
+      "height": 80
+    },
+    {
+      "name": "button",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "button.content",
+      "type": "frame",
+      "width": 114.7,
+      "height": 20
+    },
+    {
+      "name": "button.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "button.label",
+      "type": "text",
+      "width": 86.7,
+      "height": 18,
+      "lines": [
+        "Get started"
+      ]
+    }
+  ],
+  "F05_dialog_zh_light_320": [
+    {
+      "name": "dialog",
+      "type": "frame",
+      "width": 280,
+      "height": 438.55
+    },
+    {
+      "name": "body",
+      "type": "frame",
+      "width": 280,
+      "height": 358.55
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 232,
+      "height": 26,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ]
+    },
+    {
+      "name": "intro",
+      "type": "text",
+      "width": 232,
+      "height": 21,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ]
+    },
+    {
+      "name": "features",
+      "type": "frame",
+      "width": 232,
+      "height": 255.55
+    },
+    {
+      "name": "feature.1",
+      "type": "frame",
+      "width": 232,
+      "height": 80.8
+    },
+    {
+      "name": "feature.1.icon",
+      "type": "icon",
+      "width": 22,
+      "height": 22
+    },
+    {
+      "name": "feature.1.text",
+      "type": "frame",
+      "width": 198,
+      "height": 80.8
+    },
+    {
+      "name": "feature.1.title",
+      "type": "text",
+      "width": 90,
+      "height": 20.25,
+      "lines": [
+        "按住说话就行"
+      ]
+    },
+    {
+      "name": "feature.1.desc",
+      "type": "text",
+      "width": 195,
+      "height": 56.55,
+      "lines": [
+        "语音识别和朗读在手机本地完成；",
+        "首次使用需联网下载语音模型（默",
+        "认 Wi-Fi 下自动下载）。"
+      ]
+    },
+    {
+      "name": "feature.2",
+      "type": "frame",
+      "width": 232,
+      "height": 61.95
+    },
+    {
+      "name": "feature.2.icon",
+      "type": "icon",
+      "width": 22,
+      "height": 22
+    },
+    {
+      "name": "feature.2.text",
+      "type": "frame",
+      "width": 198,
+      "height": 61.95
+    },
+    {
+      "name": "feature.2.title",
+      "type": "text",
+      "width": 150,
+      "height": 20.25,
+      "lines": [
+        "它会动手，不只是聊天"
+      ]
+    },
+    {
+      "name": "feature.2.desc",
+      "type": "text",
+      "width": 195,
+      "height": 37.7,
+      "lines": [
+        "发短信、记笔记前会先请你确认；",
+        "闹钟、日历等操作直接执行。"
+      ]
+    },
+    {
+      "name": "feature.3",
+      "type": "frame",
+      "width": 232,
+      "height": 80.8
+    },
+    {
+      "name": "feature.3.icon",
+      "type": "icon",
+      "width": 22,
+      "height": 22
+    },
+    {
+      "name": "feature.3.text",
+      "type": "frame",
+      "width": 198,
+      "height": 80.8
+    },
+    {
+      "name": "feature.3.title",
+      "type": "text",
+      "width": 135,
+      "height": 20.25,
+      "lines": [
+        "会话和笔记留在本机"
+      ]
+    },
+    {
+      "name": "feature.3.desc",
+      "type": "text",
+      "width": 195,
+      "height": 56.55,
+      "lines": [
+        "保存在本机，会话可随时导出；使",
+        "用 AI ",
+        "时内容会发送给你配置的服务商。"
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 280,
+      "height": 80
+    },
+    {
+      "name": "button",
+      "type": "frame",
+      "width": 240,
+      "height": 48
+    },
+    {
+      "name": "button.content",
+      "type": "frame",
+      "width": 88,
+      "height": 20
+    },
+    {
+      "name": "button.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "button.label",
+      "type": "text",
+      "width": 60,
+      "height": 18,
+      "lines": [
+        "开始使用"
+      ]
+    }
+  ],
+  "F06_dialog_en_light_320": [
+    {
+      "name": "dialog",
+      "type": "frame",
+      "width": 280,
+      "height": 592.9
+    },
+    {
+      "name": "body",
+      "type": "frame",
+      "width": 280,
+      "height": 512.9
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 232,
+      "height": 26,
+      "lines": [
+        "Welcome to DoDroidAI"
+      ]
+    },
+    {
+      "name": "intro",
+      "type": "text",
+      "width": 232,
+      "height": 42,
+      "lines": [
+        "Say it, and let your phone do ",
+        "it."
+      ]
+    },
+    {
+      "name": "features",
+      "type": "frame",
+      "width": 232,
+      "height": 388.9
+    },
+    {
+      "name": "feature.1",
+      "type": "frame",
+      "width": 232,
+      "height": 118.5
+    },
+    {
+      "name": "feature.1.icon",
+      "type": "icon",
+      "width": 22,
+      "height": 22
+    },
+    {
+      "name": "feature.1.text",
+      "type": "frame",
+      "width": 198,
+      "height": 118.5
+    },
+    {
+      "name": "feature.1.title",
+      "type": "text",
+      "width": 128.1,
+      "height": 20.25,
+      "lines": [
+        "Just hold to talk"
+      ]
+    },
+    {
+      "name": "feature.1.desc",
+      "type": "text",
+      "width": 196.95,
+      "height": 94.25,
+      "lines": [
+        "Speech recognition and ",
+        "read-aloud run on your phone; ",
+        "voice models download once ",
+        "over the network (automatic ",
+        "on Wi-Fi)."
+      ]
+    },
+    {
+      "name": "feature.2",
+      "type": "frame",
+      "width": 232,
+      "height": 118.5
+    },
+    {
+      "name": "feature.2.icon",
+      "type": "icon",
+      "width": 22,
+      "height": 22
+    },
+    {
+      "name": "feature.2.text",
+      "type": "frame",
+      "width": 198,
+      "height": 118.5
+    },
+    {
+      "name": "feature.2.title",
+      "type": "text",
+      "width": 173.55,
+      "height": 20.25,
+      "lines": [
+        "It acts, not just chats"
+      ]
+    },
+    {
+      "name": "feature.2.desc",
+      "type": "text",
+      "width": 182.52,
+      "height": 94.25,
+      "lines": [
+        "Sending texts and saving ",
+        "notes ask for your ",
+        "confirmation first; alarms ",
+        "and calendar events run ",
+        "directly."
+      ]
+    },
+    {
+      "name": "feature.3",
+      "type": "frame",
+      "width": 232,
+      "height": 119.9
+    },
+    {
+      "name": "feature.3.icon",
+      "type": "icon",
+      "width": 22,
+      "height": 22
+    },
+    {
+      "name": "feature.3.text",
+      "type": "frame",
+      "width": 198,
+      "height": 119.9
+    },
+    {
+      "name": "feature.3.title",
+      "type": "text",
+      "width": 177.75,
+      "height": 40.5,
+      "lines": [
+        "Chats and notes stay on ",
+        "this phone"
+      ]
+    },
+    {
+      "name": "feature.3.desc",
+      "type": "text",
+      "width": 196.82,
+      "height": 75.4,
+      "lines": [
+        "Stored locally; chats can be ",
+        "exported anytime. AI requests",
+        "go to the provider you ",
+        "configure."
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 280,
+      "height": 80
+    },
+    {
+      "name": "button",
+      "type": "frame",
+      "width": 240,
+      "height": 48
+    },
+    {
+      "name": "button.content",
+      "type": "frame",
+      "width": 114.7,
+      "height": 20
+    },
+    {
+      "name": "button.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "button.label",
+      "type": "text",
+      "width": 86.7,
+      "height": 18,
+      "lines": [
+        "Get started"
+      ]
+    }
+  ],
+  "F07_font2x_zh_320": [
+    {
+      "name": "ext.caption",
+      "type": "text",
+      "width": 208.56,
+      "height": 16.8,
+      "lines": [
+        "320dp · 2x 字号 · 真实按钮宽度 240dp"
+      ]
+    },
+    {
+      "name": "ext.button",
+      "type": "frame",
+      "width": 240,
+      "height": 64
+    },
+    {
+      "name": "ext.button.content",
+      "type": "frame",
+      "width": 148,
+      "height": 36
+    },
+    {
+      "name": "ext.button.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "ext.button.label",
+      "type": "text",
+      "width": 120,
+      "height": 36,
+      "lines": [
+        "开始使用"
+      ]
+    },
+    {
+      "name": "ext.note",
+      "type": "text",
+      "width": 238.68,
+      "height": 16.8,
+      "lines": [
+        "图标 20×20dp 固定；文字单行，按钮高 64dp"
+      ]
+    }
+  ],
+  "F08_font2x_en_320": [
+    {
+      "name": "ext.caption",
+      "type": "text",
+      "width": 208.56,
+      "height": 16.8,
+      "lines": [
+        "320dp · 2x 字号 · 真实按钮宽度 240dp"
+      ]
+    },
+    {
+      "name": "ext.button",
+      "type": "frame",
+      "width": 240,
+      "height": 100
+    },
+    {
+      "name": "ext.button.content",
+      "type": "frame",
+      "width": 192,
+      "height": 72
+    },
+    {
+      "name": "ext.button.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "ext.button.label",
+      "type": "text",
+      "width": 164,
+      "height": 72,
+      "lines": [
+        "Get ",
+        "started"
+      ]
+    },
+    {
+      "name": "ext.note",
+      "type": "text",
+      "width": 165,
+      "height": 33.6,
+      "lines": [
+        "文字换行 → 按钮增高至 ",
+        "100dp；图标与文字块垂直居中"
+      ]
+    }
+  ],
+  "F09_spec_button": [
+    {
+      "name": "spec.title",
+      "type": "text",
+      "width": 312,
+      "height": 23.4,
+      "lines": [
+        "主按钮规格 · 欢迎弹窗"
+      ]
+    },
+    {
+      "name": "spec.sub",
+      "type": "text",
+      "width": 312,
+      "height": 16.8,
+      "lines": [
+        "本次仅新增左箭头；按钮宽高、文案、点击行为均不变"
+      ]
+    },
+    {
+      "name": "spec.button",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "spec.button.content",
+      "type": "frame",
+      "width": 88,
+      "height": 20
+    },
+    {
+      "name": "spec.button.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "spec.button.label",
+      "type": "text",
+      "width": 60,
+      "height": 18,
+      "lines": [
+        "开始使用"
+      ]
+    },
+    {
+      "name": "spec.button.dim",
+      "type": "text",
+      "width": 312,
+      "height": 33.6,
+      "lines": [
+        "1:1 · 全宽 280dp（弹窗 320 − 左右各 20dp），最小高 ",
+        "48dp，胶囊圆角"
+      ]
+    },
+    {
+      "name": "spec.divider.1",
+      "type": "rect",
+      "width": 312,
+      "height": 1
+    },
+    {
+      "name": "spec.icon.title",
+      "type": "text",
+      "width": 312,
+      "height": 17.55,
+      "lines": [
+        "图标"
+      ]
+    },
+    {
+      "name": "spec.icon.row",
+      "type": "frame",
+      "width": 312,
+      "height": 96
+    },
+    {
+      "name": "spec.icon.box",
+      "type": "frame",
+      "width": 96,
+      "height": 96
+    },
+    {
+      "name": "spec.icon.big",
+      "type": "icon",
+      "width": 80,
+      "height": 80
+    },
+    {
+      "name": "spec.icon.text",
+      "type": "frame",
+      "width": 200,
+      "height": 55.9
+    },
+    {
+      "name": "spec.icon.name",
+      "type": "text",
+      "width": 166.79,
+      "height": 35.1,
+      "lines": [
+        "arrow_forward（Material ",
+        "Icons 实心）"
+      ]
+    },
+    {
+      "name": "spec.icon.size",
+      "type": "text",
+      "width": 162.12,
+      "height": 16.8,
+      "lines": [
+        "20×20dp；左图为 4× 放大示意"
+      ]
+    },
+    {
+      "name": "spec.list",
+      "type": "frame",
+      "width": 312,
+      "height": 191.2
+    },
+    {
+      "name": "spec.item.1",
+      "type": "text",
+      "width": 312,
+      "height": 33.6,
+      "lines": [
+        "颜色：onPrimary，与按钮文字同色（浅色 #FFFFFF / ",
+        "深色 #0A1F5C）"
+      ]
+    },
+    {
+      "name": "spec.item.2",
+      "type": "text",
+      "width": 312,
+      "height": 16.8,
+      "lines": [
+        "间距：与文字 8dp；与文字垂直居中，中心偏差 ≤1dp"
+      ]
+    },
+    {
+      "name": "spec.item.3",
+      "type": "text",
+      "width": 312,
+      "height": 33.6,
+      "lines": [
+        "排列：图标在文字左侧，整组水平居中；文字换行时图标随",
+        "文字块居中"
+      ]
+    },
+    {
+      "name": "spec.item.4",
+      "type": "text",
+      "width": 312,
+      "height": 16.8,
+      "lines": [
+        "缩放：图标固定 20×20dp，不随系统字号放大"
+      ]
+    },
+    {
+      "name": "spec.item.5",
+      "type": "text",
+      "width": 312,
+      "height": 33.6,
+      "lines": [
+        "触控：图标不单独响应手势，点击任意位置均触发按钮 ",
+        "onPressed"
+      ]
+    },
+    {
+      "name": "spec.item.6",
+      "type": "text",
+      "width": 312,
+      "height": 16.8,
+      "lines": [
+        "无障碍：纯装饰，不进语义树；朗读名仍为「开始使用」"
+      ]
+    },
+    {
+      "name": "spec.divider.2",
+      "type": "rect",
+      "width": 312,
+      "height": 1
+    },
+    {
+      "name": "spec.theme.title",
+      "type": "text",
+      "width": 312,
+      "height": 17.55,
+      "lines": [
+        "浅色 / 深色对照"
+      ]
+    },
+    {
+      "name": "spec.theme.row",
+      "type": "frame",
+      "width": 312,
+      "height": 83.6
+    },
+    {
+      "name": "spec.theme.light",
+      "type": "frame",
+      "width": 150,
+      "height": 83.6
+    },
+    {
+      "name": "spec.chip.light",
+      "type": "frame",
+      "width": 148,
+      "height": 44
+    },
+    {
+      "name": "spec.chip.light.icon",
+      "type": "icon",
+      "width": 16,
+      "height": 16
+    },
+    {
+      "name": "spec.chip.light.label",
+      "type": "text",
+      "width": 52,
+      "height": 15.6,
+      "lines": [
+        "开始使用"
+      ]
+    },
+    {
+      "name": "spec.theme.light.label",
+      "type": "text",
+      "width": 114.24,
+      "height": 33.6,
+      "lines": [
+        "浅色 #4D6BFE / 文字 ",
+        "#FFFFFF"
+      ]
+    },
+    {
+      "name": "spec.theme.dark",
+      "type": "frame",
+      "width": 150,
+      "height": 83.6
+    },
+    {
+      "name": "spec.chip.dark",
+      "type": "frame",
+      "width": 148,
+      "height": 44
+    },
+    {
+      "name": "spec.chip.dark.icon",
+      "type": "icon",
+      "width": 16,
+      "height": 16
+    },
+    {
+      "name": "spec.chip.dark.label",
+      "type": "text",
+      "width": 52,
+      "height": 15.6,
+      "lines": [
+        "开始使用"
+      ]
+    },
+    {
+      "name": "spec.theme.dark.label",
+      "type": "text",
+      "width": 114.24,
+      "height": 33.6,
+      "lines": [
+        "深色 #8FA6FF / 文字 ",
+        "#0A1F5C"
+      ]
+    },
+    {
+      "name": "spec.foot",
+      "type": "text",
+      "width": 312,
+      "height": 33.6,
+      "lines": [
+        "单位 dp / sp。此帧为标注层（含说明文字），不是产品 ",
+        "UI。"
+      ]
+    }
+  ]
+}

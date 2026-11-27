@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="360" height="800" viewBox="0 0 360 800">
+<defs><filter id="dlgShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.18"/></filter></defs>
+<rect width="360" height="800" fill="#FFFFFF"/>
+<rect x="0" y="0" width="360" height="800" rx="0" fill="none" />
+<text x="24" y="42.18" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="18" font-weight="600" fill="#171A1F" text-anchor="start" >主按钮规格 · 欢迎弹窗</text>
+<text x="24" y="66.12" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="12" font-weight="400" fill="#5B6270" text-anchor="start" >本次仅新增左箭头；按钮宽高、文案、点击行为均不变</text>
+<rect x="24" y="90.2" width="280" height="48" rx="24" fill="#4D6BFE" />
+<rect x="120" y="104.2" width="88" height="20" rx="0" fill="none" />
+<g transform="translate(120 104.2) scale(0.83)" fill="none" stroke="#FFFFFF" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" color="#FFFFFF" ><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" fill="currentColor" stroke="none"/></g>
+<text x="148" y="119.6" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="15" font-weight="600" fill="#FFFFFF" text-anchor="start" >开始使用</text>
+<text x="24" y="158.92" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="12" font-weight="400" fill="#5B6270" text-anchor="start" >1:1 · 全宽 280dp（弹窗 320 − 左右各 20dp），最小高 <tspan x="24" dy="16.8">48dp，胶囊圆角</tspan></text>
+<rect x="24" y="199.8" width="312" height="1" rx="0" fill="#DDE1E9" />
+<text x="24" y="232.26" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="13" font-weight="600" fill="#171A1F" text-anchor="start" >图标</text>
+<rect x="24" y="248.35" width="312" height="96" rx="0" fill="none" />
+<rect x="24" y="248.35" width="96" height="96" rx="12" fill="#F3F5F9" />
+<rect x="24" y="248.35" width="96" height="96" rx="12" fill="none" stroke="#DDE1E9" stroke-width="1" />
+<g transform="translate(32 256.35) scale(3.33)" fill="none" stroke="#4D6BFE" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" color="#4D6BFE" ><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" fill="currentColor" stroke="none"/></g>
+<rect x="136" y="268.4" width="200" height="55.9" rx="0" fill="none" />
+<text x="136" y="281.85" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="13" font-weight="600" fill="#171A1F" text-anchor="start" >arrow_forward（Material <tspan x="136" dy="17.55">Icons 实心）</tspan></text>
+<text x="136" y="320.22" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="12" font-weight="400" fill="#5B6270" text-anchor="start" >20×20dp；左图为 4× 放大示意</text>
+<rect x="24" y="360.35" width="312" height="191.2" rx="0" fill="none" />
+<text x="24" y="373.07" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="12" font-weight="400" fill="#5B6270" text-anchor="start" >颜色：onPrimary，与按钮文字同色（浅色 #FFFFFF / <tspan x="24" dy="16.8">深色 #0A1F5C）</tspan></text>
+<text x="24" y="414.67" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="12" font-weight="400" fill="#5B6270" text-anchor="start" >间距：与文字 8dp；与文字垂直居中，中心偏差 ≤1dp</text>
+<text x="24" y="439.47" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="12" font-weight="400" fill="#5B6270" text-anchor="start" >排列：图标在文字左侧，整组水平居中；文字换行时图标随<tspan x="24" dy="16.8">文字块居中</tspan></text>
+<text x="24" y="481.07" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="12" font-weight="400" fill="#5B6270" text-anchor="start" >缩放：图标固定 20×20dp，不随系统字号放大</text>
+<text x="24" y="505.87" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="12" font-weight="400" fill="#5B6270" text-anchor="start" >触控：图标不单独响应手势，点击任意位置均触发按钮 <tspan x="24" dy="16.8">onPressed</tspan></text>
+<text x="24" y="547.47" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="12" font-weight="400" fill="#5B6270" text-anchor="start" >无障碍：纯装饰，不进语义树；朗读名仍为「开始使用」</text>
+<rect x="24" y="571.55" width="312" height="1" rx="0" fill="#DDE1E9" />
+<text x="24" y="602" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="13" font-weight="600" fill="#171A1F" text-anchor="start" >浅色 / 深色对照</text>
+<rect x="24" y="618.1" width="312" height="83.6" rx="0" fill="none" />
+<rect x="24" y="618.1" width="150" height="83.6" rx="0" fill="none" />
+<rect x="25" y="618.1" width="148" height="44" rx="22" fill="#4D6BFE" />
+<g transform="translate(61 632.1) scale(0.67)" fill="none" stroke="#FFFFFF" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" color="#FFFFFF" ><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" fill="currentColor" stroke="none"/></g>
+<text x="85" y="644.78" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="start" >开始使用</text>
+<text x="41.88" y="680.82" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="12" font-weight="400" fill="#5B6270" text-anchor="start" >浅色 #4D6BFE / 文字 <tspan x="41.88" dy="16.8">#FFFFFF</tspan></text>
+<rect x="186" y="618.1" width="150" height="83.6" rx="0" fill="none" />
+<rect x="187" y="618.1" width="148" height="44" rx="22" fill="#8FA6FF" />
+<g transform="translate(223 632.1) scale(0.67)" fill="none" stroke="#0A1F5C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" color="#0A1F5C" ><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" fill="currentColor" stroke="none"/></g>
+<text x="247" y="644.78" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="13" font-weight="600" fill="#0A1F5C" text-anchor="start" >开始使用</text>
+<text x="203.88" y="680.82" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="12" font-weight="400" fill="#5B6270" text-anchor="start" >深色 #8FA6FF / 文字 <tspan x="203.88" dy="16.8">#0A1F5C</tspan></text>
+<text x="24" y="730.42" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="12" font-weight="400" fill="#5B6270" text-anchor="start" >单位 dp / sp。此帧为标注层（含说明文字），不是产品 <tspan x="24" dy="16.8">UI。</tspan></text>
+</svg>

@@ -1,0 +1,32 @@
+{
+  "status": "done",
+  "summary": "完成 m94psibp 技术方案：唯一改动为主按钮 child 的箭头行内组合（20dp/8dp/onPrimary/纯装饰），给出定稿契约、T1-T9 开发拆分、影响面、11 条风险与可执行回滚，并把 PRD/设计基线漂移 4 项写入 blockers。",
+  "artifacts": [
+    {
+      "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\m94psibp\\技术方案.md",
+      "action": "created"
+    }
+  ],
+  "selfCheck": "1) 接口定稿：组件构造签名、3 个新增常量/Key、图标规格、语义、点击、日志、关闭枚举、无 API/DB/配置变更均写明，所有字段有明确取值，无未决项。2) 影响面：列出主按钮、2x/320dp、右上角角标、可选「去配置AI」、欢迎图、滚动、flag、日志、无障碍、调用方、既有测试、构建与发布，并附「必须不改」对照清单。3) PRD↔设计逐条核对 15 项：REQ-1~REQ-4 一致；REQ-5 基线漂移、A-8 枚举描述、三条卖点描述、uiautomator 验证方式共 4 项写入 blockers，功能按 PRD 意图、基线按真实 main 代码执行。4) 风险 11 条均有对策与验证方式；回滚含代码/数据/发布/回滚后验证四步，无迁移。5) 开发拆分 T1~T9 均标关联 REQ、依赖、完成判据与状态（全部待办）。6) 模块与改动点每条可追 REQ，含确认不改的对照项。7) 未修改项目下任何源码、配置、资源或测试；本阶段只写需求目录文档，代码基线只读主仓库 main 541b3a3。本阶段未运行构建/单测（方案阶段不实施），验证命令与 AC-1~AC-12 验收计划已在方案 §11 给出。",
+  "decisionsTitle": "本轮技术方案无需用户额外拍板",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "PRD A-8/§10 写「关闭方式仍只有 button/back 两种」，但当前 main 的 WelcomeDismissMethod 实际有 button/back/configureAi/closeButton 四个 wire 值（welcome_contract.dart）。本方案按现状保留四值、不新增不改名，不阻塞开发；请需求 agent 修订 PRD 的事实描述，并补充 close_button/configure_ai 回归不被误删的说明。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "PRD REQ-5/AC-10 提到「三条卖点」，但当前 main 已移除三组卖点，welcome_dialog_test.dart 明确断言其不渲染；设计说明 F01/F03 整页帧反而画了三条卖点、无欢迎图、无右上角角标、无「去配置AI」。AC-10 的「改动前」必须取当前 main 真实构建截图，不能用设计稿整页帧。请需求 agent 修订 PRD 措辞，设计侧补真实基线帧或声明整页帧仅示意。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "设计说明的整页基线帧（F00/F01/F03 等）与当前 main 真实弹窗结构不一致：真实有 2:1 欢迎图、右上角关闭角标、可选「去配置AI」，无三条卖点。设计 §6.6 还建议固定 padding，这属于 PRD 未要求的按钮样式改动（1x 下等效、2x 下会改变换行/高度），本方案不采纳，只采纳按钮内图标规格，并以真实构建作 AC-10 基线。请设计/需求侧确认该口径，避免验收时把角标/配置 AI/欢迎图误判为回归。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "需求卡片 AC-1/AC-2/AC-3 的验证方式包含 uiautomator 结构树/bounds，但 Flutter 的 Icon 不是原生 View，且 REQ-3 要求图标不进语义树，uiautomator 看不到图标节点。本方案改用 Flutter widget test + 截图量测验证图标，uiautomator 仅辅助按钮/弹窗 bounds；请测试阶段按此口径执行，避免误判「图标不存在」。",
+      "severity": "suggestion"
+    }
+  ],
+  "deliverables": {}
+}

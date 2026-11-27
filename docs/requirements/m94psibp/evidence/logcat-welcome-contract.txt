@@ -1,0 +1,5 @@
+11-28 04:50:48.687 24581 24581 I flutter : [welcome] welcome_check result=show reason=no_flag entry=other locale=en
+11-28 04:50:48.799 24581 24581 I flutter : [welcome] welcome_mark result=success
+11-28 04:50:48.867 24581 24581 I flutter : [welcome] welcome_shown entry=other locale=en
+11-28 04:50:53.556 24581 24581 I flutter : [welcome] welcome_dismissed method=button visible_ms=4727
+11-28 04:51:00.959 24740 24740 I flutter : [welcome] welcome_check result=skip reason=flagged entry=cold_start locale=en

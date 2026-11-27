@@ -1,0 +1,38 @@
+{
+  "status": "done",
+  "summary": "按技术方案实现欢迎弹窗主按钮右侧（文字左侧）20dp Material arrow_forward 图标（8dp 间距、onPrimary 同色、垂直居中、纯装饰不进语义树），新增 8 个 widget 单测覆盖 AC-1/2/3/4/5/8/9；全量 flutter test 234 通过、flutter analyze 无新增问题，产出可安装 debug APK 0.1.0.1（arm64-v8a + x86_64）并已在分配设备安装冒烟，提交 36ab0c3 已 push。REQ 映射：REQ-1～REQ-4 → welcome_dialog.dart 常量与按钮 child、welcome_dialog_test.dart 新增 8 例；REQ-5 → 未改契约/日志/flag/文案/资源，既有 37 例与本文件用例全绿。",
+  "artifacts": [
+    {
+      "path": "flutter_app/lib/widgets/welcome_dialog.dart",
+      "action": "modified"
+    },
+    {
+      "path": "flutter_app/test/welcome_dialog_test.dart",
+      "action": "modified"
+    },
+    {
+      "path": "docs/requirements/m94psibp/技术方案.md",
+      "action": "modified"
+    }
+  ],
+  "selfCheck": "1) 开发内容状态：技术方案 §7 已更新，T1～T7、T9 = 已完成，T8（AC 逐条真机验收）标为「待办（移交测试阶段）」；§13 新增交付产物表。2) 编译/构建：在 flutter_app 执行 `flutter build apk --debug --target-platform android-arm64,android-x64` 成功（√ Built build\\app\\outputs\\flutter-apk\\app-debug.apk，205,416,160 字节，含 arm64-v8a 与 x86_64 两套 lib）；未用 `gradlew assembleDebug`：android/.gitignore 忽略 gradlew.bat（构建时由 Flutter 工具生成），且 build.gradle.kts 的 abiFilters 默认只打 arm64-v8a，直接 assembleDebug 的包无法安装到分配到的 x86_64 模拟器，故显式传 target-platform。3) 单测：`flutter test` → 234 个用例全部通过；`flutter test test/welcome_dialog_test.dart` → 45 个通过（既有 37 + 新增 8）；新增用例覆盖图标类型/尺寸/颜色、8dp 间距、垂直居中≤1dp、整组居中、深色 #0A1F5C、中英一致、语义树无图标节点且按钮名精确、点图标关闭且只关一次、320dp+2x 中英不越界。4) 未引入新测试框架（沿用 flutter_test）。5) debug 包：路径 flutter_app/build/app/outputs/flutter-apk/app-debug.apk，版本 0.1.0.1，安装/启动命令已写入技术方案 §13；applicationId、versionName(0.1.0)、versionCode(1) 均未改动。6) 无遗留 TODO；未改动 pubspec/assets/android/welcome_* 契约文件。7) 符合 AGENTS.md：提交信息 `feat: 中文`、注释中文、未新增语言资源、未格式化无关文件（test 文件 diff 仅新增 188 行）。8) 改动文件与 REQ 映射见 summary。9) 提交：feature/m94psibp 上 36ab0c3（2 files, +216/-1）；`git fetch origin` + `git rebase origin/main` 无冲突（main 仍为 fb15d31）；`git push origin feature/m94psibp` 成功（新分支）。10) 未切分支、未 merge 到主分支。11) 静态检查：`flutter analyze` → 48 个 info（均为仓库既有 deprecated_member_use / prefer_initializing_formals），无 error/warning、无新增。12) 设备冒烟（仅分配设备 emulator-5554 = Pixel_3a_API_34_extension_level_7_x86_64）：`adb install -r -t -d` → Success；pm clear 后冷启动，logcat `[welcome] welcome_check result=show ...`、`[welcome] welcome_shown entry=other locale=en`，截图确认英文按钮渲染为「→ Get started」，无 Flutter 异常/welcome_error；未做 AC 逐条真机验收（测试阶段职责）。13) 未跑 integration_test（需设备交互，归测试阶段）。",
+  "decisionsTitle": "",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "架构/构建方式说明（非阻塞，供测试与验收知悉）：分配设备是 x86_64 模拟器，而 android/app/build.gradle.kts 的 abiFilters 默认只打 arm64-v8a，`gradlew assembleDebug` 的产物装不上该设备；本次按技术方案 T7 改用 `flutter build apk --debug --target-platform android-arm64,android-x64` 产出双 ABI 包。若后续用平台命令 assembleDebug 重新出包，必须补 `-Ptarget-platform=android-x64`（或含 arm64 的组合）。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "设备状态：分配设备上 TalkBack 处于开启状态（enabled_accessibility_services 含 TalkBackService，touch_exploration_enabled=1），adb 注入 tap 被 TalkBack 拦截，未能完成设备上的点击关闭冒烟；点击路径已由 widget test 覆盖（点图标中心返回 WelcomeDismissMethod.button、连点只关一次）。测试阶段做 AC-5/AC-8 真机验证时需先确认/管理 TalkBack 状态，避免把注入点击无效误判为功能失效。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "上游文档漂移（技术方案 §9 已记录并按其执行，不影响本次交付）：PRD A-8 / §10 写「关闭方式只有 button / back」，实际契约有 button/back/configureAi/closeButton 四个值；REQ-5/AC-10 提到的「三条卖点」在当前代码中已不存在；设计说明整页帧与当前真实弹窗（有欢迎图、角标、可选去配置AI）不一致。建议需求/设计侧修订措辞，避免验收按错误基线判定。",
+      "severity": "suggestion"
+    }
+  ],
+  "deliverables": {
+    "debugPackage": "flutter_app/build/app/outputs/flutter-apk/app-debug.apk#0.1.0.1"
+  }
+}

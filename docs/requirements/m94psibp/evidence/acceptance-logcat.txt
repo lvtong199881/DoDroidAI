@@ -1,0 +1,31 @@
+# 验收 logcat 摘录（debug 包 com.mohanlv.dodroidai 0.1.0，设备 emulator-5554 / Pixel_3a_API_34_extension_level_7_x86_64）
+# 说明：以下行均为本次验收运行中实际抓到并原样摘录；每次操作前执行 adb logcat -c，故时间戳不连续。
+
+# 1) 首次展示（en / 浅色 / 1x）→ 点击主按钮
+11-28 05:06:09.853 25317 25317 I flutter : [welcome] welcome_dismissed method=button visible_ms=75873
+
+# 2) 再次展示（en）→ 点击箭头中心（425,1532）
+11-28 05:07:22.479 25629 25629 I flutter : [welcome] welcome_check result=show reason=no_flag entry=other locale=en
+11-28 05:07:22.631 25629 25629 I flutter : [welcome] welcome_mark result=success
+11-28 05:07:22.664 25629 25629 I flutter : [welcome] welcome_shown entry=other locale=en
+11-28 05:07:26.407 25629 25629 I flutter : [welcome] welcome_dismissed method=button visible_ms=3769
+
+# 3) zh / 浅色 → 系统返回键
+11-28 05:09:11.175 25972 25972 I flutter : [welcome] welcome_dismissed method=back visible_ms=28014
+
+# 4) zh → 1 秒内连点 3 次（实测 279ms 内 3 次）
+11-28 05:09:33.791 26198 26198 I flutter : [welcome] welcome_dismissed method=button visible_ms=5081
+（同次运行 welcome_dismissed 计数 = 1，无 FATAL EXCEPTION / E/flutter）
+
+# 5) 二次启动（一次性标记已存在）
+11-28 05:17:11.952 28230 28230 I flutter : [welcome] welcome_check result=skip reason=flagged entry=other locale=en
+
+# 6) en → 点击箭头中心（425,1532）
+11-28 05:17:38.443 28366 28366 I flutter : [welcome] welcome_dismissed method=button visible_ms=2743
+
+# 7) 320dp + 2x（zh）展示：welcome 日志 locale 字段仍为 en（应用界面已是中文）
+11-28 05:19:32.023 29035 29035 I flutter : [welcome] welcome_check result=show reason=no_flag entry=other locale=en
+11-28 05:19:32.147 29035 29035 I flutter : [welcome] welcome_mark result=success
+11-28 05:19:32.165 29035 29035 I flutter : [welcome] welcome_shown entry=other locale=en
+
+# 全流程未出现 welcome_error stage=render，未出现 Flutter 未捕获异常。

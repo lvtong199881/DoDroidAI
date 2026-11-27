@@ -1,0 +1,21 @@
+{
+  "status": "done",
+  "summary": "完成欢迎弹窗主按钮「开始使用 / Get started」左侧新增 Material arrow_forward 的设计：10 帧 SVG/PNG 覆盖中英、浅深、320dp、2x 字号与规格标注，含 20×20dp/8dp/onPrimary/垂直居中/纯装饰的验收规格。",
+  "artifacts": [
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\m94psibp\\design\\layouts.json", "action": "created" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\m94psibp\\design\\svg\\", "action": "created" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\m94psibp\\design\\boxes.json", "action": "created" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\m94psibp\\design-images\\", "action": "created" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\m94psibp\\设计说明.md", "action": "created" }
+  ],
+  "selfCheck": "1) design/layouts.json + 10 个 .svg + boxes.json 均在，PNG 10 张在 design-images/，全部由 svggen.cjs/svg2png.cjs(scale=3) 生成，无手写 SVG 坐标；2) 最后一次改动后已重新渲染，帧名与文件一一对应；3) 必备四态齐全：正常 F01、空态 F00、多语言/长文案 F03/F04/F06、极端 F07/F08；加载/错误态判定不出（静态本地内容，无异步/失败路径）并写入说明；4) 截图库无基线，按新页面整页出稿并在说明中标注背景为纯色占位、首页未重绘；5) 每个「页面×状态」独立 frame，共 10 帧；6) 用 SVG 绝对坐标 + boxes 尺寸自查，10 帧文本与矩形均未越出画布，弹窗内文字右缘=内容盒右缘（316/276dp），无溢出；7) 颜色/字号/圆角取自项目金标准 welcome-dialog token（浅 #4D6BFE/#FFFFFF，深 #8FA6FF/#0A1F5C），字体降级（Segoe UI/Microsoft YaHei 近似 Roboto/Noto Sans CJK）已记录；8) 未改动任何源码、配置、资源（checkout 内无工程源码，仅在需求目录写产物）。",
+  "decisionsTitle": "本轮设计无需用户额外拍板",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "本次 checkout 未包含 Flutter 工程源码与 docs/ui-screenshots，无法读取工程真实主题与基线截图：色板/字号取自技能金标准 examples/welcome-dialog（与 a7efpfbp 欢迎弹窗同一套 token），背景按新页面用纯色占位。若工程主题实际值不同，只需替换 designTokens 中 primary/onPrimary 两色，结构不变，不影响开发实现。",
+      "severity": "suggestion"
+    }
+  ],
+  "deliverables": {}
+}

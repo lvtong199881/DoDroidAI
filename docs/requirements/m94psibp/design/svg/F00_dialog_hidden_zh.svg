@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="360" height="800" viewBox="0 0 360 800">
+<defs><filter id="dlgShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.18"/></filter></defs>
+<rect width="360" height="800" fill="#FFFFFF"/>
+<rect x="0" y="0" width="332" height="111.15" rx="0" fill="none" />
+<rect x="16" y="16" width="300" height="79.15" rx="12" fill="#F3F5F9" />
+<rect x="16" y="16" width="300" height="79.15" rx="12" fill="none" stroke="#DDE1E9" stroke-width="1" />
+<text x="30" y="41.46" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="13" font-weight="600" fill="#171A1F" text-anchor="start" >F00 · 空态基准</text>
+<text x="30" y="62.27" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="12" font-weight="400" fill="#5B6270" text-anchor="start" >弹窗未展示；关闭后停留首页。</text>
+<text x="30" y="79.07" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="12" font-weight="400" fill="#5B6270" text-anchor="start" >首页界面不在本需求范围，未重绘。</text>
+</svg>

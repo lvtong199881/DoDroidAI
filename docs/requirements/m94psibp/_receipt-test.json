@@ -1,0 +1,26 @@
+{
+  "status": "done",
+  "summary": "在 emulator-5554 上安装 0.1.0.1 debug 包并真机黑盒执行 17 条用例：通过 16、部分覆盖 1（AC-10 缺改动前基线，未做像素级前后对比）、未覆盖 0；M-1 主按钮关闭日志 10/10、M-2/M-3 通过，无阻塞缺陷；记录 1 条范围外观察（首页输入区 2x+320dp RenderFlex 溢出 42px，弹窗之外）。",
+  "artifacts": [
+    { "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/m94psibp/docs/requirements/m94psibp/测试报告.md", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/m94psibp/docs/requirements/m94psibp/docs/ui-screenshots/welcome/m94-01-first-show-en-light-1x.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/m94psibp/docs/requirements/m94psibp/docs/ui-screenshots/welcome/m94-02-closed-by-icon-tap-en.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/m94psibp/docs/requirements/m94psibp/docs/ui-screenshots/welcome/m94-03-first-show-zh-light-1x.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/m94psibp/docs/requirements/m94psibp/docs/ui-screenshots/welcome/m94-04-first-show-zh-dark-1x.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/m94psibp/docs/requirements/m94psibp/docs/ui-screenshots/welcome/m94-05-zh-320dp-2x-dark.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/m94psibp/docs/requirements/m94psibp/docs/ui-screenshots/welcome/m94-06-en-320dp-2x-dark.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/m94psibp/docs/requirements/m94psibp/docs/ui-screenshots/welcome/m94-07-triple-tap-closed.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/m94psibp/docs/requirements/m94psibp/docs/ui-screenshots/welcome/m94-08-closed-by-back.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/m94psibp/docs/requirements/m94psibp/docs/ui-screenshots/welcome/m94-09-second-launch-no-dialog.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/m94psibp/docs/requirements/m94psibp/evidence/a11y-tree-en-welcome.xml", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/m94psibp/docs/requirements/m94psibp/evidence/logcat-welcome-contract.txt", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/m94psibp/docs/requirements/m94psibp/evidence/m1-10-cycles-raw.txt", "action": "created" }
+  ],
+  "selfCheck": "1) 未读源码/未构建/未跑单测：是；2) 包路径/版本/安装启动命令与开发交付一致（0.1.0.1，205,416,160B，SHA256 0CC3C0…8B4B）：是；3) 关键路径均有真实执行证据：17 条用例+9 张截图+日志+无障碍节点树；4) PRD 覆盖对照填全且每项有结论或未覆盖原因：是（含 AC-1~AC-12、REQ-1~REQ-5、11.1 边界）；5) 用例均标需求编号：是；6) 监测日志逐条校验：M-1 10/10、M-2 仅 button/back、M-3 0 welcome_error/0 Flutter 异常；7) 截图按页面归档：docs/ui-screenshots/welcome/ 共 9 张；8) 缺陷处理：无范围内缺陷，范围外 1 条已记录并建议单独评估；9) 范围外缺陷只记录未改代码：是；10) 未覆盖项写明原因：AC-10 像素级基线（无改动前包）、离线/进程被杀（PRD 未新增 AC）、TalkBack 音频（无采集能力，改用节点树）。",
+  "blockers": [
+    {
+      "reason": "范围外观察：320dp + 字体 2x 下，欢迎弹窗下方的首页输入区右侧出现 Flutter debug 溢出条（OVERFLOWED BY 42 PIXELS），位置在弹窗/主按钮之外，中英文一致，判定与本需求无关。已在报告 §9.1 记录，未改代码，建议单独评估「首页输入区大字号窄屏适配」，不阻塞本需求。",
+      "severity": "suggestion"
+    }
+  ]
+}

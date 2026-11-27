@@ -1,0 +1,13 @@
+cycle=1 shown=[11-28 04:40:57.838 20220 20220 I flutter : [welcome] welcome_shown entry=other locale=en] dismiss=[11-28 04:40:59.655 20220 20220 I flutter : [welcome] welcome_dismissed method=button visible_ms=1855] focus_app=True errors=[]
+cycle=2 SHOW_TIMEOUT
+cycle=3 shown=[11-28 04:41:38.245 20682 20682 I flutter : [welcome] welcome_shown entry=other locale=en] dismiss=[11-28 04:41:39.985 20682 20682 I flutter : [welcome] welcome_dismissed method=button visible_ms=1780] focus_app=True errors=[]
+cycle=4 shown=[11-28 04:41:48.009 20874 20874 I flutter : [welcome] welcome_shown entry=other locale=en] dismiss=[11-28 04:41:49.689 20874 20874 I flutter : [welcome] welcome_dismissed method=button visible_ms=1727] focus_app=True errors=[]
+cycle=5 SHOW_TIMEOUT
+cycle=6 shown=[11-28 04:42:27.799 21342 21342 I flutter : [welcome] welcome_shown entry=other locale=en] dismiss=[11-28 04:42:29.555 21342 21342 I flutter : [welcome] welcome_dismissed method=button visible_ms=1791] focus_app=True errors=[]
+cycle=7 shown=[11-28 04:42:37.787 21529 21529 I flutter : [welcome] welcome_shown entry=other locale=en] dismiss=[11-28 04:42:40.080 21529 21529 I flutter : [welcome] welcome_dismissed method=button visible_ms=2336] focus_app=True errors=[]
+cycle=8 shown=[11-28 04:42:48.754 21726 21726 I flutter : [welcome] welcome_shown entry=other locale=en] dismiss=[11-28 04:42:50.608 21726 21726 I flutter : [welcome] welcome_dismissed method=button visible_ms=1883] focus_app=True errors=[]
+cycle=9 SHOW_TIMEOUT
+cycle=10 shown=[11-28 04:43:28.773 22191 22191 I flutter : [welcome] welcome_shown entry=other locale=en] dismiss=[11-28 04:43:30.265 22191 22191 I flutter : [welcome] welcome_dismissed method=button visible_ms=1582] focus_app=True errors=[]
+attempt=1 SUCCESS shown=[11-28 04:43:51.818 22403 22403 I flutter : [welcome] welcome_shown entry=other locale=en] dismiss=[11-28 04:43:53.011 22403 22403 I flutter : [welcome] welcome_dismissed method=button visible_ms=1216] errors=[]
+attempt=2 SUCCESS shown=[11-28 04:43:59.036 22536 22536 I flutter : [welcome] welcome_shown entry=cold_start locale=en] dismiss=[11-28 04:44:00.289 22536 22536 I flutter : [welcome] welcome_dismissed method=button visible_ms=1270] errors=[]
+attempt=3 SUCCESS shown=[11-28 04:44:06.417 22666 22666 I flutter : [welcome] welcome_shown entry=cold_start locale=en] dismiss=[11-28 04:44:07.589 22666 22666 I flutter : [welcome] welcome_dismissed method=button visible_ms=1194] errors=[]

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="320" height="800" viewBox="0 0 320 800">
+<defs><filter id="dlgShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.18"/></filter></defs>
+<rect width="320" height="800" fill="#FFFFFF"/>
+<rect width="320" height="800" fill="rgba(0, 0, 0, 0.54)"/>
+<rect x="0" y="0" width="320" height="800" rx="0" fill="none" />
+<rect x="20" y="103.55" width="280" height="592.9" rx="16" fill="#FFFFFF" />
+<rect x="20" y="103.55" width="280" height="512.9" rx="0" fill="none" />
+<text x="44" y="143.75" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="20" font-weight="600" fill="#171A1F" text-anchor="start" >Welcome to DoDroidAI</text>
+<text x="44" y="173.45" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="15" font-weight="400" fill="#5B6270" text-anchor="start" >Say it, and let your phone do <tspan x="44" dy="21">it.</tspan></text>
+<rect x="44" y="219.55" width="232" height="388.9" rx="0" fill="none" />
+<rect x="44" y="219.55" width="232" height="118.5" rx="0" fill="none" />
+<g transform="translate(44 219.55) scale(0.92)" fill="none" stroke="#4D6BFE" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" color="#4D6BFE" ><path d="M12 3.2a2.8 2.8 0 0 0-2.8 2.8v6a2.8 2.8 0 0 0 5.6 0V6A2.8 2.8 0 0 0 12 3.2Z"/><path d="M5.5 11.2a6.5 6.5 0 0 0 13 0"/><path d="M12 17.7v3.1"/><path d="M8.6 20.8h6.8"/></g>
+<rect x="78" y="219.55" width="198" height="118.5" rx="0" fill="none" />
+<text x="78" y="235.08" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="15" font-weight="600" fill="#171A1F" text-anchor="start" >Just hold to talk</text>
+<text x="78" y="257.91" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="13" font-weight="400" fill="#5B6270" text-anchor="start" >Speech recognition and <tspan x="78" dy="18.85">read-aloud run on your phone; </tspan><tspan x="78" dy="18.85">voice models download once </tspan><tspan x="78" dy="18.85">over the network (automatic </tspan><tspan x="78" dy="18.85">on Wi-Fi).</tspan></text>
+<rect x="44" y="354.05" width="232" height="118.5" rx="0" fill="none" />
+<g transform="translate(44 354.05) scale(0.92)" fill="none" stroke="#4D6BFE" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" color="#4D6BFE" ><path d="M8.4 2.4h7.2a2.2 2.2 0 0 1 2.2 2.2v14.8a2.2 2.2 0 0 1-2.2 2.2H8.4a2.2 2.2 0 0 1-2.2-2.2V4.6a2.2 2.2 0 0 1 2.2-2.2Z"/><path d="M10.4 4.9h3.2"/><path d="M11 19.2h2"/></g>
+<rect x="78" y="354.05" width="198" height="118.5" rx="0" fill="none" />
+<text x="78" y="369.58" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="15" font-weight="600" fill="#171A1F" text-anchor="start" >It acts, not just chats</text>
+<text x="78" y="392.41" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="13" font-weight="400" fill="#5B6270" text-anchor="start" >Sending texts and saving <tspan x="78" dy="18.85">notes ask for your </tspan><tspan x="78" dy="18.85">confirmation first; alarms </tspan><tspan x="78" dy="18.85">and calendar events run </tspan><tspan x="78" dy="18.85">directly.</tspan></text>
+<rect x="44" y="488.55" width="232" height="119.9" rx="0" fill="none" />
+<g transform="translate(44 488.55) scale(0.92)" fill="none" stroke="#4D6BFE" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" color="#4D6BFE" ><path d="M7.2 10.2h9.6a2 2 0 0 1 2 2v6.6a2 2 0 0 1-2 2H7.2a2 2 0 0 1-2-2v-6.6a2 2 0 0 1 2-2Z"/><path d="M8.4 10.2V7.4a3.6 3.6 0 0 1 7.2 0v2.8"/><circle cx="12" cy="15" r="1.05" fill="currentColor" stroke="none"/></g>
+<rect x="78" y="488.55" width="198" height="119.9" rx="0" fill="none" />
+<text x="78" y="504.08" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="15" font-weight="600" fill="#171A1F" text-anchor="start" >Chats and notes stay on <tspan x="78" dy="20.25">this phone</tspan></text>
+<text x="78" y="547.15" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="13" font-weight="400" fill="#5B6270" text-anchor="start" >Stored locally; chats can be <tspan x="78" dy="18.85">exported anytime. AI requests</tspan><tspan x="78" dy="18.85">go to the provider you </tspan><tspan x="78" dy="18.85">configure.</tspan></text>
+<rect x="20" y="616.45" width="280" height="80" rx="0" fill="none" />
+<rect x="40" y="628.45" width="240" height="48" rx="24" fill="#4D6BFE" />
+<rect x="102.65" y="642.45" width="114.7" height="20" rx="0" fill="none" />
+<g transform="translate(102.65 642.45) scale(0.83)" fill="none" stroke="#FFFFFF" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" color="#FFFFFF" ><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" fill="currentColor" stroke="none"/></g>
+<text x="130.65" y="657.85" font-family="'Segoe UI','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="15" font-weight="600" fill="#FFFFFF" text-anchor="start" >Get started</text>
+</svg>

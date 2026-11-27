@@ -1,0 +1,44 @@
+{
+  "status": "done",
+  "summary": "在 Pixel_3a_API_34 模拟器安装 debug 包 0.1.0 亲手跑了欢迎弹窗全状态：AC-1~AC-12 共 12 条全部通过（12 通过 / 0 未达成）",
+  "artifacts": [
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\rsqebdf9y\\m94psibp\\docs\\requirements\\m94psibp\\验收文档.md", "action": "created" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\rsqebdf9y\\m94psibp\\docs\\requirements\\m94psibp\\evidence\\acceptance-logcat.txt", "action": "created" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\rsqebdf9y\\m94psibp\\docs\\ui-screenshots\\welcome\\first-show-en-light.png", "action": "modified" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\rsqebdf9y\\m94psibp\\docs\\ui-screenshots\\welcome\\first-show-zh-light.png", "action": "modified" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\rsqebdf9y\\m94psibp\\docs\\ui-screenshots\\welcome\\first-show-en-dark.png", "action": "modified" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\rsqebdf9y\\m94psibp\\docs\\ui-screenshots\\welcome\\first-show-en-320dp.png", "action": "modified" }
+  ],
+  "selfCheck": "1) 追溯矩阵完整：AC-1~12 每条都追到 REQ、设计帧和本次实测证据文件；按角色边界未读测试报告，未回填测试用例编号。2) 有界面变化，亲手在分配设备 emulator-5554（AVD Pixel_3a_API_34_extension_level_7_x86_64）装包跑过：中/英、浅/深、1x/2x、320dp、连点、返回键、TalkBack 语义树，结论在验收文档。3) 未看源码、未构建、未评价代码风格；未读测试报告/评审报告。4) 设计偏差逐状态对照：箭头规格与设计一致；真机弹窗结构与设计稿不同（设计按示例出稿，无仓库源码），已判为文档偏差并记录。5) 每条 AC 有明确通过/未达成结论。6) 截图库已更新：测试归档 9 张同名覆盖 + 公共库 4 张 first-show 覆盖，改动前基线备份在 evidence/baseline-*.png。7) 偏差与未验证项已显式列出（TalkBack 未录音、release 无日志、升级路径、折叠屏/RTL、次要按钮与关闭 X）。8) 待决策事项 3 项集中在验收文档 §9 与回执 decisions。",
+  "decisionsTitle": "3 项待拍板（均不影响本次通过）",
+  "decisions": [
+    {
+      "q": "320dp + 2x 字体时主界面底栏出现 Flutter 溢出黄黑条 OVERFLOWED BY 42 PIXELS（全局既有问题，与本需求无关，欢迎弹窗主按钮本身正常）如何处置？",
+      "options": [
+        { "text": "记录、另立需求统一处理（推荐）", "recommended": true },
+        { "text": "本次一并修（会扩大需求范围）" },
+        { "text": "不处理" }
+      ]
+    },
+    {
+      "q": "设计说明/设计稿里的弹窗结构（三条卖点、单按钮、无配图/关闭 X/次要按钮）与真机不一致，如何处置？",
+      "options": [
+        { "text": "设计说明补注「以真机为准」即可（推荐）", "recommended": true },
+        { "text": "重新出稿" },
+        { "text": "修改 PRD 范围" }
+      ]
+    },
+    {
+      "q": "welcome_check/welcome_shown 日志的 locale 字段在应用语言为中文时仍输出 locale=en（疑似取系统 locale），是否纳入后续修复？",
+      "options": [
+        { "text": "记录观察，不改已冻结的 method/visible_ms 契约（推荐）", "recommended": true },
+        { "text": "统一为应用语言后修复" },
+        { "text": "不处理" }
+      ]
+    }
+  ],
+  "blockers": [],
+  "deliverables": {
+    "debugPackage": "flutter_app/build/app/outputs/flutter-apk/app-debug.apk#0.1.0"
+  }
+}
