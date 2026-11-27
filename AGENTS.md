@@ -16,8 +16,9 @@ git 历史中仍可查阅。
 ```
 用户输入
   └─> ChatController.send()
-        ├─ 取最近 20 条消息（上下文窗口）
+        ├─ 取全部历史消息，超模型窗口 80% 时滚动压缩（见 4.2 上下文压缩）
         ├─ 按开关决定是否把 web_search 放进工具列表
+        ├─ system prompt 注入长期记忆（相关性检索）
         ├─ ChatApi.stream() → POST /v1/chat/completions 或 /v1/messages（SSE 流式）
         ├─ 解析 content / reasoning / tool_calls 增量，写入有序内容块
         ├─ tool_call → ToolRegistry.execute()
@@ -25,7 +26,8 @@ git 历史中仍可查阅。
         │     ├─ 缺运行时权限：permission_handler 申请
         │     └─ 结果作为 tool 消息回填
         ├─ 带工具结果再次请求（最多 5 轮）
-        └─ 最终回复写入 sqflite（sessions/messages）
+        ├─ 最终回复写入 sqflite（sessions/messages）
+        └─ 后台异步提炼新记忆（失败静默，不阻塞 UI）
 ```
 
 - 包名：`com.mohanlv.dodroidai`
@@ -65,6 +67,9 @@ git 历史中仍可查阅。
 | 主题色与排版 | `lib/theme/app_theme.dart` |
 | AI 配置模型、多配置持久化 | `lib/ai/ai_config.dart` |
 | 请求构建与 SSE 解析 | `lib/ai/chat_api.dart` |
+| 上下文压缩（滚动增量摘要） | `lib/ai/context_compressor.dart` |
+| 长期记忆自动提炼 | `lib/ai/memory_extractor.dart` |
+| 轻量文本嵌入（哈希 n-gram + 余弦） | `lib/ai/text_embedding.dart` |
 | 工具契约、注册、执行 | `lib/ai/tools.dart` |
 | 会话检索工具（只读，5 个 session_*） | `lib/ai/session_tools.dart` |
 | 联网搜索 | `lib/ai/web_search.dart` |
@@ -108,8 +113,25 @@ class MessageBlock { kind, text, ToolCallInfo? tool, seconds }
   - `openaiChatCompletions`：`{base}/v1/chat/completions`，`Authorization: Bearer`
 - `baseUrl` 统一视为根地址，`normalizeBaseUrl()` 会去掉尾部 `/v1` 等后缀
 - 深度思考开关：OpenAI 格式传 `reasoning_effort`（high/none），Anthropic 传 `thinking`
-- 上下文窗口固定取最近 20 条；工具循环最多 5 轮
+- 上下文管理见 4.2.1（超窗口滚动摘要，不再固定取最近 20 条）；工具循环最多 5 轮
 - OpenCode Go 需要 `x-opencode-session` header（稳定 session id，用于路由与 prompt cache）
+
+### 4.2.1 上下文压缩与长期记忆
+
+- 上下文压缩由 `lib/ai/context_compressor.dart` 完成：消息总 token 超过
+  `contextWindow * 0.8` 时触发，保留最近约 40% 预算的消息，其余压缩成一条摘要
+  user 消息；dart-define `CTX_TRIGGER` 可覆盖触发阈值（调试用，此时保留预算为其 50%）
+- **滚动增量摘要**：已摘要的部分（条数 + 摘要文本）持久化在
+  `session_context` 表；下一轮只摘要「新增落入旧段的消息」，旧段没变化直接复用，
+  不再全量重摘。摘要失败降级为占位文本且不覆盖已存摘要
+- 长期记忆 `memory.db`：`MemoryRepository.insert` 自带语义去重（余弦 ≥ 0.88 视为
+  重复）；`searchRelevant` 用 `lib/ai/text_embedding.dart` 的哈希字符 n-gram 嵌入
+  （0.65 语义 + 0.35 词面 Jaccard 混合评分），旧数据缺向量时懒回填
+- system prompt 记忆注入：记忆 ≤ 20 条全量注入；更多时按最近一条用户消息做
+  相关性检索取 8 条 + 最近 4 条（去重）
+- 每轮对话结束后后台提炼新记忆（`lib/ai/memory_extractor.dart`，最多 3 条 JSON），
+  走 `MemoryRepository.insert` 自动去重；默认开启，`SharedPreferences` 键
+  `memory_auto_extract`（`false` 关闭），失败静默
 
 ### 4.3 工具
 
@@ -131,6 +153,9 @@ class MessageBlock { kind, text, ToolCallInfo? tool, seconds }
   当前会话 id 由 `ToolRegistry.execute(..., sessionId:)` 传入，省略时用当前会话
 - `web_search` 的 `queries` 接受 1-4 个关键词：串行请求（Brave 免费版约 1 QPS）、
   结果按 query 分节并全局 URL 去重，单个查询失败不影响其他查询；旧 `query` 参数仍兼容
+- 记忆工具：`remember_fact`（语义去重，重复时返回已有条目）、`recall_memory`
+  （相关性检索）、`forget_memory`（检索 score ≥ 0.5 才删，删前列出确认）；执行逻辑
+  在 `lib/ai/tools.dart`，检索/去重在 `lib/data/memory_database.dart`
 
 ### 4.3.1 交互式工具 `ask_user_question`
 
@@ -164,8 +189,11 @@ class MessageBlock { kind, text, ToolCallInfo? tool, seconds }
 
 ### 4.5 数据与持久化
 
-- 会话/消息：`dodroidai_flutter.db`（sqflite，当前 version 5），`messages.blocks` 存 JSON，
-  `pending_questions` 存超时未答的问题
+- 会话/消息：`dodroidai_flutter.db`（sqflite，当前 version 6），`messages.blocks` 存 JSON，
+  `pending_questions` 存超时未答的问题；v6 新增 `session_context` 表
+  （session_id/summary/summarized_count/updated_at，滚动摘要持久化）
+- 记忆：独立 `memory.db`（当前 version 2），`memory_facts` 表 v2 新增 `embedding`
+  TEXT 列（JSON 向量，懒回填）；语义去重与检索依赖该列
 - 数据库版本变更必须写 `onUpgrade` 迁移，且 `onCreate` 与迁移列保持一致
 - 新会话懒创建：只有发送第一条消息时才写库，启动和点「+」不落库
 - 笔记/记忆/定时任务各自独立表

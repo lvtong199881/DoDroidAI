@@ -15,6 +15,21 @@ class ChatSession {
   final int updatedAt;
 }
 
+/// 会话的滚动压缩上下文：摘要文本 + 已被摘要覆盖的消息条数
+class SessionContextRecord {
+  SessionContextRecord({
+    required this.sessionId,
+    required this.summary,
+    required this.summarizedCount,
+    required this.updatedAt,
+  });
+
+  final String sessionId;
+  final String summary;
+  final int summarizedCount;
+  final int updatedAt;
+}
+
 /// 会话检索命中的一条消息（含命中片段，供工具层直接展示）
 class MessageHit {
   MessageHit({
@@ -77,7 +92,7 @@ class ChatDatabase {
     final dir = await getDatabasesPath();
     _db = await openDatabase(
       p.join(dir, 'dodroidai_flutter.db'),
-      version: 5,
+      version: 6,
       onCreate: (db, version) async {
         await db.execute(
           'CREATE TABLE sessions (id TEXT PRIMARY KEY, name TEXT, updated_at INTEGER)',
@@ -92,6 +107,7 @@ class ChatDatabase {
           'session_id TEXT, call_id TEXT, questions TEXT, '
           'created_at INTEGER, answered_at INTEGER)',
         );
+        await _createSessionContext(db);
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
@@ -110,9 +126,20 @@ class ChatDatabase {
             'created_at INTEGER, answered_at INTEGER)',
           );
         }
+        if (oldVersion < 6) {
+          await _createSessionContext(db);
+        }
       },
     );
     return _db!;
+  }
+
+  static Future<void> _createSessionContext(Database db) async {
+    await db.execute(
+      'CREATE TABLE IF NOT EXISTS session_context ('
+      'session_id TEXT PRIMARY KEY, summary TEXT, '
+      'summarized_count INTEGER, updated_at INTEGER)',
+    );
   }
 
   Future<void> ensureSession(String id, String name) async {
@@ -167,7 +194,68 @@ class ChatDatabase {
     await db.delete('messages', where: 'session_id = ?', whereArgs: [sessionId]);
     await db.delete('pending_questions',
         where: 'session_id = ?', whereArgs: [sessionId]);
+    // 滚动摘要上下文与会话同生命周期
+    await _deleteSessionContextSafe(db, sessionId);
     await db.delete('sessions', where: 'id = ?', whereArgs: [sessionId]);
+  }
+
+  /// session_context 在低版本测试库里可能不存在，静默跳过
+  static Future<void> _deleteSessionContextSafe(
+    Database db,
+    String sessionId,
+  ) async {
+    try {
+      await db.delete('session_context',
+          where: 'session_id = ?', whereArgs: [sessionId]);
+    } catch (_) {
+      // ignore missing table
+    }
+  }
+
+  /// 读取会话的滚动压缩上下文；不存在或表缺失时返回 null
+  Future<SessionContextRecord?> sessionContext(String sessionId) async {
+    final db = await _open();
+    try {
+      final rows = await db.query(
+        'session_context',
+        where: 'session_id = ?',
+        whereArgs: [sessionId],
+        limit: 1,
+      );
+      if (rows.isEmpty) return null;
+      final r = rows.first;
+      return SessionContextRecord(
+        sessionId: sessionId,
+        summary: r['summary'] as String? ?? '',
+        summarizedCount: r['summarized_count'] as int? ?? 0,
+        updatedAt: r['updated_at'] as int? ?? 0,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 保存（覆盖）会话的滚动压缩上下文
+  Future<void> saveSessionContext(
+    String sessionId,
+    String summary,
+    int summarizedCount,
+  ) async {
+    final db = await _open();
+    try {
+      await db.insert(
+        'session_context',
+        {
+          'session_id': sessionId,
+          'summary': summary,
+          'summarized_count': summarizedCount,
+          'updated_at': DateTime.now().millisecondsSinceEpoch,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    } catch (_) {
+      // ignore missing table（低版本测试库）
+    }
   }
 
   /// 超时未答的问题落库，支持重启后补答

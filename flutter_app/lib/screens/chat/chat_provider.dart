@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../ai/ai_config.dart';
 import '../../ai/chat_api.dart';
+import '../../ai/context_compressor.dart';
+import '../../ai/memory_extractor.dart';
 import '../../ai/token_counter.dart';
 import '../../ai/tools.dart';
 import '../../data/memory_database.dart';
@@ -95,6 +97,19 @@ class ChatController extends StateNotifier<ChatState> {
   final ChatApi _api;
   final ChatDatabase _database;
   final AiConfigStore _configStore;
+
+  late final ContextCompressor _compressor = ContextCompressor(
+    tokenOf: _estimateMessageTokens,
+    summarizeFresh: (transcript) => _summarizeText(transcript),
+    summarizeIncremental: (previous, transcript) =>
+        _summarizeText(transcript, previousSummary: previous),
+  );
+
+  MemoryExtractor? _extractorOverride;
+
+  /// 后台记忆提炼用的 ChatApi（可测试注入）
+  MemoryExtractor get _extractor =>
+      _extractorOverride ?? MemoryExtractor(api: _api);
 
   AiConfig? _config;
   String? _sessionId;
@@ -244,12 +259,15 @@ class ChatController extends StateNotifier<ChatState> {
     // 会话 ID 由 _ensureSessionId 懒创建，幂等
     final sessionId = await _ensureSessionId();
     if (sessionId.isEmpty) return;
-    // 按模型上下文窗口压缩：超过 80% 时由摘要替换更早的对话
     final allMessages = state.messages.where((m) => !m.isLoading).toList();
-    final history = await _fitContextAsync(allMessages, config);
+    // 最近一条用户消息：相关记忆检索的查询词
+    final lastUserText = _lastUserTextOf(allMessages);
+    // 按模型上下文窗口压缩：超过 80% 时由摘要替换更早的对话
+    // （滚动增量摘要，已摘要部分持久化在 session_context 表）
+    final history = await _fitContextAsync(allMessages, config, sessionId);
 
     // 把长期记忆注入 system prompt，让模型真正"记得"用户信息
-    final systemPrompt = await _buildSystemPrompt();
+    final systemPrompt = await _buildSystemPrompt(query: lastUserText.content);
 
     var iteration = 0;
     try {
@@ -432,6 +450,8 @@ class ChatController extends StateNotifier<ChatState> {
       final sessions = await _database.sessions();
       state = state.copyWith(isLoading: false, sessions: sessions);
       await _database.insertMessage(sessionId, assistant);
+      // 每轮结束后后台提炼长期记忆：不阻塞 UI，失败静默
+      unawaited(_maybeExtractMemories(lastUserText.content, assistant.content));
       unawaited(HomeWidgetSync.refresh());
       ChatWidgets.update(
         title: state.currentSession?.name ?? 'DoDroidAI',
@@ -605,113 +625,63 @@ class ChatController extends StateNotifier<ChatState> {
   }
 
   /// 用 tiktoken 精确统计消息 token（含思考与工具内容）
-  int _estimateTokens(List<ChatMessage> messages) {
+  int _estimateMessageTokens(ChatMessage m) {
     final counter = TokenCounter.instance;
-    var total = 0;
-    for (final m in messages) {
-      total += counter.count(m.content);
-      for (final block in m.blocks) {
-        total += counter.count(block.text);
-        final tool = block.tool;
-        if (tool != null) {
-          total += counter.count(tool.arguments);
-          total += counter.count(tool.resultSummary ?? '');
-        }
+    var total = counter.count(m.content);
+    for (final block in m.blocks) {
+      total += counter.count(block.text);
+      final tool = block.tool;
+      if (tool != null) {
+        total += counter.count(tool.arguments);
+        total += counter.count(tool.resultSummary ?? '');
       }
     }
     return total;
   }
 
-  /// 上下文压缩：超过窗口 80% 时把旧消息摘要成一条，保留最近对话
+  ChatMessage _lastUserTextOf(List<ChatMessage> messages) {
+    for (final m in messages.reversed) {
+      if (m.role == ChatRole.user) return m;
+    }
+    return ChatMessage(role: ChatRole.user, content: '');
+  }
+
+  /// 上下文压缩：超过窗口 80% 时把旧消息滚动摘要成一条；
+  /// 已摘要的部分持久化在 session_context 表，下一轮只摘要新增部分
   Future<List<ChatMessage>> _fitContextAsync(
     List<ChatMessage> all,
     AiConfig config,
+    String sessionId,
   ) async {
-    if (all.isEmpty) return all;
-    final window = config.contextWindow > 0 ? config.contextWindow : 200000;
-    // TEMP: 调试用触发阈值，便于在少量对话下验证摘要链路
-    const debugTrigger = int.fromEnvironment('CTX_TRIGGER');
-    final trigger = debugTrigger > 0 ? debugTrigger : (window * 0.8).round();
-    final tokens = _estimateTokens(all);
-    if (tokens <= trigger) return all;
-
-    // 保留最近一段（目标占用 <= 40%），其余交给摘要
-    // 调试阈值下按同比例缩放，便于小对话验证
-    final keepBudget = debugTrigger > 0
-        ? (debugTrigger * 0.5).round()
-        : (window * 0.4).round();
-    var start = 0;
-    while (start < all.length - 2 &&
-        _estimateTokens(all.sublist(start)) > keepBudget) {
-      start++;
-    }
-    if (start == 0) return all;
-
-    final older = all.sublist(0, start);
-    final recent = all.sublist(start);
-    debugPrint(
-      'CONTEXT_COMPRESS summarizing ${older.length} msgs '
-      'tokens≈${_estimateTokens(all)} window=$window',
+    return _compressor.fit(
+      all: all,
+      contextWindow: config.contextWindow,
+      sessionId: sessionId,
+      loadContext: _database.sessionContext,
+      saveContext: _database.saveSessionContext,
     );
-
-    final summary = await _summarize(older, config);
-    if (summary == null || summary.trim().isEmpty) {
-      // 摘要失败时降级为保留最近对话，避免请求直接超限
-      return [
-        ChatMessage(
-          role: ChatRole.user,
-          content: '[更早的 ${older.length} 条对话因超出上下文已省略]',
-        ),
-        ...recent,
-      ];
-    }
-    return [
-      ChatMessage(
-        role: ChatRole.user,
-        content: '[以下是更早对话的摘要，供你保持上下文连续性]\n$summary',
-      ),
-      ...recent,
-    ];
   }
 
-  /// 用当前模型把旧消息压缩成要点摘要
-  Future<String?> _summarize(
-    List<ChatMessage> messages,
-    AiConfig config,
-  ) async {
-    final buffer = StringBuffer();
-    for (final m in messages) {
-      final role = switch (m.role) {
-        ChatRole.user => '用户',
-        ChatRole.assistant => '助手',
-        ChatRole.tool => '工具',
-      };
-      if (m.content.trim().isNotEmpty) {
-        buffer.writeln('$role：${m.content.trim()}');
-      }
-      for (final block in m.blocks) {
-        if (block.kind == MessageBlockKind.toolCall && block.tool != null) {
-          buffer.writeln(
-            '工具 ${block.tool!.name}：${block.tool!.resultSummary ?? ''}',
-          );
-        }
-      }
-    }
-    final transcript = buffer.toString();
+  /// 用当前模型压缩对话转录；`previousSummary` 非空时做增量合并
+  Future<String?> _summarizeText(
+    String transcript, {
+    String? previousSummary,
+  }) async {
     if (transcript.trim().isEmpty) return null;
-
-    final prompt = ChatMessage(
-      role: ChatRole.user,
-      content:
-          '请把下面这段历史对话压缩成要点摘要，保留：用户的关键诉求与偏好、'
-          '已完成的工具操作及其结果、未完成的事项。用简洁的中文条目输出，不要寒暄。\n\n'
-          '$transcript',
-    );
+    final prompt = previousSummary == null
+        ? '请把下面这段历史对话压缩成要点摘要，保留：用户的关键诉求与偏好、'
+            '已完成的工具操作及其结果、未完成的事项。用简洁的中文条目输出，不要寒暄。\n\n'
+            '$transcript'
+        : '下面是一段历史对话的现有摘要，以及该会话新增的对话内容。'
+            '把新增内容合并进摘要，输出一份更新后的完整摘要：'
+            '保留用户的关键诉求与偏好、已完成的工具操作及其结果、未完成的事项，'
+            '不要丢失仍然有效的要点。用简洁的中文条目输出，不要寒暄。\n\n'
+            '[现有摘要]\n$previousSummary\n\n[新增对话]\n$transcript';
     try {
       final collected = StringBuffer();
       await for (final event in _api.stream(
-        config,
-        [prompt],
+        _config!,
+        [ChatMessage(role: ChatRole.user, content: prompt)],
         systemPrompt: '你是对话摘要器，只输出精简摘要。',
       )) {
         final content = event.content;
@@ -725,28 +695,75 @@ class ChatController extends StateNotifier<ChatState> {
   }
 
   /// 拼装 system prompt：固定角色说明 + 长期记忆
-  Future<String?> _buildSystemPrompt() async {
+  ///
+  /// 记忆注入策略：总量少（<=20 条）全量注入；多了就按与最近一条用户消息
+  /// 的相关性检索（语义 + 词面混合评分），再补几条最近的，避免「第 51 条
+  /// 记忆永远看不见」。
+  Future<String?> _buildSystemPrompt({String? query}) async {
     final base =
         '你是 DoDroidAI，一个运行在 Android 手机上的助手。'
         '你可以调用工具操作手机（闹钟、日历、短信、笔记、通讯录、剪贴板、定时任务、联网搜索）。'
         '需要操作手机时直接调用工具，不要只描述步骤；回答简洁准确。'
         '需要回忆过去的对话或查找之前说过的内容时，用 session_search 检索所有历史会话，'
-        '用 session_event_search 在当前会话内检索，用 session_event_read 读取完整消息。'
+        '用 session_event_search 在当前会话内检索，用 session_event_read 读取完整消息；'
+        '需要回忆用户的长期信息时，用 recall_memory 检索记忆库。'
         '缺少必要信息或需要用户做选择时，用 ask_user_question 提问；'
         '能从上下文推断的不要问。若收到 pending，说明用户还没回答，'
         '继续做可以独立完成的工作，不要把 pending 当成跳过或许可。';
     try {
       final facts = await MemoryRepository.instance.list();
       if (facts.isEmpty) return base;
-      final lines = facts
-          .take(50)
-          .map((f) => '- ${f.content}')
-          .join('\n');
+      List<MemoryFact> selected;
+      if (facts.length <= 20) {
+        selected = facts;
+      } else {
+        final queryText = query?.trim() ?? '';
+        final relevant = queryText.isEmpty
+            ? facts.take(8).toList()
+            : await MemoryRepository.instance.searchRelevant(
+                queryText,
+                limit: 8,
+              );
+        final selectedIds = relevant.map((f) => f.id).toSet();
+        final recent =
+            facts.where((f) => !selectedIds.contains(f.id)).take(4);
+        selected = [...relevant, ...recent];
+      }
+      final lines = selected.map((f) => '- ${f.content}').join('\n');
       return '$base\n\n你记住的关于用户的信息：\n$lines';
     } catch (_) {
       return base;
     }
   }
+
+  /// 每轮对话结束后后台提炼新记忆：不阻塞 UI，失败静默
+  Future<void> _maybeExtractMemories(String userText, String assistantText) async {
+    try {
+      final config = _config;
+      if (config == null || !config.isConfigured) return;
+      final prefs = await SharedPreferences.getInstance();
+      // 默认开启，可在对话设置关闭
+      if (prefs.getBool(memoryAutoExtractPrefKey) == false) return;
+      final known = (await MemoryRepository.instance.list())
+          .take(10)
+          .map((f) => f.content)
+          .toList();
+      final extracted = await _extractor.extract(
+        config,
+        userText,
+        assistantText,
+        knownFacts: known,
+      );
+      for (final memory in extracted) {
+        await MemoryRepository.instance.insert('${memory.key}: ${memory.value}');
+      }
+    } catch (_) {
+      // 记忆提炼是增强功能，任何失败都不影响主流程
+    }
+  }
+
+  /// 后台记忆提炼开关（默认开启）
+  static const memoryAutoExtractPrefKey = 'memory_auto_extract';
 
   /// 把底层异常转成用户能看懂的提示
   String _friendlyError(Object error) {
@@ -784,9 +801,7 @@ class ChatController extends StateNotifier<ChatState> {
     return '请求失败：$brief';
   }
 
-  static const autoReadPrefKey = 'auto_read';
-
-  void toggleAutoRead() {
+  static const autoReadPrefKey = 'auto_read';  void toggleAutoRead() {
     final next = !state.autoRead;
     state = state.copyWith(autoRead: next);
     unawaited(_saveAutoRead(next));

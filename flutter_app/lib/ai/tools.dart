@@ -63,7 +63,9 @@ class ToolRegistry {
       'type': 'function',
       'function': {
         'name': 'remember_fact',
-        'description': '记住一条长期信息，例如用户称呼、城市、偏好',
+        'description': '记住一条长期信息，例如用户称呼、城市、偏好。'
+            '与已有记忆语义重复时不会重复存储；'
+            '后续会按相关性自动注入相关记忆，无需每次复述。',
         'parameters': {
           'type': 'object',
           'properties': {
@@ -71,6 +73,47 @@ class ToolRegistry {
             'value': {'type': 'string', 'description': '信息的值'},
           },
           'required': ['key', 'value'],
+        },
+      },
+    },
+    {
+      'type': 'function',
+      'function': {
+        'name': 'recall_memory',
+        'description': '按语义检索已记住的长期信息（用户偏好、城市、称呼等）。'
+            '回答涉及用户个人情况、且当前对话上下文里没有时使用。',
+        'parameters': {
+          'type': 'object',
+          'properties': {
+            'query': {
+              'type': 'string',
+              'description': '要回忆的内容，例如"用户住在哪里""咖啡偏好"',
+            },
+            'limit': {
+              'type': 'integer',
+              'description': '最多返回条数，默认 5，最大 10',
+            },
+          },
+          'required': ['query'],
+        },
+      },
+    },
+    {
+      'type': 'function',
+      'function': {
+        'name': 'forget_memory',
+        'description': '删除一条已记住的长期信息'
+            '（用户明确要求忘记或更正某条信息时使用）。'
+            '只删除语义匹配的条目，结果里会列出删除的内容。',
+        'parameters': {
+          'type': 'object',
+          'properties': {
+            'query': {
+              'type': 'string',
+              'description': '要忘记的内容描述，例如"之前住的城市"',
+            },
+          },
+          'required': ['query'],
         },
       },
     },
@@ -396,6 +439,9 @@ class ToolRegistry {
 
   static const Set<String> highRiskTools = {'send_sms', 'add_note'};
 
+  /// forget_memory 的删除阈值：低于该相关性的条目一律不动
+  static const double _forgetScoreThreshold = 0.5;
+
   static bool isKnown(String name) =>
       definitions.any((d) => d['function']['name'] == name);
 
@@ -464,8 +510,38 @@ class ToolRegistry {
       case 'remember_fact':
         final key = (args['key'] as String?) ?? '';
         final value = (args['value'] as String?) ?? '';
-        await MemoryRepository.instance.insert('$key: $value');
+        if (key.isEmpty || value.isEmpty) {
+          return '参数不合法：key 与 value 必填';
+        }
+        final content = '$key: $value';
+        final fact = await MemoryRepository.instance.insert(content);
+        if (fact.content != content) {
+          return '已有相似记忆，未重复存储：${fact.content}';
+        }
         return '已记住：$key = $value';
+      case 'recall_memory':
+        final query = (args['query'] as String?) ?? '';
+        if (query.isEmpty) return '参数不合法：query 不能为空';
+        final limit = ((args['limit'] as num?)?.toInt() ?? 5).clamp(1, 10);
+        final facts =
+            await MemoryRepository.instance.searchRelevant(query, limit: limit);
+        if (facts.isEmpty) return '还没有记住任何信息';
+        return facts.map((f) => '- ${f.content}').join('\n');
+      case 'forget_memory':
+        final query = (args['query'] as String?) ?? '';
+        if (query.isEmpty) return '参数不合法：query 不能为空';
+        final candidates = await MemoryRepository.instance.searchRelevant(
+          query,
+          limit: 5,
+        );
+        final matched =
+            candidates.where((f) => f.score >= _forgetScoreThreshold).toList();
+        if (matched.isEmpty) return '没有找到与「$query」匹配的记忆，未删除';
+        for (final fact in matched) {
+          await MemoryRepository.instance.delete(fact.id);
+        }
+        return '已删除 ${matched.length} 条记忆：\n'
+            '${matched.map((f) => '- ${f.content}').join('\n')}';
       case 'schedule_task':
         final prompt = (args['prompt'] as String?) ?? '';
         final delay = (args['delay_minutes'] as num?)?.toInt() ?? 0;
