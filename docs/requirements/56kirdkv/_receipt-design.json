@@ -1,0 +1,27 @@
+{
+  "status": "done",
+  "summary": "完成欢迎弹窗新增「AI 配置」说明行的整页设计稿：8 帧 SVG/PNG、布局清单与几何校验、设计说明，覆盖中英/深浅/320dp/2 倍字号/已配置/欢迎图缺失。",
+  "artifacts": [
+    { "path": "design/layouts.json", "action": "created" },
+    { "path": "design/svg/", "action": "created" },
+    { "path": "design/boxes.json", "action": "created" },
+    { "path": "design/hero/", "action": "created" },
+    { "path": "design-images/", "action": "created" },
+    { "path": "设计说明.md", "action": "created" }
+  ],
+  "selfCheck": "准出清单逐项：①design/layouts.json、design/svg/（8 帧）、design/boxes.json、design-images/（8 张 PNG）均存在，SVG/PNG 全部由 svggen.cjs + svg2png.cjs 生成，无手写坐标；②改过 no-hero 顶部条与 320/640 背景后已重渲染，PNG 与 SVG/清单一致；③正常（F01/F02/F07）、空态（F08 欢迎图缺失）、超长/多语言（F03/F06）、极端 2 倍字号/320dp（F05/F04）均有独立帧；加载/错误态无独立帧，理由见设计说明 §4.2；④8 帧 changeScope 均为 full-page，按无截图的新页面整页出稿；⑤boxes 无溢出：F05 弹窗高 604.8 + 顶部 24 = 628.8 < 640，F03 427.4 + 24 = 451.4 < 800，文本宽均 ≤ 标题文案区宽；⑥颜色/字号/圆角/内边距取自现有主题与金标准，新增 6/12/10 间距已记录；⑦字体降级已记录（Windows 预览 Segoe UI/Microsoft YaHei，CJK 600 回退；真机以系统字体为准）；⑧未改动项目源码、配置、资源。",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "项目截图库没有欢迎弹窗真实截图：弹窗宽度 320/280、顶部 24dp、关闭按钮视觉按金标准示例与现有主题推导；若现有实现不同，开发以现有实现为准，说明行的 13sp/颜色/居中/间距/滚动归属不受影响。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "现有欢迎图资源未在本次设计输入中：稿件用同色系 2:1 矢量波形占位，开发合入时替换为现有欢迎图，尺寸 320×160 / 280×140、16dp 圆角与贴边方式不变。",
+      "severity": "suggestion"
+    }
+  ],
+  "deliverables": {
+    "debugPackage": ""
+  }
+}

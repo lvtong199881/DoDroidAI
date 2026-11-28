@@ -1,0 +1,51 @@
+欢迎日志校验摘要（56kirdkv）
+说明：以下为原始 logcat 行摘录；四出口原始记录见 29-close-methods-matrix.txt / 30-close-methods-matrix2.txt。
+
+【四个关闭出口】
+back（1x，2026-11-28 17:21:23）
+11-28 17:21:23.999  3503  3503 I flutter : [welcome] welcome_dismissed method=back visible_ms=66200
+
+back（2x 字体，17:45:11）
+11-28 17:45:11.786  8105  8105 I flutter : [welcome] welcome_dismissed method=back visible_ms=3500
+
+close_button（2x 字体，17:47:50）
+11-28 17:47:50.572  8902  8902 I flutter : [welcome] welcome_dismissed method=close_button visible_ms=12821
+
+button（2x 字体，17:48:18）
+11-28 17:48:18.554  9098  9098 I flutter : [welcome] welcome_dismissed method=button visible_ms=12748
+
+configure_ai（2x 字体，17:48:45）
+11-28 17:48:45.335  9304  9304 I flutter : [welcome] welcome_dismissed method=configure_ai visible_ms=12475
+
+【展示事件：未配置 / 已配置 / 中文 / 二次启动 / 升级】
+未配置英文首次展示（17:20:17）
+11-28 17:20:17.503  3503  3503 I flutter : [welcome] welcome_check result=show reason=no_flag entry=other locale=en
+11-28 17:20:17.787  3503  3503 I flutter : [welcome] welcome_mark result=success
+11-28 17:20:17.850  3503  3503 I flutter : [welcome] welcome_shown entry=other locale=en
+
+已配置英文展示（仅删欢迎标记，保留 AI 配置；17:23:58）
+11-28 17:23:58.960  4435  4435 I flutter : [welcome] welcome_check result=show reason=no_flag entry=other locale=en
+11-28 17:23:59.123  4435  4435 I flutter : [welcome] welcome_shown entry=other locale=en
+
+中文界面展示（17:26:44）——观察：界面已中文，locale 字段仍为 en
+11-28 17:26:44.132  5057  5057 I flutter : [welcome] welcome_check result=show reason=no_flag entry=other locale=en
+11-28 17:26:44.399  5057  5057 I flutter : [welcome] welcome_mark result=success
+11-28 17:26:44.432  5057  5057 I flutter : [welcome] welcome_shown entry=other locale=en
+
+二次启动门控（17:24:31）
+11-28 17:24:31.944  4619  4619 I flutter : [welcome] welcome_check result=skip reason=flagged entry=other locale=en
+
+弹窗展示中杀进程后重启（17:40:50 展示，17:41:08 重启）
+11-28 17:40:50.286  7425  7425 I flutter : [welcome] welcome_check result=show reason=no_flag entry=other locale=en
+11-28 17:40:50.399  7425  7425 I flutter : [welcome] welcome_mark result=success
+11-28 17:40:50.425  7425  7425 I flutter : [welcome] welcome_shown entry=other locale=en
+11-28 17:41:08.317  7529  7529 I flutter : [welcome] welcome_check result=skip reason=flagged entry=cold_start locale=en
+
+覆盖安装后启动（17:42:46）
+11-28 17:42:46.192  7696  7696 I flutter : [welcome] welcome_check result=skip reason=flagged entry=cold_start locale=en
+
+【结论】
+- 四个出口的 method 分别为 back / close_button / button / configure_ai，与 PRD §10.1 契约一致。
+- 每次展示都有 welcome_shown；二次启动、展示中杀进程、覆盖安装后均为 skip reason=flagged。
+- welcome_error 未触发（未能构造 read/write/render 异常），见报告“未覆盖项”。
+- locale 在应用切中文后仍为 en（系统 locale=en-US），非本需求改动；作为监测口径待确认记录。

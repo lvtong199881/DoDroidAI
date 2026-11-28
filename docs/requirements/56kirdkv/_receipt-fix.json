@@ -1,0 +1,37 @@
+{
+  "status": "done",
+  "summary": "按代码评审第 1 轮完成修正：R1（应修）删除集成测试硬编码中文断言、改为与语言无关的 key 断言；S1 补类注释、S2 删除与 Flutter 默认 150ms 耦合的断言并保留共享淡出契约、S3 新增 320dp+英文+2x 用例；复跑 flutter analyze（48 info，无 error/warning）与 flutter test（249 全绿），重出 debug 包 0.1.0.2 并在 emulator-5554 冷启动冒烟通过；提交 7853152 已 push，待复审。",
+  "artifacts": [
+    {
+      "path": "flutter_app/integration_test/welcome_flow_test.dart",
+      "action": "modified"
+    },
+    {
+      "path": "flutter_app/lib/widgets/welcome_dialog.dart",
+      "action": "modified"
+    },
+    {
+      "path": "flutter_app/test/welcome_dialog_test.dart",
+      "action": "modified"
+    },
+    {
+      "path": "C:\\Users\\mohanshang\\.qq-bot\\rsqebdf9y\\56kirdkv\\docs\\requirements\\56kirdkv\\技术方案.md",
+      "action": "modified"
+    }
+  ],
+  "selfCheck": "逐条处理评审：R1（应修）integration_test/welcome_flow_test.dart 已删除硬编码中文 find.text，保留 welcomeDialogAiHintKey 断言（评审建议选项 1），文案逐字仍由 welcome_copy_test / app_strings_test 锁定，英文设备不再必红；S1 已把 welcome_dialog.dart 类注释改为「居中主标题、说明行与副标题」；S2 已删除 route.transitionDuration / reverseTransitionDuration 的 150ms 断言，保留「说明行与主标题共享同一 FadeTransition + 弹窗子树无新增 FadeTransition」两处契约，关闭中帧采样由 75ms 改为 16ms 以与默认时长解耦；S3 已新增「320×640 + 英文 + 2 倍字号」用例，断言说明行换行（高度 > 36.4dp）、无 overflow、滚动区 maxScrollExtent > 0、主按钮完整可见且可点。验证：cd flutter_app && flutter analyze → 48 个 info（均为既有 deprecated_member_use / prefer_initializing_formals），无 error / warning；flutter test → 249 个用例全部通过（本轮 +1，新增英文小屏用例）；定向四个文件 81 个用例全部通过。编译：flutter build apk --debug → √ Built build\\app\\outputs\\flutter-apk\\app-debug.apk（258,830,128 字节，17:11:32）。出包登记：技术方案 §13 已把 0.1.0.1 的「当前有效」改为否、追加 0.1.0.2 行为当前有效，安装/启动命令齐全；包内 versionName 0.1.0 / versionCode 1 未改。设备：仅用 emulator-5554，adb install -r -t -d → Success；pm clear 后冷启动弹窗含说明行（ui dump content-desc = You can change your AI config anytime in Settings.），日志 welcome_check/show 正常，返回键关闭产生 welcome_dismissed method=back，再次启动 welcome_check result=skip reason=flagged、不再弹。提交：7853152（父 38e05ef，feature/56kirdkv）；git fetch 后 origin/main 无新提交，rebase 结果 up to date；push 成功（38e05ef..7853152）。未切分支、未 merge 到主分支。未验证项：设备集成测试未跑（归测试阶段）；android 原生单测任务因 JAVA_HOME=JVM 11 未跑通（无原生 test 源码），见 blockers。修正是否收口以复审为准。",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "cd flutter_app/android && .\\gradlew.bat testDebugUnitTest --console=plain 未跑通：Gradle 要求 JVM 17+，本机 JAVA_HOME 指向 JVM 11；且 android/app/src 下没有 test 源码，该任务本身无用例。Flutter 出包与单测走自带 JDK，均已通过。需要跑原生单测时请把 JAVA_HOME 指到 JDK 17+。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "设计说明与既有实现仍有 4 处不一致（技术方案 §3.2/§11 已按 PRD 收敛，未落地）：① 次/主按钮间距设计 10dp、实现保持 8dp（footer 136/80）；② 无欢迎图时设计 64dp 关闭条、实现沿用半露出角标 + 56dp 额外顶部预留；③ 设计 8 帧未绘主按钮右箭头（既有功能保留）；④ 次按钮设计 15sp/500、1.5dp primary 描边，实现为 w600、outline 1dp。建议需求/设计侧修正文档口径，避免验收按设计稿像素比对；本需求不阻塞。",
+      "severity": "suggestion"
+    }
+  ],
+  "deliverables": {
+    "debugPackage": "flutter_app/build/app/outputs/flutter-apk/app-debug.apk#0.1.0.2"
+  }
+}

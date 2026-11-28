@@ -1,0 +1,30 @@
+{
+  "status": "done",
+  "summary": "首轮评审完成：应修 1 条、建议 3 条；结论打回开发修正（生产实现符合接口契约，问题集中在测试可移植性）",
+  "artifacts": [
+    {
+      "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/56kirdkv/docs/requirements/56kirdkv/代码评审报告.md",
+      "action": "created"
+    }
+  ],
+  "selfCheck": "覆盖本次 diff 7 个文件、直接调用方（showDialog 宿主与 DoDroidApp 语言解析）及 AGENTS.md 约定；未读 PRD、未做需求覆盖核对；未跑构建/测试、未写代码；每条问题均有位置、证据、风险；应修给了具体改法；范围外只记录；首轮评审无复审项。",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "集成测试 welcome_flow_test.dart:51 硬编码中文文案且未固定 locale；DoDroidApp 跟随系统语言，英文设备上该 find.text 必失败，应改为 key 断言或按当前 locale 解析期望文案（应修）",
+      "severity": "blocker"
+    },
+    {
+      "reason": "welcome_dialog.dart:69-73 类级文档仍写「主标题与副标题」，未同步新增说明行（建议）",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "welcome_dialog_test.dart:1318-1324 断言 Flutter DialogRoute 默认 150ms，与本项目未声明的框架默认值耦合，建议只保留共享 FadeTransition 断言（建议）",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "缺少英文 320dp（可叠加 2x）下说明行换行与滚动用例，R2 风险未被直接覆盖（建议）",
+      "severity": "suggestion"
+    }
+  ]
+}

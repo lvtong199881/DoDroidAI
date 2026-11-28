@@ -1,0 +1,140 @@
+{
+  "status": "needs_input",
+  "summary": "已产出 7 条待确认问题（新行位置、是否可点击、配置状态可见性、次要色 token、13 号字缩放、淡出方式、英文文案），等待用户回答后进入需求定稿；本回合未写 PRD 与需求卡片。",
+  "artifacts": [
+    {
+      "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\56kirdkv\\待提问清单.md",
+      "action": "created"
+    }
+  ],
+  "selfCheck": "回合 A 准出清单：1) 7 个疑点均写了「会改变什么」和「推荐答案」——通过；2) 未把只影响实现/设计的疑点混入，居中/换行/字重/行高/间距/日志等已放入「默认采用」——通过；3) 未替用户拍板，推荐仅为建议——通过；4) 未写 PRD/需求卡片，未改上游文档，未起子 agent，未执行 commit/push/发布/删数据——通过；5) 已读 AGENTS.md 与 welcome_dialog.dart、app_theme.dart、app_strings.dart 核对现状；6) 系统条件逐项判断：深色（Q4 + 对比度）、折叠屏/分屏（不专项适配，已写明）、生命周期/升级（无变化）、异常（无网络/权限不适用，渲染沿用现有）、字体缩放（Q5）、多语言（Q7）、无障碍（默认语义，不做全应用改造）；7) 未跑真机/自动化验证（本阶段不涉及）。",
+  "decisionsTitle": "欢迎弹窗新增「AI 配置」说明行：请确认 7 个口径",
+  "decisions": [
+    {
+      "q": "新说明行放在现有副标题的上面还是下面？",
+      "options": [
+        {
+          "text": "紧贴主标题下方、现有副标题上方（保留现有副标题）",
+          "recommended": false
+        },
+        {
+          "text": "现有副标题下方、按钮区上方（保留现有副标题，字号 20/15/13）",
+          "recommended": true
+        },
+        {
+          "text": "替换现有副标题",
+          "recommended": false
+        }
+      ]
+    },
+    {
+      "q": "新说明行是纯文本，还是可点击跳转「设置 → AI 配置」？",
+      "options": [
+        {
+          "text": "纯文本，不可点击；配置入口仍走现有「去配置AI」按钮",
+          "recommended": true
+        },
+        {
+          "text": "整行可点击，跳转「设置 → AI 配置」",
+          "recommended": false
+        },
+        {
+          "text": "仅未配置 AI 时可点击",
+          "recommended": false
+        }
+      ]
+    },
+    {
+      "q": "已配置 AI 的用户是否也显示这行说明？",
+      "options": [
+        {
+          "text": "未配置、已配置都显示",
+          "recommended": true
+        },
+        {
+          "text": "仅已配置时显示",
+          "recommended": false
+        },
+        {
+          "text": "仅未配置时显示",
+          "recommended": false
+        }
+      ]
+    },
+    {
+      "q": "「次要色」用哪个主题 token？",
+      "options": [
+        {
+          "text": "onSurfaceVariant（与现有副标题同色）",
+          "recommended": true
+        },
+        {
+          "text": "colorScheme.secondary",
+          "recommended": false
+        },
+        {
+          "text": "其它指定色值（请补充浅色/深色）",
+          "recommended": false
+        }
+      ]
+    },
+    {
+      "q": "「13 号字」是否跟随系统字体缩放？",
+      "options": [
+        {
+          "text": "13sp，跟随系统字体缩放",
+          "recommended": true
+        },
+        {
+          "text": "固定 13dp，不随系统字体缩放",
+          "recommended": false
+        },
+        {
+          "text": "13sp，但设最大缩放上限（如 1.3 倍）",
+          "recommended": false
+        }
+      ]
+    },
+    {
+      "q": "「跟标题一起淡出」是沿用现有弹窗淡出，还是新增独立淡出动画？",
+      "options": [
+        {
+          "text": "沿用现有整体淡出，不新增动画",
+          "recommended": true
+        },
+        {
+          "text": "新增「标题 + 说明行先淡出，再关闭」的独立动画",
+          "recommended": false
+        },
+        {
+          "text": "只让说明行自己淡出，标题不动",
+          "recommended": false
+        }
+      ]
+    },
+    {
+      "q": "英文界面这行用什么文案？",
+      "options": [
+        {
+          "text": "You can change your AI config anytime in Settings.",
+          "recommended": true
+        },
+        {
+          "text": "You can change AI settings anytime in Settings.",
+          "recommended": false
+        },
+        {
+          "text": "我提供英文定稿",
+          "recommended": false
+        }
+      ]
+    }
+  ],
+  "blockers": [
+    {
+      "reason": "工作区 C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y 除 .qq-bot-scratch 外为空，没有 AGENTS.md 和 flutter_app/；本回合已从主仓库 origin/main 读取 AGENTS.md、welcome_dialog.dart、app_theme.dart、app_strings.dart 核对现状。后续开发/测试前需要把代码恢复到该工作区或改用可用的 worktree。",
+      "severity": "suggestion"
+    }
+  ],
+  "deliverables": {}
+}

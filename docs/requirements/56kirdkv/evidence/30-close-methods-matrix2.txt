@@ -1,0 +1,25 @@
+﻿close-method matrix2 on 2026-11-28T17:47:28
+
+===== CASE close_button =====
+shown=True boundsFound=True tap=1020,296
+dismissed=True
+11-28 17:47:37.558  8902  8902 I flutter : [welcome] welcome_check result=show reason=no_flag entry=other locale=en
+11-28 17:47:37.747  8902  8902 I flutter : [welcome] welcome_mark result=success
+11-28 17:47:37.772  8902  8902 I flutter : [welcome] welcome_shown entry=other locale=en
+11-28 17:47:50.572  8902  8902 I flutter : [welcome] welcome_dismissed method=close_button visible_ms=12821
+
+===== CASE button =====
+shown=True boundsFound=True tap=540,1804
+dismissed=True
+11-28 17:48:05.655  9098  9098 I flutter : [welcome] welcome_check result=show reason=no_flag entry=cold_start locale=en
+11-28 17:48:05.791  9098  9098 I flutter : [welcome] welcome_mark result=success
+11-28 17:48:05.856  9098  9098 I flutter : [welcome] welcome_shown entry=cold_start locale=en
+11-28 17:48:18.554  9098  9098 I flutter : [welcome] welcome_dismissed method=button visible_ms=12748
+
+===== CASE configure_ai =====
+shown=True boundsFound=True tap=540,1650
+dismissed=True
+11-28 17:48:32.627  9304  9304 I flutter : [welcome] welcome_check result=show reason=no_flag entry=other locale=en
+11-28 17:48:32.853  9304  9304 I flutter : [welcome] welcome_mark result=success
+11-28 17:48:32.897  9304  9304 I flutter : [welcome] welcome_shown entry=other locale=en
+11-28 17:48:45.335  9304  9304 I flutter : [welcome] welcome_dismissed method=configure_ai visible_ms=12475
