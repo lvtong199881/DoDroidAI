@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../app_version.dart';
 import 'welcome_ai_gate.dart';
 import 'welcome_controller.dart';
 import 'welcome_flag_store.dart';
@@ -21,3 +22,12 @@ final welcomeControllerProvider = Provider<WelcomeController>((ref) {
 final welcomeAiGateProvider = Provider<WelcomeAiGate>((ref) {
   return WelcomeAiGate();
 });
+
+/// 应用版本读取器：欢迎弹窗展示前解析版本号，测试用 `overrideWithValue`
+/// 注入 fake loader。
+///
+/// 不缓存结果、不持有 BuildContext；每次启动最多调用一次。
+final appVersionProvider = Provider<AppVersionResolver>(
+  (ref) => const AppVersionResolver(),
+);
+

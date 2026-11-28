@@ -1,0 +1,27 @@
+{
+  "status": "done",
+  "summary": "验收标准 17 条：通过 12、部分通过 2、未验证 3、达成偏差 0；真机实测 v0.1.0 居中显示，深浅色、2 倍字号、640×400、点击/长按、二次启动均通过",
+  "artifacts": [
+    { "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/d8sfkp2v/docs/requirements/d8sfkp2v/验收文档.md", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/d8sfkp2v/docs/requirements/d8sfkp2v/screenshots/F01_welcome_en_light_1x.png", "action": "modified" },
+    { "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/d8sfkp2v/docs/requirements/d8sfkp2v/screenshots/F02_welcome_en_dark_1x.png", "action": "modified" },
+    { "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/d8sfkp2v/docs/requirements/d8sfkp2v/screenshots/F04_second_launch_no_dialog_dark.png", "action": "modified" },
+    { "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/d8sfkp2v/docs/requirements/d8sfkp2v/screenshots/F05_welcome_en_light_2x.png", "action": "modified" },
+    { "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/d8sfkp2v/docs/requirements/d8sfkp2v/screenshots/F06_second_launch_no_dialog_light.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/d8sfkp2v/docs/requirements/d8sfkp2v/screenshots/F07_welcome_640x400_2x.png", "action": "created" },
+    { "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/d8sfkp2v/docs/requirements/d8sfkp2v/screenshots/F08_welcome_640x400_2x_scrolled.png", "action": "created" }
+  ],
+  "selfCheck": "准出清单：1) 追溯矩阵完整，17 条 AC 均列覆盖 REQ、实现位置、验证方式、本次证据、结论；2) 有界面变化，已亲手在 emulator-5554 跑装包/启动/点击/长按/切深色/切字号/640×400/清数据/二次启动并截图；3) 未看源码、未构建、未评价代码风格；4) 所有 adb/装包/启动/截图命令均带 15–180s 超时，无靠回合总超时收尸；5) 设计偏差已逐状态对照，判定设计稿少画一行说明行（实现与 PRD 一致）；6) 每条 AC 有明确结论：通过 12、部分通过 2、未验证 3，均注明原因；7) 截图库更新 7 张（4 覆盖 + 3 新增）；8) 偏差与未验证项已在验收文档第 3/5/6 节显式列出；9) 无强制待决策项。注意：模拟器 system_server 在验收中崩溃，5 条未完全验证已在文档列明。",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "AC-2（版本读取失败回退 v1.0.0）与 AC-8（超长版本号末尾省略）只能由单测故障注入覆盖，真机不可构造；本阶段按边界未读测试报告，需以测试阶段的单测结论兜底。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "验收中 emulator-5554 的 system_server 被 Watchdog 杀死（主线程阻塞于 SurfaceControl.nativeGetCompositionDataspaces，window/settings 服务持续不可用），未重启/重置设备；AC-3 中文态、AC-11 淡出中间帧、AC-12 其余关闭方式及中文/已配置 AI 截图未能复核，建议恢复设备后补验。",
+      "severity": "suggestion"
+    }
+  ],
+  "deliverables": {}
+}

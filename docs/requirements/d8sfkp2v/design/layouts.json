@@ -1,0 +1,1622 @@
+{
+  "requirement": "d8sfkp2v 欢迎弹窗底部版本号：footer 内新增一行居中版本号（v0.1.0），其余内容沿用现有实现",
+  "designTokens": {
+    "fonts": {
+      "android": {
+        "latin": "Roboto",
+        "cjk": "系统默认中文字体",
+        "stack": "Roboto, Noto Sans SC, sans-serif"
+      },
+      "preview": {
+        "stack": "'Segoe UI', 'Microsoft YaHei', 'Noto Sans SC', sans-serif",
+        "reason": "Windows 出图环境无 Roboto/Noto Sans CJK，使用系统字体近似；Android 真机以系统字体为准"
+      }
+    },
+    "colors": {
+      "light": {
+        "primary": "#4D6BFE",
+        "onPrimary": "#FFFFFF",
+        "primaryContainer": "#DCE4FF",
+        "onPrimaryContainer": "#0A1F5C",
+        "secondary": "#5A5F6B",
+        "onSecondary": "#FFFFFF",
+        "background": "#F7F8FA",
+        "onBackground": "#171A1F",
+        "surface": "#FFFFFF",
+        "surfaceContainer": "#F1F3F7",
+        "surfaceContainerHigh": "#E9ECF2",
+        "onSurface": "#171A1F",
+        "onSurfaceVariant": "#5B6270",
+        "outline": "#C6CBD4",
+        "outlineVariant": "#E1E4EA",
+        "error": "#BA1A1A",
+        "closeBadgeFill": "#FFFFFF",
+        "scrim": "rgba(0, 0, 0, 0.54)",
+        "shadow": "0 8px 24px rgba(0, 0, 0, 0.18)"
+      },
+      "dark": {
+        "primary": "#8FA6FF",
+        "onPrimary": "#0A1F5C",
+        "primaryContainer": "#1F2B66",
+        "onPrimaryContainer": "#DDE2FF",
+        "secondary": "#BEC4D0",
+        "onSecondary": "#1A1F2B",
+        "background": "#0F1115",
+        "onBackground": "#E6E8EC",
+        "surface": "#161920",
+        "surfaceContainer": "#1E222B",
+        "surfaceContainerHigh": "#262B36",
+        "onSurface": "#E6E8EC",
+        "onSurfaceVariant": "#A6ADBB",
+        "outline": "#3A404C",
+        "outlineVariant": "#2A2F39",
+        "error": "#FFB4AB",
+        "closeBadgeFill": "#262B36",
+        "scrim": "rgba(0, 0, 0, 0.54)",
+        "shadow": "0 8px 24px rgba(0, 0, 0, 0.55)"
+      }
+    },
+    "typography": {
+      "title": {
+        "fontSize": 20,
+        "fontWeight": 600,
+        "lineHeight": 1.3,
+        "colorToken": "onSurface"
+      },
+      "intro": {
+        "fontSize": 15,
+        "fontWeight": 400,
+        "lineHeight": 1.4,
+        "colorToken": "onSurfaceVariant"
+      },
+      "button": {
+        "fontSize": 15,
+        "fontWeight": 600,
+        "lineHeight": 1.2,
+        "colorToken": "onPrimary"
+      },
+      "buttonSecondary": {
+        "fontSize": 15,
+        "fontWeight": 600,
+        "lineHeight": 1.2,
+        "colorToken": "primary"
+      },
+      "version": {
+        "fontSize": 14,
+        "fontWeight": 400,
+        "lineHeight": 1.4,
+        "colorToken": "onSurfaceVariant"
+      }
+    },
+    "radius": {
+      "dialog": 16,
+      "pill": 999,
+      "badge": 16
+    },
+    "icons": {
+      "size": 22,
+      "strokeWidth": 2.5,
+      "viewport": 24,
+      "colorToken": "primary",
+      "items": {
+        "arrow": {
+          "svg": "<path d=\"M12 4 10.59 5.41 16.17 11H4v2h12.17l-5.59 5.59L12 20l8-8z\" fill=\"currentColor\" stroke=\"none\"/>"
+        },
+        "close": {
+          "svg": "<path d=\"M5.5 5.5 18.5 18.5\"/><path d=\"M18.5 5.5 5.5 18.5\"/>"
+        }
+      }
+    }
+  },
+  "copy": {
+    "zh": {
+      "title": "欢迎使用 DoDroidAI",
+      "intro": "说一句话，让手机替你做事。",
+      "configAi": "去配置AI",
+      "start": "开始使用"
+    },
+    "en": {
+      "title": "Welcome to DoDroidAI",
+      "intro": "Say it, and let your phone do it.",
+      "configAi": "Set up AI",
+      "start": "Get started"
+    }
+  },
+  "components": {
+    "welcomeDialogBase": {
+      "type": "frame",
+      "name": "stage",
+      "width": 360,
+      "height": 740,
+      "fill": "transparent",
+      "children": [
+        {
+          "type": "frame",
+          "name": "dialog",
+          "x": 20,
+          "y": 166.7,
+          "width": 320,
+          "radius": 16,
+          "fill": "surface",
+          "layout": {
+            "mode": "vertical",
+            "padding": 0,
+            "align": "stretch"
+          },
+          "children": [
+            {
+              "type": "image",
+              "name": "hero",
+              "x": 0,
+              "y": 0,
+              "width": 320,
+              "height": 160,
+              "src": "../assets/welcome_hero_light.png"
+            },
+            {
+              "type": "frame",
+              "name": "content",
+              "x": 0,
+              "y": 160,
+              "width": 320,
+              "layout": {
+                "mode": "vertical",
+                "padding": [
+                  20,
+                  24,
+                  8,
+                  24
+                ],
+                "align": "stretch"
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "name": "title",
+                  "typography": "title",
+                  "align": "center",
+                  "textRef": "{{LOCALE}}.title"
+                },
+                {
+                  "type": "text",
+                  "name": "intro",
+                  "typography": "intro",
+                  "align": "center",
+                  "margin": [
+                    8,
+                    0,
+                    0,
+                    0
+                  ],
+                  "textRef": "{{LOCALE}}.intro"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "name": "footer",
+              "x": 0,
+              "y": 243,
+              "width": 320,
+              "height": 163.6,
+              "layout": {
+                "mode": "vertical",
+                "padding": [
+                  12,
+                  20,
+                  20,
+                  20
+                ],
+                "spacing": 8,
+                "align": "stretch"
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "name": "configureAi",
+                  "height": 48,
+                  "radius": 999,
+                  "fill": "transparent",
+                  "stroke": "outline",
+                  "strokeWidth": 1,
+                  "layout": {
+                    "mode": "vertical",
+                    "padding": 0,
+                    "align": "center",
+                    "justify": "center"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "name": "configureAi.label",
+                      "typography": "buttonSecondary",
+                      "textRef": "{{LOCALE}}.configAi"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "name": "start",
+                  "height": 48,
+                  "radius": 999,
+                  "fill": "primary",
+                  "layout": {
+                    "mode": "horizontal",
+                    "padding": 0,
+                    "spacing": 8,
+                    "align": "center",
+                    "justify": "center"
+                  },
+                  "children": [
+                    {
+                      "type": "icon",
+                      "name": "start.icon",
+                      "icon": "arrow",
+                      "width": 20,
+                      "height": 20,
+                      "fill": "onPrimary"
+                    },
+                    {
+                      "type": "text",
+                      "name": "start.label",
+                      "typography": "button",
+                      "fill": "onPrimary",
+                      "textRef": "{{LOCALE}}.start"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "name": "version",
+                  "typography": "version",
+                  "text": "v0.1.0",
+                  "align": "center"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "name": "closeBadge",
+          "x": 324,
+          "y": 150.7,
+          "width": 32,
+          "height": 32,
+          "radius": 999,
+          "fill": "closeBadgeFill",
+          "stroke": "outline",
+          "strokeWidth": 1,
+          "layout": {
+            "mode": "vertical",
+            "padding": 0,
+            "align": "center",
+            "justify": "center"
+          },
+          "children": [
+            {
+              "type": "icon",
+              "name": "closeBadge.icon",
+              "icon": "close",
+              "width": 20,
+              "height": 20,
+              "fill": "onSurface"
+            }
+          ]
+        }
+      ]
+    },
+    "welcomeDialogDark": {
+      "type": "frame",
+      "name": "stage",
+      "width": 360,
+      "height": 740,
+      "fill": "transparent",
+      "children": [
+        {
+          "type": "frame",
+          "name": "dialog",
+          "x": 20,
+          "y": 166.7,
+          "width": 320,
+          "radius": 16,
+          "fill": "surface",
+          "layout": {
+            "mode": "vertical",
+            "padding": 0,
+            "align": "stretch"
+          },
+          "children": [
+            {
+              "type": "image",
+              "name": "hero",
+              "x": 0,
+              "y": 0,
+              "width": 320,
+              "height": 160,
+              "src": "../assets/welcome_hero_dark.png"
+            },
+            {
+              "type": "frame",
+              "name": "content",
+              "x": 0,
+              "y": 160,
+              "width": 320,
+              "layout": {
+                "mode": "vertical",
+                "padding": [
+                  20,
+                  24,
+                  8,
+                  24
+                ],
+                "align": "stretch"
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "name": "title",
+                  "typography": "title",
+                  "align": "center",
+                  "textRef": "{{LOCALE}}.title"
+                },
+                {
+                  "type": "text",
+                  "name": "intro",
+                  "typography": "intro",
+                  "align": "center",
+                  "margin": [
+                    8,
+                    0,
+                    0,
+                    0
+                  ],
+                  "textRef": "{{LOCALE}}.intro"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "name": "footer",
+              "x": 0,
+              "y": 243,
+              "width": 320,
+              "height": 163.6,
+              "layout": {
+                "mode": "vertical",
+                "padding": [
+                  12,
+                  20,
+                  20,
+                  20
+                ],
+                "spacing": 8,
+                "align": "stretch"
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "name": "configureAi",
+                  "height": 48,
+                  "radius": 999,
+                  "fill": "transparent",
+                  "stroke": "outline",
+                  "strokeWidth": 1,
+                  "layout": {
+                    "mode": "vertical",
+                    "padding": 0,
+                    "align": "center",
+                    "justify": "center"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "name": "configureAi.label",
+                      "typography": "buttonSecondary",
+                      "textRef": "{{LOCALE}}.configAi"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "name": "start",
+                  "height": 48,
+                  "radius": 999,
+                  "fill": "primary",
+                  "layout": {
+                    "mode": "horizontal",
+                    "padding": 0,
+                    "spacing": 8,
+                    "align": "center",
+                    "justify": "center"
+                  },
+                  "children": [
+                    {
+                      "type": "icon",
+                      "name": "start.icon",
+                      "icon": "arrow",
+                      "width": 20,
+                      "height": 20,
+                      "fill": "onPrimary"
+                    },
+                    {
+                      "type": "text",
+                      "name": "start.label",
+                      "typography": "button",
+                      "fill": "onPrimary",
+                      "textRef": "{{LOCALE}}.start"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "name": "version",
+                  "typography": "version",
+                  "text": "v0.1.0",
+                  "align": "center"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "name": "closeBadge",
+          "x": 324,
+          "y": 150.7,
+          "width": 32,
+          "height": 32,
+          "radius": 999,
+          "fill": "closeBadgeFill",
+          "stroke": "outline",
+          "strokeWidth": 1,
+          "layout": {
+            "mode": "vertical",
+            "padding": 0,
+            "align": "center",
+            "justify": "center"
+          },
+          "children": [
+            {
+              "type": "icon",
+              "name": "closeBadge.icon",
+              "icon": "close",
+              "width": 20,
+              "height": 20,
+              "fill": "onSurface"
+            }
+          ]
+        }
+      ]
+    },
+    "welcomeDialogConfigured": {
+      "type": "frame",
+      "name": "stage",
+      "width": 360,
+      "height": 740,
+      "fill": "transparent",
+      "children": [
+        {
+          "type": "frame",
+          "name": "dialog",
+          "x": 20,
+          "y": 194.7,
+          "width": 320,
+          "radius": 16,
+          "fill": "surface",
+          "layout": {
+            "mode": "vertical",
+            "padding": 0,
+            "align": "stretch"
+          },
+          "children": [
+            {
+              "type": "image",
+              "name": "hero",
+              "x": 0,
+              "y": 0,
+              "width": 320,
+              "height": 160,
+              "src": "../assets/welcome_hero_light.png"
+            },
+            {
+              "type": "frame",
+              "name": "content",
+              "x": 0,
+              "y": 160,
+              "width": 320,
+              "layout": {
+                "mode": "vertical",
+                "padding": [
+                  20,
+                  24,
+                  8,
+                  24
+                ],
+                "align": "stretch"
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "name": "title",
+                  "typography": "title",
+                  "align": "center",
+                  "textRef": "{{LOCALE}}.title"
+                },
+                {
+                  "type": "text",
+                  "name": "intro",
+                  "typography": "intro",
+                  "align": "center",
+                  "margin": [
+                    8,
+                    0,
+                    0,
+                    0
+                  ],
+                  "textRef": "{{LOCALE}}.intro"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "name": "footer",
+              "x": 0,
+              "y": 243,
+              "width": 320,
+              "height": 107.6,
+              "layout": {
+                "mode": "vertical",
+                "padding": [
+                  12,
+                  20,
+                  20,
+                  20
+                ],
+                "spacing": 8,
+                "align": "stretch"
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "name": "start",
+                  "height": 48,
+                  "radius": 999,
+                  "fill": "primary",
+                  "layout": {
+                    "mode": "horizontal",
+                    "padding": 0,
+                    "spacing": 8,
+                    "align": "center",
+                    "justify": "center"
+                  },
+                  "children": [
+                    {
+                      "type": "icon",
+                      "name": "start.icon",
+                      "icon": "arrow",
+                      "width": 20,
+                      "height": 20,
+                      "fill": "onPrimary"
+                    },
+                    {
+                      "type": "text",
+                      "name": "start.label",
+                      "typography": "button",
+                      "fill": "onPrimary",
+                      "textRef": "{{LOCALE}}.start"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "name": "version",
+                  "typography": "version",
+                  "text": "v0.1.0",
+                  "align": "center"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "name": "closeBadge",
+          "x": 324,
+          "y": 178.7,
+          "width": 32,
+          "height": 32,
+          "radius": 999,
+          "fill": "closeBadgeFill",
+          "stroke": "outline",
+          "strokeWidth": 1,
+          "layout": {
+            "mode": "vertical",
+            "padding": 0,
+            "align": "center",
+            "justify": "center"
+          },
+          "children": [
+            {
+              "type": "icon",
+              "name": "closeBadge.icon",
+              "icon": "close",
+              "width": 20,
+              "height": 20,
+              "fill": "onSurface"
+            }
+          ]
+        }
+      ]
+    },
+    "welcomeDialogNoHero": {
+      "type": "frame",
+      "name": "stage",
+      "width": 360,
+      "height": 740,
+      "fill": "transparent",
+      "children": [
+        {
+          "type": "frame",
+          "name": "dialog",
+          "x": 20,
+          "y": 218.7,
+          "width": 320,
+          "radius": 16,
+          "fill": "surface",
+          "layout": {
+            "mode": "vertical",
+            "padding": 0,
+            "align": "stretch"
+          },
+          "children": [
+            {
+              "type": "frame",
+              "name": "content",
+              "x": 0,
+              "y": 0,
+              "width": 320,
+              "layout": {
+                "mode": "vertical",
+                "padding": [
+                  76,
+                  24,
+                  8,
+                  24
+                ],
+                "align": "stretch"
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "name": "title",
+                  "typography": "title",
+                  "align": "center",
+                  "textRef": "{{LOCALE}}.title"
+                },
+                {
+                  "type": "text",
+                  "name": "intro",
+                  "typography": "intro",
+                  "align": "center",
+                  "margin": [
+                    8,
+                    0,
+                    0,
+                    0
+                  ],
+                  "textRef": "{{LOCALE}}.intro"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "name": "footer",
+              "x": 0,
+              "y": 139,
+              "width": 320,
+              "height": 163.6,
+              "layout": {
+                "mode": "vertical",
+                "padding": [
+                  12,
+                  20,
+                  20,
+                  20
+                ],
+                "spacing": 8,
+                "align": "stretch"
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "name": "configureAi",
+                  "height": 48,
+                  "radius": 999,
+                  "fill": "transparent",
+                  "stroke": "outline",
+                  "strokeWidth": 1,
+                  "layout": {
+                    "mode": "vertical",
+                    "padding": 0,
+                    "align": "center",
+                    "justify": "center"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "name": "configureAi.label",
+                      "typography": "buttonSecondary",
+                      "textRef": "{{LOCALE}}.configAi"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "name": "start",
+                  "height": 48,
+                  "radius": 999,
+                  "fill": "primary",
+                  "layout": {
+                    "mode": "horizontal",
+                    "padding": 0,
+                    "spacing": 8,
+                    "align": "center",
+                    "justify": "center"
+                  },
+                  "children": [
+                    {
+                      "type": "icon",
+                      "name": "start.icon",
+                      "icon": "arrow",
+                      "width": 20,
+                      "height": 20,
+                      "fill": "onPrimary"
+                    },
+                    {
+                      "type": "text",
+                      "name": "start.label",
+                      "typography": "button",
+                      "fill": "onPrimary",
+                      "textRef": "{{LOCALE}}.start"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "name": "version",
+                  "typography": "version",
+                  "text": "v0.1.0",
+                  "align": "center"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "name": "closeBadge",
+          "x": 324,
+          "y": 202.7,
+          "width": 32,
+          "height": 32,
+          "radius": 999,
+          "fill": "closeBadgeFill",
+          "stroke": "outline",
+          "strokeWidth": 1,
+          "layout": {
+            "mode": "vertical",
+            "padding": 0,
+            "align": "center",
+            "justify": "center"
+          },
+          "children": [
+            {
+              "type": "icon",
+              "name": "closeBadge.icon",
+              "icon": "close",
+              "width": 20,
+              "height": 20,
+              "fill": "onSurface"
+            }
+          ]
+        }
+      ]
+    },
+    "welcomeDialogLongVersion": {
+      "type": "frame",
+      "name": "stage",
+      "width": 360,
+      "height": 740,
+      "fill": "transparent",
+      "children": [
+        {
+          "type": "frame",
+          "name": "dialog",
+          "x": 20,
+          "y": 166.7,
+          "width": 320,
+          "radius": 16,
+          "fill": "surface",
+          "layout": {
+            "mode": "vertical",
+            "padding": 0,
+            "align": "stretch"
+          },
+          "children": [
+            {
+              "type": "image",
+              "name": "hero",
+              "x": 0,
+              "y": 0,
+              "width": 320,
+              "height": 160,
+              "src": "../assets/welcome_hero_light.png"
+            },
+            {
+              "type": "frame",
+              "name": "content",
+              "x": 0,
+              "y": 160,
+              "width": 320,
+              "layout": {
+                "mode": "vertical",
+                "padding": [
+                  20,
+                  24,
+                  8,
+                  24
+                ],
+                "align": "stretch"
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "name": "title",
+                  "typography": "title",
+                  "align": "center",
+                  "textRef": "{{LOCALE}}.title"
+                },
+                {
+                  "type": "text",
+                  "name": "intro",
+                  "typography": "intro",
+                  "align": "center",
+                  "margin": [
+                    8,
+                    0,
+                    0,
+                    0
+                  ],
+                  "textRef": "{{LOCALE}}.intro"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "name": "footer",
+              "x": 0,
+              "y": 243,
+              "width": 320,
+              "height": 163.6,
+              "layout": {
+                "mode": "vertical",
+                "padding": [
+                  12,
+                  20,
+                  20,
+                  20
+                ],
+                "spacing": 8,
+                "align": "stretch"
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "name": "configureAi",
+                  "height": 48,
+                  "radius": 999,
+                  "fill": "transparent",
+                  "stroke": "outline",
+                  "strokeWidth": 1,
+                  "layout": {
+                    "mode": "vertical",
+                    "padding": 0,
+                    "align": "center",
+                    "justify": "center"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "name": "configureAi.label",
+                      "typography": "buttonSecondary",
+                      "textRef": "{{LOCALE}}.configAi"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "name": "start",
+                  "height": 48,
+                  "radius": 999,
+                  "fill": "primary",
+                  "layout": {
+                    "mode": "horizontal",
+                    "padding": 0,
+                    "spacing": 8,
+                    "align": "center",
+                    "justify": "center"
+                  },
+                  "children": [
+                    {
+                      "type": "icon",
+                      "name": "start.icon",
+                      "icon": "arrow",
+                      "width": 20,
+                      "height": 20,
+                      "fill": "onPrimary"
+                    },
+                    {
+                      "type": "text",
+                      "name": "start.label",
+                      "typography": "button",
+                      "fill": "onPrimary",
+                      "textRef": "{{LOCALE}}.start"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "name": "version",
+                  "typography": "version",
+                  "text": "v10.24.0-beta.20250612.22591…",
+                  "align": "center"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "name": "closeBadge",
+          "x": 324,
+          "y": 150.7,
+          "width": 32,
+          "height": 32,
+          "radius": 999,
+          "fill": "closeBadgeFill",
+          "stroke": "outline",
+          "strokeWidth": 1,
+          "layout": {
+            "mode": "vertical",
+            "padding": 0,
+            "align": "center",
+            "justify": "center"
+          },
+          "children": [
+            {
+              "type": "icon",
+              "name": "closeBadge.icon",
+              "icon": "close",
+              "width": 20,
+              "height": 20,
+              "fill": "onSurface"
+            }
+          ]
+        }
+      ]
+    },
+    "welcomeDialogFallback": {
+      "type": "frame",
+      "name": "stage",
+      "width": 360,
+      "height": 740,
+      "fill": "transparent",
+      "children": [
+        {
+          "type": "frame",
+          "name": "dialog",
+          "x": 20,
+          "y": 166.7,
+          "width": 320,
+          "radius": 16,
+          "fill": "surface",
+          "layout": {
+            "mode": "vertical",
+            "padding": 0,
+            "align": "stretch"
+          },
+          "children": [
+            {
+              "type": "image",
+              "name": "hero",
+              "x": 0,
+              "y": 0,
+              "width": 320,
+              "height": 160,
+              "src": "../assets/welcome_hero_light.png"
+            },
+            {
+              "type": "frame",
+              "name": "content",
+              "x": 0,
+              "y": 160,
+              "width": 320,
+              "layout": {
+                "mode": "vertical",
+                "padding": [
+                  20,
+                  24,
+                  8,
+                  24
+                ],
+                "align": "stretch"
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "name": "title",
+                  "typography": "title",
+                  "align": "center",
+                  "textRef": "{{LOCALE}}.title"
+                },
+                {
+                  "type": "text",
+                  "name": "intro",
+                  "typography": "intro",
+                  "align": "center",
+                  "margin": [
+                    8,
+                    0,
+                    0,
+                    0
+                  ],
+                  "textRef": "{{LOCALE}}.intro"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "name": "footer",
+              "x": 0,
+              "y": 243,
+              "width": 320,
+              "height": 163.6,
+              "layout": {
+                "mode": "vertical",
+                "padding": [
+                  12,
+                  20,
+                  20,
+                  20
+                ],
+                "spacing": 8,
+                "align": "stretch"
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "name": "configureAi",
+                  "height": 48,
+                  "radius": 999,
+                  "fill": "transparent",
+                  "stroke": "outline",
+                  "strokeWidth": 1,
+                  "layout": {
+                    "mode": "vertical",
+                    "padding": 0,
+                    "align": "center",
+                    "justify": "center"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "name": "configureAi.label",
+                      "typography": "buttonSecondary",
+                      "textRef": "{{LOCALE}}.configAi"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "name": "start",
+                  "height": 48,
+                  "radius": 999,
+                  "fill": "primary",
+                  "layout": {
+                    "mode": "horizontal",
+                    "padding": 0,
+                    "spacing": 8,
+                    "align": "center",
+                    "justify": "center"
+                  },
+                  "children": [
+                    {
+                      "type": "icon",
+                      "name": "start.icon",
+                      "icon": "arrow",
+                      "width": 20,
+                      "height": 20,
+                      "fill": "onPrimary"
+                    },
+                    {
+                      "type": "text",
+                      "name": "start.label",
+                      "typography": "button",
+                      "fill": "onPrimary",
+                      "textRef": "{{LOCALE}}.start"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "name": "version",
+                  "typography": "version",
+                  "text": "v1.0.0",
+                  "align": "center"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "name": "closeBadge",
+          "x": 324,
+          "y": 150.7,
+          "width": 32,
+          "height": 32,
+          "radius": 999,
+          "fill": "closeBadgeFill",
+          "stroke": "outline",
+          "strokeWidth": 1,
+          "layout": {
+            "mode": "vertical",
+            "padding": 0,
+            "align": "center",
+            "justify": "center"
+          },
+          "children": [
+            {
+              "type": "icon",
+              "name": "closeBadge.icon",
+              "icon": "close",
+              "width": 20,
+              "height": 20,
+              "fill": "onSurface"
+            }
+          ]
+        }
+      ]
+    },
+    "welcomeDialogFont2x": {
+      "type": "frame",
+      "name": "stage",
+      "width": 360,
+      "height": 740,
+      "fill": "transparent",
+      "children": [
+        {
+          "type": "frame",
+          "name": "dialog",
+          "x": 20,
+          "y": 86.39999999999998,
+          "width": 320,
+          "radius": 16,
+          "fill": "surface",
+          "layout": {
+            "mode": "vertical",
+            "padding": 0,
+            "align": "stretch"
+          },
+          "children": [
+            {
+              "type": "image",
+              "name": "hero",
+              "x": 0,
+              "y": 0,
+              "width": 320,
+              "height": 160,
+              "src": "../assets/welcome_hero_light.png"
+            },
+            {
+              "type": "frame",
+              "name": "content",
+              "x": 0,
+              "y": 160,
+              "width": 320,
+              "layout": {
+                "mode": "vertical",
+                "padding": [
+                  20,
+                  24,
+                  8,
+                  24
+                ],
+                "align": "stretch"
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "name": "title",
+                  "typography": "title",
+                  "align": "center",
+                  "textRef": "{{LOCALE}}.title"
+                },
+                {
+                  "type": "text",
+                  "name": "intro",
+                  "typography": "intro",
+                  "align": "center",
+                  "margin": [
+                    8,
+                    0,
+                    0,
+                    0
+                  ],
+                  "textRef": "{{LOCALE}}.intro"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "name": "footer",
+              "x": 0,
+              "y": 384,
+              "width": 320,
+              "height": 183.2,
+              "layout": {
+                "mode": "vertical",
+                "padding": [
+                  12,
+                  20,
+                  20,
+                  20
+                ],
+                "spacing": 8,
+                "align": "stretch"
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "name": "configureAi",
+                  "height": 48,
+                  "radius": 999,
+                  "fill": "transparent",
+                  "stroke": "outline",
+                  "strokeWidth": 1,
+                  "layout": {
+                    "mode": "vertical",
+                    "padding": 0,
+                    "align": "center",
+                    "justify": "center"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "name": "configureAi.label",
+                      "typography": "buttonSecondary",
+                      "textRef": "{{LOCALE}}.configAi"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "name": "start",
+                  "height": 48,
+                  "radius": 999,
+                  "fill": "primary",
+                  "layout": {
+                    "mode": "horizontal",
+                    "padding": 0,
+                    "spacing": 8,
+                    "align": "center",
+                    "justify": "center"
+                  },
+                  "children": [
+                    {
+                      "type": "icon",
+                      "name": "start.icon",
+                      "icon": "arrow",
+                      "width": 20,
+                      "height": 20,
+                      "fill": "onPrimary"
+                    },
+                    {
+                      "type": "text",
+                      "name": "start.label",
+                      "typography": "button",
+                      "fill": "onPrimary",
+                      "textRef": "{{LOCALE}}.start"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "name": "version",
+                  "typography": "version",
+                  "text": "v0.1.0",
+                  "align": "center"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "name": "closeBadge",
+          "x": 324,
+          "y": 70.39999999999998,
+          "width": 32,
+          "height": 32,
+          "radius": 999,
+          "fill": "closeBadgeFill",
+          "stroke": "outline",
+          "strokeWidth": 1,
+          "layout": {
+            "mode": "vertical",
+            "padding": 0,
+            "align": "center",
+            "justify": "center"
+          },
+          "children": [
+            {
+              "type": "icon",
+              "name": "closeBadge.icon",
+              "icon": "close",
+              "width": 20,
+              "height": 20,
+              "fill": "onSurface"
+            }
+          ]
+        }
+      ]
+    },
+    "welcomeDialogSmall640": {
+      "type": "frame",
+      "name": "stage",
+      "width": 640,
+      "height": 400,
+      "fill": "transparent",
+      "children": [
+        {
+          "type": "frame",
+          "name": "dialog",
+          "x": 20,
+          "y": 40,
+          "width": 600,
+          "radius": 16,
+          "fill": "surface",
+          "layout": {
+            "mode": "vertical",
+            "padding": 0,
+            "align": "stretch"
+          },
+          "children": [
+            {
+              "type": "image",
+              "name": "heroViewport",
+              "x": 0,
+              "y": 0,
+              "width": 600,
+              "height": 136.8,
+              "src": "../assets/welcome_hero_light_strip.png"
+            },
+            {
+              "type": "frame",
+              "name": "footer",
+              "x": 0,
+              "y": 136.8,
+              "width": 600,
+              "layout": {
+                "mode": "vertical",
+                "padding": [
+                  12,
+                  20,
+                  20,
+                  20
+                ],
+                "spacing": 8,
+                "align": "stretch"
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "name": "configureAi",
+                  "height": 48,
+                  "radius": 999,
+                  "fill": "transparent",
+                  "stroke": "outline",
+                  "strokeWidth": 1,
+                  "layout": {
+                    "mode": "vertical",
+                    "padding": 0,
+                    "align": "center",
+                    "justify": "center"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "name": "configureAi.label",
+                      "typography": "buttonSecondary",
+                      "textRef": "{{LOCALE}}.configAi"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "name": "start",
+                  "height": 48,
+                  "radius": 999,
+                  "fill": "primary",
+                  "layout": {
+                    "mode": "horizontal",
+                    "padding": 0,
+                    "spacing": 8,
+                    "align": "center",
+                    "justify": "center"
+                  },
+                  "children": [
+                    {
+                      "type": "icon",
+                      "name": "start.icon",
+                      "icon": "arrow",
+                      "width": 20,
+                      "height": 20,
+                      "fill": "onPrimary"
+                    },
+                    {
+                      "type": "text",
+                      "name": "start.label",
+                      "typography": "button",
+                      "fill": "onPrimary",
+                      "textRef": "{{LOCALE}}.start"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "name": "version",
+                  "typography": "version",
+                  "text": "v0.1.0",
+                  "align": "center"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "name": "closeBadge",
+          "x": 604,
+          "y": 24,
+          "width": 32,
+          "height": 32,
+          "radius": 999,
+          "fill": "closeBadgeFill",
+          "stroke": "outline",
+          "strokeWidth": 1,
+          "layout": {
+            "mode": "vertical",
+            "padding": 0,
+            "align": "center",
+            "justify": "center"
+          },
+          "children": [
+            {
+              "type": "icon",
+              "name": "closeBadge.icon",
+              "icon": "close",
+              "width": 20,
+              "height": 20,
+              "fill": "onSurface"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "frames": [
+    {
+      "id": "F01_normal_zh_light",
+      "name": "F01 常规·浅色·中文·未配置 AI（v0.1.0）",
+      "theme": "light",
+      "locale": "zh",
+      "fontScale": 1,
+      "canvas": {
+        "width": 360,
+        "height": 740,
+        "deviceScale": 3
+      },
+      "background": {
+        "type": "screenshot",
+        "src": "assets/home_zh_light.png"
+      },
+      "scrim": true,
+      "changeScope": "改动区域：弹窗 footer 新增版本行（卡片随 footer 增高、整体重新居中，其余内容不变）",
+      "ac": [
+        "AC-1",
+        "AC-4",
+        "AC-5",
+        "AC-6",
+        "AC-9",
+        "AC-13",
+        "AC-14"
+      ],
+      "notes": "基准帧：真实首页截图 + 遮罩，弹窗按现有实现重绘并新增版本行。",
+      "contentRef": "welcomeDialogBase",
+      "variants": [
+        {
+          "id": "F02_normal_dark",
+          "name": "F02 常规·深色·中文·未配置 AI（v0.1.0）",
+          "theme": "dark",
+          "background": {
+            "type": "color",
+            "fill": "background"
+          },
+          "contentRef": "welcomeDialogDark"
+        },
+        {
+          "id": "F03_normal_en_light",
+          "name": "F03 常规·浅色·英文·未配置 AI（v0.1.0）",
+          "locale": "en",
+          "background": {
+            "type": "screenshot",
+            "src": "assets/home_en_light.png"
+          }
+        },
+        {
+          "id": "F04_configured_zh_light",
+          "name": "F04 常规·浅色·中文·已配置 AI（仅开始使用）",
+          "contentRef": "welcomeDialogConfigured"
+        },
+        {
+          "id": "F05_empty_no_hero",
+          "name": "F05 空态·欢迎图缺失折叠·浅色·中文",
+          "contentRef": "welcomeDialogNoHero"
+        },
+        {
+          "id": "F06_long_version",
+          "name": "F06 极端数据·超长版本号末尾省略·浅色·中文",
+          "contentRef": "welcomeDialogLongVersion"
+        },
+        {
+          "id": "F07_fallback_version",
+          "name": "F07 异常·版本读取失败回退 v1.0.0·浅色·中文",
+          "contentRef": "welcomeDialogFallback"
+        },
+        {
+          "id": "F08_font_2x",
+          "name": "F08 极端数据·系统字号 2.0 倍（版本号 28sp）·浅色·中文",
+          "fontScale": 2,
+          "contentRef": "welcomeDialogFont2x"
+        }
+      ]
+    },
+    {
+      "id": "F09_small_640x400_2x",
+      "name": "F09 小高度·640×400·2.0 倍字号·内容滚动 footer 固定",
+      "theme": "light",
+      "locale": "zh",
+      "fontScale": 2,
+      "canvas": {
+        "width": 640,
+        "height": 400,
+        "deviceScale": 3
+      },
+      "background": {
+        "type": "color",
+        "fill": "background"
+      },
+      "scrim": true,
+      "changeScope": "改动区域：固定 footer 内的版本行；640×400/2 倍内容超高时只滚动上半区",
+      "ac": [
+        "AC-7",
+        "AC-10",
+        "AC-15"
+      ],
+      "notes": "滚动位置 0：可视区只露出欢迎图顶部 136.8dp，标题/说明在滚动区内；按钮与版本行固定在底部完整可见。背景以主题 background 色示意。",
+      "contentRef": "welcomeDialogSmall640"
+    }
+  ]
+}

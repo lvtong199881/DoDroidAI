@@ -1,0 +1,868 @@
+{
+  "F01_normal_zh_light": [
+    {
+      "name": "dialog",
+      "type": "frame",
+      "width": 320,
+      "height": 406.6
+    },
+    {
+      "name": "hero",
+      "type": "image",
+      "width": 320,
+      "height": 160
+    },
+    {
+      "name": "content",
+      "type": "frame",
+      "width": 320,
+      "height": 83
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 272,
+      "height": 26,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ]
+    },
+    {
+      "name": "intro",
+      "type": "text",
+      "width": 272,
+      "height": 21,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 320,
+      "height": 163.6
+    },
+    {
+      "name": "configureAi",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "configureAi.label",
+      "type": "text",
+      "width": 61.5,
+      "height": 18,
+      "lines": [
+        "去配置AI"
+      ]
+    },
+    {
+      "name": "start",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "start.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "start.label",
+      "type": "text",
+      "width": 60,
+      "height": 18,
+      "lines": [
+        "开始使用"
+      ]
+    },
+    {
+      "name": "version",
+      "type": "text",
+      "width": 280,
+      "height": 19.6,
+      "lines": [
+        "v0.1.0"
+      ]
+    },
+    {
+      "name": "closeBadge",
+      "type": "frame",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "name": "closeBadge.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    }
+  ],
+  "F02_normal_dark": [
+    {
+      "name": "dialog",
+      "type": "frame",
+      "width": 320,
+      "height": 406.6
+    },
+    {
+      "name": "hero",
+      "type": "image",
+      "width": 320,
+      "height": 160
+    },
+    {
+      "name": "content",
+      "type": "frame",
+      "width": 320,
+      "height": 83
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 272,
+      "height": 26,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ]
+    },
+    {
+      "name": "intro",
+      "type": "text",
+      "width": 272,
+      "height": 21,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 320,
+      "height": 163.6
+    },
+    {
+      "name": "configureAi",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "configureAi.label",
+      "type": "text",
+      "width": 61.5,
+      "height": 18,
+      "lines": [
+        "去配置AI"
+      ]
+    },
+    {
+      "name": "start",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "start.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "start.label",
+      "type": "text",
+      "width": 60,
+      "height": 18,
+      "lines": [
+        "开始使用"
+      ]
+    },
+    {
+      "name": "version",
+      "type": "text",
+      "width": 280,
+      "height": 19.6,
+      "lines": [
+        "v0.1.0"
+      ]
+    },
+    {
+      "name": "closeBadge",
+      "type": "frame",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "name": "closeBadge.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    }
+  ],
+  "F03_normal_en_light": [
+    {
+      "name": "dialog",
+      "type": "frame",
+      "width": 320,
+      "height": 406.6
+    },
+    {
+      "name": "hero",
+      "type": "image",
+      "width": 320,
+      "height": 160
+    },
+    {
+      "name": "content",
+      "type": "frame",
+      "width": 320,
+      "height": 83
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 272,
+      "height": 26,
+      "lines": [
+        "Welcome to DoDroidAI"
+      ]
+    },
+    {
+      "name": "intro",
+      "type": "text",
+      "width": 272,
+      "height": 21,
+      "lines": [
+        "Say it, and let your phone do it."
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 320,
+      "height": 163.6
+    },
+    {
+      "name": "configureAi",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "configureAi.label",
+      "type": "text",
+      "width": 66.15,
+      "height": 18,
+      "lines": [
+        "Set up AI"
+      ]
+    },
+    {
+      "name": "start",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "start.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "start.label",
+      "type": "text",
+      "width": 86.7,
+      "height": 18,
+      "lines": [
+        "Get started"
+      ]
+    },
+    {
+      "name": "version",
+      "type": "text",
+      "width": 280,
+      "height": 19.6,
+      "lines": [
+        "v0.1.0"
+      ]
+    },
+    {
+      "name": "closeBadge",
+      "type": "frame",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "name": "closeBadge.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    }
+  ],
+  "F04_configured_zh_light": [
+    {
+      "name": "dialog",
+      "type": "frame",
+      "width": 320,
+      "height": 350.6
+    },
+    {
+      "name": "hero",
+      "type": "image",
+      "width": 320,
+      "height": 160
+    },
+    {
+      "name": "content",
+      "type": "frame",
+      "width": 320,
+      "height": 83
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 272,
+      "height": 26,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ]
+    },
+    {
+      "name": "intro",
+      "type": "text",
+      "width": 272,
+      "height": 21,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 320,
+      "height": 107.6
+    },
+    {
+      "name": "start",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "start.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "start.label",
+      "type": "text",
+      "width": 60,
+      "height": 18,
+      "lines": [
+        "开始使用"
+      ]
+    },
+    {
+      "name": "version",
+      "type": "text",
+      "width": 280,
+      "height": 19.6,
+      "lines": [
+        "v0.1.0"
+      ]
+    },
+    {
+      "name": "closeBadge",
+      "type": "frame",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "name": "closeBadge.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    }
+  ],
+  "F05_empty_no_hero": [
+    {
+      "name": "dialog",
+      "type": "frame",
+      "width": 320,
+      "height": 302.6
+    },
+    {
+      "name": "content",
+      "type": "frame",
+      "width": 320,
+      "height": 139
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 272,
+      "height": 26,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ]
+    },
+    {
+      "name": "intro",
+      "type": "text",
+      "width": 272,
+      "height": 21,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 320,
+      "height": 163.6
+    },
+    {
+      "name": "configureAi",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "configureAi.label",
+      "type": "text",
+      "width": 61.5,
+      "height": 18,
+      "lines": [
+        "去配置AI"
+      ]
+    },
+    {
+      "name": "start",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "start.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "start.label",
+      "type": "text",
+      "width": 60,
+      "height": 18,
+      "lines": [
+        "开始使用"
+      ]
+    },
+    {
+      "name": "version",
+      "type": "text",
+      "width": 280,
+      "height": 19.6,
+      "lines": [
+        "v0.1.0"
+      ]
+    },
+    {
+      "name": "closeBadge",
+      "type": "frame",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "name": "closeBadge.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    }
+  ],
+  "F06_long_version": [
+    {
+      "name": "dialog",
+      "type": "frame",
+      "width": 320,
+      "height": 406.6
+    },
+    {
+      "name": "hero",
+      "type": "image",
+      "width": 320,
+      "height": 160
+    },
+    {
+      "name": "content",
+      "type": "frame",
+      "width": 320,
+      "height": 83
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 272,
+      "height": 26,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ]
+    },
+    {
+      "name": "intro",
+      "type": "text",
+      "width": 272,
+      "height": 21,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 320,
+      "height": 163.6
+    },
+    {
+      "name": "configureAi",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "configureAi.label",
+      "type": "text",
+      "width": 61.5,
+      "height": 18,
+      "lines": [
+        "去配置AI"
+      ]
+    },
+    {
+      "name": "start",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "start.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "start.label",
+      "type": "text",
+      "width": 60,
+      "height": 18,
+      "lines": [
+        "开始使用"
+      ]
+    },
+    {
+      "name": "version",
+      "type": "text",
+      "width": 280,
+      "height": 19.6,
+      "lines": [
+        "v10.24.0-beta.20250612.22591…"
+      ]
+    },
+    {
+      "name": "closeBadge",
+      "type": "frame",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "name": "closeBadge.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    }
+  ],
+  "F07_fallback_version": [
+    {
+      "name": "dialog",
+      "type": "frame",
+      "width": 320,
+      "height": 406.6
+    },
+    {
+      "name": "hero",
+      "type": "image",
+      "width": 320,
+      "height": 160
+    },
+    {
+      "name": "content",
+      "type": "frame",
+      "width": 320,
+      "height": 83
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 272,
+      "height": 26,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ]
+    },
+    {
+      "name": "intro",
+      "type": "text",
+      "width": 272,
+      "height": 21,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 320,
+      "height": 163.6
+    },
+    {
+      "name": "configureAi",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "configureAi.label",
+      "type": "text",
+      "width": 61.5,
+      "height": 18,
+      "lines": [
+        "去配置AI"
+      ]
+    },
+    {
+      "name": "start",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "start.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "start.label",
+      "type": "text",
+      "width": 60,
+      "height": 18,
+      "lines": [
+        "开始使用"
+      ]
+    },
+    {
+      "name": "version",
+      "type": "text",
+      "width": 280,
+      "height": 19.6,
+      "lines": [
+        "v1.0.0"
+      ]
+    },
+    {
+      "name": "closeBadge",
+      "type": "frame",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "name": "closeBadge.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    }
+  ],
+  "F08_font_2x": [
+    {
+      "name": "dialog",
+      "type": "frame",
+      "width": 320,
+      "height": 567.2
+    },
+    {
+      "name": "hero",
+      "type": "image",
+      "width": 320,
+      "height": 160
+    },
+    {
+      "name": "content",
+      "type": "frame",
+      "width": 320,
+      "height": 224
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 272,
+      "height": 104,
+      "lines": [
+        "欢迎使用 ",
+        "DoDroidAI"
+      ]
+    },
+    {
+      "name": "intro",
+      "type": "text",
+      "width": 272,
+      "height": 84,
+      "lines": [
+        "说一句话，让手机替",
+        "你做事。"
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 320,
+      "height": 183.2
+    },
+    {
+      "name": "configureAi",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "configureAi.label",
+      "type": "text",
+      "width": 123,
+      "height": 36,
+      "lines": [
+        "去配置AI"
+      ]
+    },
+    {
+      "name": "start",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "start.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "start.label",
+      "type": "text",
+      "width": 120,
+      "height": 36,
+      "lines": [
+        "开始使用"
+      ]
+    },
+    {
+      "name": "version",
+      "type": "text",
+      "width": 280,
+      "height": 39.2,
+      "lines": [
+        "v0.1.0"
+      ]
+    },
+    {
+      "name": "closeBadge",
+      "type": "frame",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "name": "closeBadge.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    }
+  ],
+  "F09_small_640x400_2x": [
+    {
+      "name": "dialog",
+      "type": "frame",
+      "width": 600,
+      "height": 320
+    },
+    {
+      "name": "heroViewport",
+      "type": "image",
+      "width": 600,
+      "height": 136.8
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 600,
+      "height": 183.2
+    },
+    {
+      "name": "configureAi",
+      "type": "frame",
+      "width": 560,
+      "height": 48
+    },
+    {
+      "name": "configureAi.label",
+      "type": "text",
+      "width": 123,
+      "height": 36,
+      "lines": [
+        "去配置AI"
+      ]
+    },
+    {
+      "name": "start",
+      "type": "frame",
+      "width": 560,
+      "height": 48
+    },
+    {
+      "name": "start.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    },
+    {
+      "name": "start.label",
+      "type": "text",
+      "width": 120,
+      "height": 36,
+      "lines": [
+        "开始使用"
+      ]
+    },
+    {
+      "name": "version",
+      "type": "text",
+      "width": 560,
+      "height": 39.2,
+      "lines": [
+        "v0.1.0"
+      ]
+    },
+    {
+      "name": "closeBadge",
+      "type": "frame",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "name": "closeBadge.icon",
+      "type": "icon",
+      "width": 20,
+      "height": 20
+    }
+  ]
+}

@@ -97,3 +97,19 @@ class AppTheme {
     );
   }
 }
+
+/// 排版 token：只承载字号 / 字重 / 行高，颜色仍由 `ColorScheme` 提供。
+class AppTypography {
+  const AppTypography._();
+
+  /// 欢迎弹窗底部版本行（14sp / w400 / 行高 1.4）。
+  ///
+  /// 只被版本行使用；颜色在调用处取 `colorScheme.onSurfaceVariant`，
+  /// 不在这里写死色值，避免绕过主题。
+  static const TextStyle version = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    height: 1.4,
+  );
+}
+

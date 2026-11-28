@@ -1,0 +1,13 @@
+{
+  "status": "done",
+  "summary": "按打回意见修订技术方案：不再将 PRD 示意图差异列为 blocker，按设计说明落地 AppTypography.version 排版 token，并明确 closeBadgeFill 与现有 ColorScheme 等价；接口、验收映射与回滚方案保持完整。",
+  "artifacts": [
+    {
+      "path": "C:/Users/mohanshang/.qq-bot/checkouts/rsqebdf9y/.qq-bot-scratch/d8sfkp2v/技术方案.md",
+      "action": "modified"
+    }
+  ],
+  "selfCheck": "1) 接口定稿：formatVersionLabel、AppVersionResolver、appVersionProvider、WelcomeDialog.versionLabel、AppTypography.version、宿主调用契约、布局/日志契约均写明类型、空值、异常、超时，无待定项。2) 影响面：覆盖构造签名、主题 token、footer/卡片高度、4 处既有测试断言、首启读取、日志、一次性标记、无障碍、关于页、依赖/权限/数据，均列出。3) PRD↔设计逐条核对：版本来源/格式/回退/位置/间距/字号/颜色/缩放/省略/footer 高度/滚动/淡出/无障碍/一次性语义一致；PRD §1.1/§5.1 的示意差异在设计阶段已记录，本方案按现有两行文字执行并只作上游备注，不再列为 blocker；设计 version token 已落为 AppTypography.version，closeBadgeFill 与现有 isDark ? surfaceContainerHigh : surface 取值完全等价、不改角标。4) 风险 R1-R11 均有对策；回滚为纯代码 revert，无数据迁移，步骤可执行。5) 开发内容 T1-T6 均标关联 REQ、依赖、状态（待办）和完成标准。6) 模块与改动点 M1-M7 每条均可追到 REQ 编号。7) 未修改项目下任何源码、配置、资源或测试；本阶段只读 origin/main 与三份输入文档，产物只写在需求目录。未验证：未执行 flutter analyze/test/build（本阶段只出方案、不改代码，方案结论基于代码与文档核对）。",
+  "decisions": [],
+  "blockers": []
+}

@@ -1,0 +1,21 @@
+{
+  "status": "done",
+  "summary": "完成欢迎弹窗底部版本号设计：在现有 footer 主按钮下新增一行 14sp/w400/1.4、onSurfaceVariant、居中、距按钮 8dp、距底部 20dp 的版本号（v + versionName），按现有实现整卡重绘并输出浅色/深色/英文/已配置AI/空态/超长/回退/2倍字号/640×400 共 9 帧 SVG+PNG。",
+  "artifacts": [
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\d8sfkp2v\\design\\layouts.json", "action": "created" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\d8sfkp2v\\design\\svg\\", "action": "created" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\d8sfkp2v\\design\\boxes.json", "action": "created" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\d8sfkp2v\\design\\assets\\", "action": "created" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\d8sfkp2v\\design-images\\", "action": "created" },
+    { "path": "C:\\Users\\mohanshang\\.qq-bot\\checkouts\\rsqebdf9y\\.qq-bot-scratch\\d8sfkp2v\\设计说明.md", "action": "created" }
+  ],
+  "selfCheck": "准出逐项：1) layouts.json + 9 个 SVG + boxes.json + 9 张 PNG 均为自带 svggen/svg2png 生成，最后一次调整后已重跑（PNG 时间戳晚于 SVG）；2) 帧内容与 layouts.json 一致，无陈旧产物；3) 必备状态齐全：正常 F01/F04、空态 F05、超长/多语言 F06/F03、极端数据 F07/F08/F09；加载态舍弃（版本号须在弹窗展示前就绪，AC-9，无加载 UI）、错误态保留 F07（回退 v1.0.0，不阻塞弹窗）；4) 老页面按改动区域标注（changeScope=footer 版本行），底图取真实首页截图，对齐依据 qa-03-first-show-zh-light.png；5) 每帧独立（9 个 .svg/.png）；6) boxes 无溢出：卡片最大 567.2dp<592dp 上限、F09 320dp=400×80%，版本行 280×19.6dp/280×39.2dp 均单行，footer 内容未超出卡片，角标 324–356dp 在画布内；7) 颜色/间距/字号取自 app_theme.dart 与现有弹窗实现，仅新增 PRD 指定的 version 排版 token 与 closeBadgeFill 语义映射；字体降级（预览 Segoe UI/微软雅黑，真机 Roboto/系统字体）已记录；8) 未改动项目源码、配置、资源，仅只读主仓库 origin/main 的截图/主题/弹窗实现。",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "PRD 文档与真实界面不一致：PRD §5.1 布局示意多出「随时可以在设置里改 AI 配置」一行、§1.1 写「标题、说明行、副标题」，但主仓库现有实现与截图（qa-03-first-show-zh-light.png）只有主标题+一行副标题。本次按真实现状出稿、未新增该行（加行会超出本需求「不改欢迎弹窗其他内容」的范围）。需要产品确认：回写 PRD 示意，还是另开需求补这行文案。",
+      "severity": "suggestion"
+    }
+  ],
+  "deliverables": {}
+}
