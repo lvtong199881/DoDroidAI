@@ -61,9 +61,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (!mounted) {
       throw StateError('首页已销毁，跳过欢迎弹窗');
     }
-    // 展示前先判定一次，弹窗只以最终状态出现；读取耗时不计入 visibleMs。
-    final showConfigureAi =
-        await ref.read(welcomeAiGateProvider).shouldShowConfigureAi();
+    // 展示前并行解析 AI 入口与版本号，弹窗只以最终状态出现；
+    // 读取耗时不计入 visibleMs。
+    final showConfigureAiFuture =
+        ref.read(welcomeAiGateProvider).shouldShowConfigureAi();
+    final versionLabelFuture = ref.read(appVersionProvider).resolve();
+
+    final showConfigureAi = await showConfigureAiFuture;
+    final versionLabel = await versionLabelFuture;
     if (!mounted) {
       throw StateError('首页已销毁，跳过欢迎弹窗');
     }
@@ -72,7 +77,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       context: context,
       barrierDismissible: false,
       useRootNavigator: true,
-      builder: (_) => WelcomeDialog(showConfigureAi: showConfigureAi),
+      builder: (_) => WelcomeDialog(
+        showConfigureAi: showConfigureAi,
+        versionLabel: versionLabel,
+      ),
     );
     // showDialog 已 push 路由，此时记录 welcome_shown。
     onShown();

@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dodroidai/app_version.dart';
 import 'package:dodroidai/l10n/app_strings.dart';
 import 'package:dodroidai/settings/welcome_contract.dart';
 import 'package:dodroidai/theme/app_theme.dart';
@@ -26,7 +27,9 @@ Future<Future<WelcomeDismissMethod?>> openWelcome(
   Size logicalSize = const Size(360, 800),
   double textScale = 1.0,
   bool showConfigureAi = false,
+  String versionLabel = 'v0.1.0',
   String? heroAssetOverride,
+  bool settle = true,
 }) async {
   tester.view.devicePixelRatio = 1.0;
   tester.view.physicalSize = logicalSize;
@@ -60,6 +63,7 @@ Future<Future<WelcomeDismissMethod?>> openWelcome(
                   barrierDismissible: false,
                   builder: (_) => WelcomeDialog(
                     showConfigureAi: showConfigureAi,
+                    versionLabel: versionLabel,
                     heroAssetOverride: heroAssetOverride,
                   ),
                 );
@@ -75,7 +79,8 @@ Future<Future<WelcomeDismissMethod?>> openWelcome(
   await tester.pump(); // 本地化是异步 load，补一拍让 home 真正建出来
 
   await tester.tap(find.text('打开弹窗'));
-  await tester.pumpAndSettle();
+  await tester.pump();
+  if (settle) await tester.pumpAndSettle();
   expect(find.byType(WelcomeDialog), findsOneWidget);
   return closing!;
 }
@@ -381,7 +386,7 @@ void main() {
     expect(card.color, const Color(0xFF161920));
   });
 
-  testWidgets('文字不设 maxLines/ellipsis，不覆盖系统字号', (tester) async {
+  testWidgets('文字不设 maxLines/ellipsis（版本行除外），不覆盖系统字号', (tester) async {
     await openWelcome(tester, textScale: 2.0);
 
     final texts = tester.widgetList<Text>(
@@ -392,9 +397,15 @@ void main() {
     );
     expect(texts, isNotEmpty);
     for (final text in texts) {
+      if (text.key == welcomeDialogVersionKey) continue;
       expect(text.maxLines, isNull);
       expect(text.overflow, isNull);
     }
+
+    // 版本行按需求单行末尾省略，是唯一例外。
+    final version = tester.widget<Text>(find.byKey(welcomeDialogVersionKey));
+    expect(version.maxLines, 1);
+    expect(version.overflow, TextOverflow.ellipsis);
   });
 
   testWidgets('640×400 超高：图与文字可滚动，按钮固定可见', (tester) async {
@@ -520,8 +531,8 @@ void main() {
       expect(rect.height, greaterThanOrEqualTo(48));
     }
 
-    // footer 高度 = 上 12 + 48 + 8 + 48 + 下 20 = 136
-    expect(footerHeight(tester), closeTo(136, 0.5));
+    // footer 高度 = 上 12 + 48 + 8 + 48 + 8 + 19.6 + 下 20 = 163.6
+    expect(footerHeight(tester), closeTo(163.6, 0.5));
 
     // 次要样式：OutlinedButton + 主题 outline 描边 / primary 文字，主按钮仍是 FilledButton
     final secondary = tester.widget<OutlinedButton>(find.byKey(_configureAiKey));
@@ -541,7 +552,7 @@ void main() {
     );
   });
 
-  testWidgets('已配置：无次要按钮、无额外占位（footer 仍 80）', (tester) async {
+  testWidgets('已配置：无次要按钮、无额外占位（footer 107.6，版本行贴底）', (tester) async {
     await openWelcome(tester, showConfigureAi: false);
 
     final dialogRect = dialogSurfaceRect(tester);
@@ -549,10 +560,12 @@ void main() {
 
     expect(find.byKey(_configureAiKey), findsNothing);
     expect(find.text('去配置AI'), findsNothing);
-    // 未配置时 footer 为 136（多一个 48 按钮 + 8 间距），已配置必须回到 80
-    expect(footerHeight(tester), closeTo(80, 0.5));
-    // 主按钮贴底：48 + 下内边距 20
-    expect(primaryRect.bottom, closeTo(dialogRect.bottom - 20, 0.5));
+    // 未配置时 footer 为 163.6（多一个 48 按钮 + 8 间距），已配置为 107.6
+    expect(footerHeight(tester), closeTo(107.6, 0.5));
+    // 版本行贴底：19.6 行盒 + 下内边距 20
+    final versionRect = tester.getRect(find.byKey(welcomeDialogVersionKey));
+    expect(dialogRect.bottom - versionRect.bottom, closeTo(20, 0.5));
+    expect(versionRect.top - primaryRect.bottom, closeTo(8, 0.5));
     expect(tester.takeException(), isNull);
   });
 
@@ -1300,7 +1313,8 @@ void main() {
       final titleBefore = tester.getRect(find.byKey(_titleKey)).top;
       final hintBefore = hintRect(tester).top;
 
-      await tester.drag(find.byKey(_scrollKey), const Offset(0, -150));
+      // 滚到底（footer 加版本行后可视区变矮，滚动范围随之变大）
+      await tester.drag(find.byKey(_scrollKey), const Offset(0, -600));
       await tester.pumpAndSettle();
 
       final titleDelta = tester.getRect(find.byKey(_titleKey)).top - titleBefore;
@@ -1413,6 +1427,348 @@ void main() {
       expect(hint.overlaps(hit), isFalse);
       expect(hint.overlaps(visual), isFalse);
       expect(hint.top, greaterThan(hit.bottom));
+    });
+  });
+
+  group('版本行（REQ-1～REQ-6）', () {
+    Rect versionRect(WidgetTester tester) =>
+        tester.getRect(find.byKey(welcomeDialogVersionKey));
+
+    Text versionText(WidgetTester tester) =>
+        tester.widget<Text>(find.byKey(welcomeDialogVersionKey));
+
+    List<FadeTransition> fadesOf(Element element) {
+      final fades = <FadeTransition>[];
+      element.visitAncestorElements((ancestor) {
+        if (ancestor.widget is FadeTransition) {
+          fades.add(ancestor.widget as FadeTransition);
+        }
+        return true;
+      });
+      return fades;
+    }
+
+    /// AC-4/AC-5：居中、宽满内容区、上 8 下 20，且在滚动区之外。
+    void expectVersionLayout(WidgetTester tester) {
+      final card = dialogSurfaceRect(tester);
+      final version = versionRect(tester);
+      final primary = tester.getRect(find.byKey(_startKey));
+
+      expect(version.center.dx, closeTo(card.center.dx, 1.0));
+      expect(version.width, closeTo(card.width - 40, 0.5));
+      expect(version.left, closeTo(card.left + 20, 0.5));
+      expect(version.right, closeTo(card.right - 20, 0.5));
+      expect(version.top - primary.bottom, closeTo(8, 1.0));
+      expect(card.bottom - version.bottom, closeTo(20, 1.0));
+      expect(version.top, greaterThan(primary.top));
+      expect(version.overlaps(primary), isFalse);
+      expect(
+        find.descendant(
+          of: find.byKey(_scrollKey),
+          matching: find.byKey(welcomeDialogVersionKey),
+        ),
+        findsNothing,
+        reason: '版本行不应进入可滚动内容区',
+      );
+      expect(tester.takeException(), isNull);
+    }
+
+    testWidgets('AC-1/AC-9：弹窗第一帧就显示完整版本号', (tester) async {
+      final closing = await openWelcome(tester, settle: false);
+
+      // 只推进一帧：路由过渡仍在进行，文本已就绪、非空、无占位符。
+      final version = versionText(tester);
+      expect(version.data, 'v0.1.0');
+      expect(version.data, isNotEmpty);
+      expect(find.text('v0.1.0'), findsOneWidget);
+
+      await tester.pumpAndSettle();
+      expect(find.text('v0.1.0'), findsOneWidget);
+
+      await tester.tap(find.byKey(_startKey));
+      await tester.pumpAndSettle();
+      expect(await closing, WelcomeDismissMethod.button);
+    });
+
+    testWidgets('AC-2：注入回退文本 v1.0.0 时弹窗正常展示且可关闭', (tester) async {
+      final closing = await openWelcome(
+        tester,
+        versionLabel: fallbackAppVersionLabel,
+      );
+
+      expect(find.text('v1.0.0'), findsOneWidget);
+      expect(find.byType(WelcomeDialog), findsOneWidget);
+      expect(find.byKey(_startKey), findsOneWidget);
+
+      await tester.tap(find.byKey(_startKey));
+      await tester.pumpAndSettle();
+      expect(await closing, WelcomeDismissMethod.button);
+    });
+
+    testWidgets('AC-3：中英文显示同一版本文本，无翻译缺失/占位符', (tester) async {
+      await openWelcome(tester);
+      expect(versionText(tester).data, 'v0.1.0');
+      expect(find.text('welcomeDialogVersion'), findsNothing);
+
+      await tester.tap(find.byKey(_startKey));
+      await tester.pumpAndSettle();
+
+      await openWelcome(tester, locale: const Locale('en'));
+      expect(versionText(tester).data, 'v0.1.0');
+      expect(find.text('v0.1.0'), findsOneWidget);
+      expect(find.text('v'), findsNothing);
+    });
+
+    testWidgets('AC-4：已配置 AI（单按钮）时居中、宽满内容区、上 8 下 20',
+        (tester) async {
+      await openWelcome(tester, showConfigureAi: false);
+
+      expect(find.byKey(_configureAiKey), findsNothing);
+      expectVersionLayout(tester);
+    });
+
+    testWidgets('AC-5：未配置 AI（双按钮）时仍在主按钮下方最底部，不与按钮重叠',
+        (tester) async {
+      await openWelcome(tester, showConfigureAi: true);
+
+      final version = versionRect(tester);
+      final primary = tester.getRect(find.byKey(_startKey));
+      final secondary = tester.getRect(find.byKey(_configureAiKey));
+
+      expect(find.byKey(_configureAiKey), findsOneWidget);
+      expect(version.overlaps(secondary), isFalse);
+      expect(version.top, greaterThan(secondary.bottom));
+      expect(version.top, greaterThan(primary.bottom));
+      expectVersionLayout(tester);
+    });
+
+    testWidgets('AC-6：14sp / w400 / 行高 1.4，颜色取 onSurfaceVariant',
+        (tester) async {
+      await openWelcome(tester);
+
+      final lightScheme = AppTheme.light().colorScheme;
+      final text = versionText(tester);
+      expect(text.style?.fontSize, 14);
+      expect(text.style?.fontWeight, FontWeight.w400);
+      expect(text.style?.height, 1.4);
+      expect(text.textAlign, TextAlign.center);
+      expect(text.style?.color, lightScheme.onSurfaceVariant);
+      expect(text.style?.color, const Color(0xFF5B6270));
+      expect(AppTypography.version.fontSize, 14);
+      expect(AppTypography.version.fontWeight, FontWeight.w400);
+      expect(AppTypography.version.height, 1.4);
+      // 1.0 倍：行盒 = 14 × 1.4
+      expect(versionRect(tester).height, closeTo(14 * 1.4, 0.5));
+
+      await tester.tap(find.byKey(_startKey));
+      await tester.pumpAndSettle();
+
+      await openWelcome(tester, theme: AppTheme.dark());
+      final darkScheme = AppTheme.dark().colorScheme;
+      expect(versionText(tester).style?.color, darkScheme.onSurfaceVariant);
+      expect(versionText(tester).style?.color, const Color(0xFFA6ADBB));
+      expect(
+        contrastRatio(darkScheme.onSurfaceVariant, darkScheme.surface),
+        greaterThanOrEqualTo(4.5),
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('AC-7：2 倍字号渲染 28sp、行盒 39.2、单行不横向溢出',
+        (tester) async {
+      await openWelcome(tester, textScale: 2.0);
+
+      final paragraph = tester.renderObject<RenderParagraph>(
+        find.byKey(welcomeDialogVersionKey),
+      );
+      expect(paragraph.textScaler.scale(14), 28);
+      expect(paragraph.preferredLineHeight, closeTo(28 * 1.4, 0.5));
+      expect(versionRect(tester).height, closeTo(28 * 1.4, 0.5));
+      expect(paragraph.didExceedMaxLines, isFalse);
+
+      final card = dialogSurfaceRect(tester);
+      final version = versionRect(tester);
+      expect(version.width, closeTo(card.width - 40, 0.5));
+      expect(version.left, greaterThanOrEqualTo(card.left));
+      expect(version.right, lessThanOrEqualTo(card.right));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('AC-8：320dp 超长版本号单行末尾省略，不撑破卡片', (tester) async {
+      const longLabel =
+          'v10.24.0-beta.20250612.22591.abcdefghijklmnopqrstuvwxyz';
+      await openWelcome(
+        tester,
+        logicalSize: const Size(320, 640),
+        versionLabel: longLabel,
+      );
+
+      expect(tester.takeException(), isNull);
+      final text = versionText(tester);
+      expect(text.maxLines, 1);
+      expect(text.overflow, TextOverflow.ellipsis);
+      expect(text.softWrap, isFalse);
+
+      final paragraph = tester.renderObject<RenderParagraph>(
+        find.byKey(welcomeDialogVersionKey),
+      );
+      expect(paragraph.didExceedMaxLines, isTrue);
+
+      final card = dialogSurfaceRect(tester);
+      final version = versionRect(tester);
+      expect(card.width, closeTo(280, 1.0));
+      expect(version.width, closeTo(card.width - 40, 0.5));
+      expect(version.left, greaterThanOrEqualTo(card.left));
+      expect(version.right, lessThanOrEqualTo(card.right));
+      expect(version.height, closeTo(14 * 1.4, 0.5));
+    });
+
+    testWidgets('AC-10：小高度滚动时版本行固定在 footer，不随内容滚出', (tester) async {
+      await openWelcome(tester, logicalSize: const Size(640, 400));
+
+      final state = scrollState(tester);
+      expect(state.position.maxScrollExtent, greaterThan(0));
+
+      final card = dialogSurfaceRect(tester);
+      final before = versionRect(tester);
+      await tester.drag(find.byKey(_scrollKey), const Offset(0, -600));
+      await tester.pumpAndSettle();
+
+      expect(state.position.pixels, state.position.maxScrollExtent);
+      final after = versionRect(tester);
+      expect(after.top, closeTo(before.top, 0.5));
+      expect(after.left, closeTo(before.left, 0.5));
+      expect(after.bottom, closeTo(before.bottom, 0.5));
+      expect(after.top, greaterThanOrEqualTo(card.top));
+      expect(after.bottom, lessThanOrEqualTo(card.bottom));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('AC-11：与主标题共享同一 FadeTransition，弹窗内无新增淡出节点',
+        (tester) async {
+      await openWelcome(tester);
+
+      final titleFades = fadesOf(tester.element(find.byKey(_titleKey)));
+      final versionFades = fadesOf(
+        tester.element(find.byKey(welcomeDialogVersionKey)),
+      );
+
+      expect(versionFades, isNotEmpty, reason: '版本行不在路由过渡中');
+      expect(versionFades.length, titleFades.length);
+      for (var i = 0; i < versionFades.length; i++) {
+        expect(identical(versionFades[i], titleFades[i]), isTrue);
+      }
+      expect(
+        find.descendant(
+          of: find.byType(WelcomeDialog),
+          matching: find.byType(FadeTransition),
+        ),
+        findsNothing,
+      );
+
+      await tester.tap(find.byKey(_startKey));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 16));
+
+      final versionOpacity = fadesOf(
+        tester.element(find.byKey(welcomeDialogVersionKey)),
+      ).first.opacity.value;
+      final titleOpacity = fadesOf(
+        tester.element(find.byKey(_titleKey)),
+      ).first.opacity.value;
+      expect(versionOpacity, titleOpacity);
+      expect(versionOpacity, greaterThan(0));
+      expect(versionOpacity, lessThan(1));
+
+      await tester.pumpAndSettle();
+      expect(find.byType(WelcomeDialog), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('AC-12：四种关闭方式后版本行不残留', (tester) async {
+      var closing = await openWelcome(tester);
+      await tester.tap(find.byKey(_startKey));
+      await tester.pumpAndSettle();
+      expect(find.byKey(welcomeDialogVersionKey), findsNothing);
+      expect(await closing, WelcomeDismissMethod.button);
+
+      closing = await openWelcome(tester);
+      await tester.tap(find.byKey(welcomeDialogCloseKey));
+      await tester.pumpAndSettle();
+      expect(find.byKey(welcomeDialogVersionKey), findsNothing);
+      expect(await closing, WelcomeDismissMethod.closeButton);
+
+      closing = await openWelcome(tester);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.byKey(welcomeDialogVersionKey), findsNothing);
+      expect(await closing, isNull);
+
+      closing = await openWelcome(tester, showConfigureAi: true);
+      await tester.tap(find.byKey(_configureAiKey));
+      await tester.pumpAndSettle();
+      expect(find.byKey(welcomeDialogVersionKey), findsNothing);
+      expect(await closing, WelcomeDismissMethod.configureAi);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('AC-13：语义为普通文本，读出完整版本号且不是按钮', (tester) async {
+      final handle = tester.ensureSemantics();
+      await openWelcome(tester);
+
+      final data = tester
+          .getSemantics(find.byKey(welcomeDialogVersionKey))
+          .getSemanticsData();
+      expect(data.label, 'v0.1.0');
+      expect(data.flagsCollection.isButton, isFalse);
+      expect(data.hasAction(SemanticsAction.tap), isFalse);
+      expect(data.hasAction(SemanticsAction.longPress), isFalse);
+
+      handle.dispose();
+    });
+
+    testWidgets('AC-14：点击/长按版本行无操作，弹窗保持打开', (tester) async {
+      final closing = await openWelcome(tester);
+
+      await tester.tap(find.byKey(welcomeDialogVersionKey));
+      await tester.longPress(find.byKey(welcomeDialogVersionKey));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(WelcomeDialog), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(await closing, isNull);
+    });
+
+    testWidgets('AC-15：640×400 + 2 倍字号，版本行完整可见、单行、不与按钮重叠',
+        (tester) async {
+      await openWelcome(
+        tester,
+        logicalSize: const Size(640, 400),
+        textScale: 2.0,
+      );
+
+      expect(tester.takeException(), isNull);
+      final card = dialogSurfaceRect(tester);
+      final version = versionRect(tester);
+      final primary = tester.getRect(find.byKey(_startKey));
+
+      expect(card.height, lessThanOrEqualTo(400 * 0.8 + 0.5));
+      expect(version.top, greaterThan(primary.bottom + 7));
+      expect(version.overlaps(primary), isFalse);
+      expect(version.left, greaterThanOrEqualTo(card.left));
+      expect(version.right, lessThanOrEqualTo(card.right));
+      expect(version.top, greaterThanOrEqualTo(card.top));
+      expect(version.bottom, lessThanOrEqualTo(card.bottom + 0.5));
+      expect(version.height, closeTo(28 * 1.4, 0.5));
+
+      final paragraph = tester.renderObject<RenderParagraph>(
+        find.byKey(welcomeDialogVersionKey),
+      );
+      expect(paragraph.didExceedMaxLines, isFalse);
+      expect(scrollState(tester).position.maxScrollExtent, greaterThan(0));
     });
   });
 

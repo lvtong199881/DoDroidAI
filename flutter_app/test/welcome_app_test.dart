@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:dodroidai/ai/ai_config.dart';
 import 'package:dodroidai/app.dart';
+import 'package:dodroidai/app_version.dart';
 import 'package:dodroidai/screens/chat/chat_provider.dart';
 import 'package:dodroidai/screens/chat/chat_screen.dart';
 import 'package:dodroidai/screens/settings/api_config_screen.dart';
@@ -29,12 +30,17 @@ const Key _hintKey = Key('welcome_dialog_ai_hint');
 ProviderScope appWith({
   required WelcomeController controller,
   WelcomeAiGate? gate,
+  AppVersionLoader? versionLoader,
 }) {
   return ProviderScope(
     overrides: [
       chatProvider.overrideWith((_) => _NoopChatController()),
       welcomeControllerProvider.overrideWithValue(controller),
       if (gate != null) welcomeAiGateProvider.overrideWithValue(gate),
+      // 测试环境没有 package_info_plus 通道：统一注入假版本，默认 0.1.0。
+      appVersionProvider.overrideWithValue(
+        AppVersionResolver(loader: versionLoader ?? () async => '0.1.0'),
+      ),
     ],
     child: const DoDroidApp(),
   );
@@ -76,6 +82,9 @@ void main() {
 
     expect(find.byType(ChatScreen), findsOneWidget);
     expect(find.byType(WelcomeDialog), findsOneWidget);
+    // 首帧后展示时版本号已就绪（非空、真实 versionName 格式）
+    expect(find.byKey(welcomeDialogVersionKey), findsOneWidget);
+    expect(find.text('v0.1.0'), findsOneWidget);
     expect(store.writeCount, 1);
     expect(log.events.first, startsWith('check:show:no_flag:cold_start:'));
 
@@ -119,6 +128,64 @@ void main() {
     expect(dismissed.single, startsWith('dismissed:close_button:'));
     final visibleMs = int.parse(dismissed.single.split(':').last);
     expect(visibleMs, greaterThanOrEqualTo(0));
+  });
+
+  testWidgets('版本读取失败：回退 v1.0.0，弹窗仍展示且可关闭', (tester) async {
+    final store = FakeWelcomeFlagStore();
+    final log = RecordingWelcomeLog();
+    final controller = WelcomeController(
+      store: store,
+      log: log,
+      entryResolver: fixedEntryResolver(WelcomeEntry.coldStart),
+    );
+
+    await tester.pumpWidget(
+      appWith(
+        controller: controller,
+        versionLoader: () async => throw StateError('package info failed'),
+      ),
+    );
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(WelcomeDialog), findsOneWidget);
+    expect(find.text('v1.0.0'), findsOneWidget);
+    // 失败不产生 welcome_error，日志事件顺序不变
+    expect(log.events.any((event) => event.startsWith('error:')), isFalse);
+
+    await tester.tap(startButton());
+    await tester.pumpAndSettle();
+
+    expect(find.byType(WelcomeDialog), findsNothing);
+    expect(
+      log.events.any((event) => event.startsWith('dismissed:button')),
+      isTrue,
+    );
+  });
+
+  testWidgets('已展示标记：不弹窗、不读版本号', (tester) async {
+    var versionCalls = 0;
+    final controller = WelcomeController(
+      store: FakeWelcomeFlagStore(flagged: true),
+      log: RecordingWelcomeLog(),
+      entryResolver: fixedEntryResolver(WelcomeEntry.coldStart),
+    );
+
+    await tester.pumpWidget(
+      appWith(
+        controller: controller,
+        versionLoader: () async {
+          versionCalls++;
+          return '0.1.0';
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(WelcomeDialog), findsNothing);
+    expect(find.byKey(welcomeDialogVersionKey), findsNothing);
+    expect(versionCalls, 0);
   });
 
   testWidgets('已展示标记存在时不弹窗、不写标记', (tester) async {

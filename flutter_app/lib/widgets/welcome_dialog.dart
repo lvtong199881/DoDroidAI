@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/app_strings.dart';
 import '../settings/welcome_contract.dart';
+import '../theme/app_theme.dart';
 
 /// 欢迎图资源（2:1，1280×640），深浅各一套，按主题亮度选择。
 const String welcomeHeroLightAsset = 'assets/images/welcome_hero_light.png';
@@ -64,6 +65,12 @@ const FontWeight welcomeHintFontWeight = FontWeight.w400;
 /// 说明行行高倍数。
 const double welcomeHintLineHeight = 1.4;
 
+/// 版本行定位 key（footer 最底部的一行纯展示文本）。
+const Key welcomeDialogVersionKey = Key('welcome_dialog_version');
+
+/// 主按钮 → 版本行间距（dp）。
+const double welcomeVersionGap = 8.0;
+
 /// 一次性欢迎弹窗（模态）。
 ///
 /// 结构：透明外壳（路由/遮罩/居中）→ 内层卡片 Material（背景/圆角/阴影/裁切）
@@ -75,6 +82,7 @@ class WelcomeDialog extends StatefulWidget {
   const WelcomeDialog({
     super.key,
     this.showConfigureAi = false,
+    required this.versionLabel,
     @visibleForTesting this.heroAssetOverride,
   });
 
@@ -82,6 +90,11 @@ class WelcomeDialog extends StatefulWidget {
   ///
   /// 为 `false` 时整段不渲染，footer 高度与改动前一致。
   final bool showConfigureAi;
+
+  /// 已格式化的版本展示文本，如 'v0.1.0'；由调用方在展示前解析并保证非空。
+  ///
+  /// 弹窗内不做异步读取、不做第二次回退，保证首帧即显示完整版本号。
+  final String versionLabel;
 
   /// 仅测试注入：非空时使用该 asset path；空字符串视为资源缺失，直接不渲染图片。
   @visibleForTesting
@@ -119,6 +132,7 @@ class _WelcomeDialogState extends State<WelcomeDialog> {
 
   @override
   Widget build(BuildContext context) {
+    assert(widget.versionLabel.isNotEmpty, '版本行文本不能为空，调用方需先兜底');
     final scheme = Theme.of(context).colorScheme;
     final strings = AppStrings.of(context);
     final maxHeight =
@@ -288,6 +302,19 @@ class _WelcomeDialogState extends State<WelcomeDialog> {
                                   ),
                                 ],
                               ),
+                            ),
+                          ),
+                          // 版本行：纯展示文本，固定 footer 最底部，不进滚动区。
+                          const SizedBox(height: welcomeVersionGap),
+                          Text(
+                            widget.versionLabel,
+                            key: welcomeDialogVersionKey,
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            softWrap: false,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTypography.version.copyWith(
+                              color: scheme.onSurfaceVariant,
                             ),
                           ),
                         ],
