@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -127,6 +127,16 @@ double footerHeight(WidgetTester tester) {
   final dialogRect = dialogSurfaceRect(tester);
   final scrollRect = tester.getRect(find.byKey(_scrollKey));
   return dialogRect.bottom - scrollRect.bottom;
+}
+
+/// 说明行（主标题与副标题之间的静态提示）矩形。
+Rect hintRect(WidgetTester tester) {
+  return tester.getRect(find.byKey(welcomeDialogAiHintKey));
+}
+
+/// 说明行 Text 组件。
+Text hintText(WidgetTester tester) {
+  return tester.widget<Text>(find.byKey(welcomeDialogAiHintKey));
 }
 
 /// 读取 PNG 的 IHDR 宽高。
@@ -1075,6 +1085,301 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expectStartContentInsideButton(tester, 'Get started');
+    });
+  });
+
+  group('说明行（REQ-1～REQ-5）', () {
+    const zhHint = '随时可以在设置里改 AI 配置';
+    const enHint = 'You can change your AI config anytime in Settings.';
+
+    testWidgets('AC-1/13/17：主标题 → 说明行 → 副标题，间距 6/12，水平居中，副标题不变', (
+      tester,
+    ) async {
+      await openWelcome(tester);
+
+      final dialogRect = dialogSurfaceRect(tester);
+      final titleRect = tester.getRect(find.byKey(_titleKey));
+      final hint = hintRect(tester);
+      final subtitleRect = tester.getRect(find.byKey(_subtitleKey));
+
+      // 纵向顺序与相邻不重叠
+      expect(titleRect.bottom, lessThanOrEqualTo(hint.top + 0.5));
+      expect(hint.bottom, lessThanOrEqualTo(subtitleRect.top + 0.5));
+      expect(hint.overlaps(titleRect), isFalse);
+      expect(hint.overlaps(subtitleRect), isFalse);
+
+      // 间距 6 / 12
+      expect(hint.top - titleRect.bottom, closeTo(welcomeHintTitleGap, 0.5));
+      expect(
+        subtitleRect.top - hint.bottom,
+        closeTo(welcomeHintSubtitleGap, 0.5),
+      );
+
+      // 水平居中，与主标题中心偏差 ≤ 1dp
+      expect(hint.center.dx, closeTo(dialogRect.center.dx, 1.0));
+      expect(hint.center.dx, closeTo(titleRect.center.dx, 1.0));
+
+      // 副标题文案/字号/颜色保持既有实现
+      final subtitle = tester.widget<Text>(find.byKey(_subtitleKey));
+      expect(subtitle.data, '说一句话，让手机替你做事。');
+      expect(subtitle.style?.fontSize, 15);
+      expect(
+        subtitle.style?.color,
+        AppTheme.light().colorScheme.onSurfaceVariant,
+      );
+      expect(find.byKey(welcomeDialogAiHintKey), findsOneWidget);
+    });
+
+    testWidgets('AC-5/6/7：中英逐字文案，非中英回退中文', (tester) async {
+      await openWelcome(tester);
+      expect(find.text(zhHint), findsOneWidget);
+      expect(find.text('welcomeAiHint'), findsNothing);
+      expect(hintText(tester).data, zhHint);
+
+      // 关闭后再以另一语言重建，避免旧路由遮住入口
+      await tester.tap(find.byKey(_startKey));
+      await tester.pumpAndSettle();
+
+      await openWelcome(tester, locale: const Locale('en'));
+      expect(find.text(enHint), findsOneWidget);
+      expect(find.text(zhHint), findsNothing);
+      expect(find.text('welcomeAiHint'), findsNothing);
+      expect(hintText(tester).data, enHint);
+
+      await tester.tap(find.byKey(_startKey));
+      await tester.pumpAndSettle();
+
+      await openWelcome(tester, locale: const Locale('fr'));
+      expect(find.text(zhHint), findsOneWidget);
+      expect(hintText(tester).data, zhHint);
+    });
+
+    testWidgets('AC-8：默认字号 13sp、400、行高 1.4、渲染行高 18.2', (tester) async {
+      await openWelcome(tester);
+
+      final text = hintText(tester);
+      expect(text.style?.fontSize, welcomeHintFontSize);
+      expect(text.style?.fontSize, 13);
+      expect(text.style?.fontWeight, FontWeight.w400);
+      expect(text.style?.height, 1.4);
+      expect(text.textAlign, TextAlign.center);
+      expect(text.maxLines, isNull);
+      expect(text.overflow, isNull);
+
+      final paragraph = tester.renderObject<RenderParagraph>(
+        find.byKey(welcomeDialogAiHintKey),
+      );
+      expect(paragraph.textScaler.scale(welcomeHintFontSize), 13);
+      expect(paragraph.preferredLineHeight, closeTo(13 * 1.4, 0.5));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('AC-10：2 倍线性缩放渲染 26sp、行高 36.4', (tester) async {
+      await openWelcome(tester, textScale: 2.0);
+
+      final text = hintText(tester);
+      expect(text.style?.fontSize, welcomeHintFontSize);
+
+      final paragraph = tester.renderObject<RenderParagraph>(
+        find.byKey(welcomeDialogAiHintKey),
+      );
+      expect(paragraph.textScaler.scale(welcomeHintFontSize), 26);
+      expect(paragraph.preferredLineHeight, closeTo(26 * 1.4, 0.5));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('AC-9：浅色取 #5B6270、深色取 #A6ADBB，对比度均 ≥ 4.5', (tester) async {
+      await openWelcome(tester);
+      final lightScheme = AppTheme.light().colorScheme;
+      expect(hintText(tester).style?.color, lightScheme.onSurfaceVariant);
+      expect(hintText(tester).style?.color, const Color(0xFF5B6270));
+      expect(
+        contrastRatio(lightScheme.onSurfaceVariant, lightScheme.surface),
+        greaterThanOrEqualTo(4.5),
+      );
+
+      await tester.tap(find.byKey(_startKey));
+      await tester.pumpAndSettle();
+
+      await openWelcome(tester, theme: AppTheme.dark());
+      final darkScheme = AppTheme.dark().colorScheme;
+      expect(hintText(tester).style?.color, darkScheme.onSurfaceVariant);
+      expect(hintText(tester).style?.color, const Color(0xFFA6ADBB));
+      expect(
+        contrastRatio(darkScheme.onSurfaceVariant, darkScheme.surface),
+        greaterThanOrEqualTo(4.5),
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('AC-11：320dp 窄屏宽 232、无横向溢出、不截断', (tester) async {
+      await openWelcome(tester, logicalSize: const Size(320, 640));
+
+      expect(tester.takeException(), isNull);
+      final dialogRect = dialogSurfaceRect(tester);
+      final hint = hintRect(tester);
+
+      expect(dialogRect.width, closeTo(280, 1.0));
+      expect(hint.width, closeTo(232, 1.0));
+      expect(hint.left, greaterThanOrEqualTo(dialogRect.left));
+      expect(hint.right, lessThanOrEqualTo(dialogRect.right));
+      // 中文 1 行；无省略号/最大行数
+      expect(hint.height, closeTo(13 * 1.4, 0.5));
+      expect(hintText(tester).maxLines, isNull);
+      expect(hintText(tester).overflow, isNull);
+      expect(
+        find.descendant(
+          of: find.byKey(_scrollKey),
+          matching: find.byKey(welcomeDialogAiHintKey),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('AC-12：2 倍字号 360×640 内容可滚、主按钮完整可点', (tester) async {
+      final closing = await openWelcome(
+        tester,
+        textScale: 2.0,
+        logicalSize: const Size(360, 640),
+      );
+
+      expect(tester.takeException(), isNull);
+      final state = scrollState(tester);
+      expect(state.position.maxScrollExtent, greaterThan(0));
+
+      final buttonRect = tester.getRect(find.byKey(_startKey));
+      expect(buttonRect.top, greaterThanOrEqualTo(0));
+      expect(buttonRect.bottom, lessThanOrEqualTo(640));
+      expect(buttonRect.height, greaterThanOrEqualTo(48));
+
+      await tester.tap(find.byKey(_startKey));
+      await tester.pumpAndSettle();
+      expect(await closing, WelcomeDismissMethod.button);
+    });
+
+    testWidgets('AC-2：滚动时说明行与主标题同步移动，不固定在底部', (tester) async {
+      await openWelcome(tester, logicalSize: const Size(640, 400));
+
+      final titleBefore = tester.getRect(find.byKey(_titleKey)).top;
+      final hintBefore = hintRect(tester).top;
+
+      await tester.drag(find.byKey(_scrollKey), const Offset(0, -150));
+      await tester.pumpAndSettle();
+
+      final titleDelta = tester.getRect(find.byKey(_titleKey)).top - titleBefore;
+      final hintDelta = hintRect(tester).top - hintBefore;
+      expect(titleDelta, lessThan(0));
+      expect((titleDelta - hintDelta).abs(), lessThanOrEqualTo(1.0));
+
+      final scrollRect = tester.getRect(find.byKey(_scrollKey));
+      expect(hintRect(tester).bottom, lessThanOrEqualTo(scrollRect.bottom + 0.5));
+      expect(
+        find.descendant(
+          of: find.byKey(_scrollKey),
+          matching: find.byKey(welcomeDialogAiHintKey),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('AC-14/15：关闭时与主标题共享同一淡出，路由时长 150ms', (tester) async {
+      await openWelcome(tester);
+
+      List<FadeTransition> fadesOf(Element element) {
+        final fades = <FadeTransition>[];
+        element.visitAncestorElements((ancestor) {
+          if (ancestor.widget is FadeTransition) {
+            fades.add(ancestor.widget as FadeTransition);
+          }
+          return true;
+        });
+        return fades;
+      }
+
+      final titleElement = tester.element(find.byKey(_titleKey));
+      final hintElement = tester.element(find.byKey(welcomeDialogAiHintKey));
+      final titleFades = fadesOf(titleElement);
+      final hintFades = fadesOf(hintElement);
+
+      expect(hintFades, isNotEmpty, reason: '说明行不在路由过渡中');
+      expect(hintFades.length, titleFades.length);
+      for (var i = 0; i < hintFades.length; i++) {
+        expect(identical(hintFades[i], titleFades[i]), isTrue);
+      }
+      // 弹窗自身不新增淡出节点
+      expect(
+        find.descendant(
+          of: find.byType(WelcomeDialog),
+          matching: find.byType(FadeTransition),
+        ),
+        findsNothing,
+      );
+
+      final route = ModalRoute.of<WelcomeDismissMethod>(hintElement)
+          as DialogRoute<WelcomeDismissMethod>;
+      expect(route.transitionDuration, const Duration(milliseconds: 150));
+      expect(
+        route.reverseTransitionDuration,
+        const Duration(milliseconds: 150),
+      );
+
+      await tester.tap(find.byKey(_startKey));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 75));
+
+      // 动画中途两者透明度相同且处于过渡中
+      final hintOpacity = fadesOf(
+        tester.element(find.byKey(welcomeDialogAiHintKey)),
+      ).first.opacity.value;
+      final titleOpacity = fadesOf(
+        tester.element(find.byKey(_titleKey)),
+      ).first.opacity.value;
+      expect(hintOpacity, titleOpacity);
+      expect(hintOpacity, greaterThan(0));
+      expect(hintOpacity, lessThan(1));
+
+      await tester.pumpAndSettle();
+      expect(find.byType(WelcomeDialog), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('AC-16：点击/长按说明行无交互，语义不是按钮', (tester) async {
+      final handle = tester.ensureSemantics();
+      final closing = await openWelcome(tester);
+      final hintFinder = find.byKey(welcomeDialogAiHintKey);
+
+      final data = tester.getSemantics(hintFinder).getSemanticsData();
+      expect(data.label, '随时可以在设置里改 AI 配置');
+      expect(data.flagsCollection.isButton, isFalse);
+      expect(data.hasAction(SemanticsAction.tap), isFalse);
+
+      await tester.tap(hintFinder);
+      await tester.longPress(hintFinder);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(WelcomeDialog), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      handle.dispose();
+      // 清理：避免未完成的 closing 影响后续用例
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(await closing, isNull);
+    });
+
+    testWidgets('AC-21：无欢迎图时说明行仍显示且不与关闭按钮相交', (tester) async {
+      await openWelcome(tester, heroAssetOverride: '');
+
+      expect(tester.takeException(), isNull);
+      expect(find.byKey(_heroKey), findsNothing);
+      expect(find.byKey(welcomeDialogAiHintKey), findsOneWidget);
+
+      final hint = hintRect(tester);
+      final hit = closeHitRect(tester);
+      final visual = closeVisualRect(tester);
+      expect(hint.overlaps(hit), isFalse);
+      expect(hint.overlaps(visual), isFalse);
+      expect(hint.top, greaterThan(hit.bottom));
     });
   });
 

@@ -46,6 +46,24 @@ const double welcomeStartIconSize = 20.0;
 /// 主按钮图标与文字之间的间距（dp）。
 const double welcomeStartIconGap = 8.0;
 
+/// 说明行定位 key（主标题与副标题之间的一行静态提示）。
+const Key welcomeDialogAiHintKey = Key('welcome_dialog_ai_hint');
+
+/// 主标题 → 说明行间距（dp）。
+const double welcomeHintTitleGap = 6.0;
+
+/// 说明行 → 副标题间距（dp）。
+const double welcomeHintSubtitleGap = 12.0;
+
+/// 说明行基准字号（sp）。
+const double welcomeHintFontSize = 13.0;
+
+/// 说明行字重。
+const FontWeight welcomeHintFontWeight = FontWeight.w400;
+
+/// 说明行行高倍数。
+const double welcomeHintLineHeight = 1.4;
+
 /// 一次性欢迎弹窗（模态）。
 ///
 /// 结构：透明外壳（路由/遮罩/居中）→ 内层卡片 Material（背景/圆角/阴影/裁切）
@@ -173,7 +191,21 @@ class _WelcomeDialogState extends State<WelcomeDialog> {
                                       color: scheme.onSurface,
                                     ),
                                   ),
-                                  const SizedBox(height: 8),
+                                  const SizedBox(height: welcomeHintTitleGap),
+                                  Text(
+                                    strings.t('welcomeAiHint'),
+                                    key: welcomeDialogAiHintKey,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: welcomeHintFontSize,
+                                      fontWeight: welcomeHintFontWeight,
+                                      height: welcomeHintLineHeight,
+                                      color: scheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: welcomeHintSubtitleGap,
+                                  ),
                                   Text(
                                     strings.t('welcomeIntro'),
                                     key: const Key('welcome_dialog_subtitle'),

@@ -46,6 +46,9 @@ void main() {
     await tester.pumpAndSettle(const Duration(seconds: 1));
 
     expect(find.byType(WelcomeDialog), findsOneWidget);
+    // 说明行随欢迎弹窗一起展示（REQ-1 / AC-19）
+    expect(find.byKey(welcomeDialogAiHintKey), findsOneWidget);
+    expect(find.text('随时可以在设置里改 AI 配置'), findsOneWidget);
     // 先写标记再展示（AC-6）
     expect(await flag.exists(), isTrue);
     expect((await flag.readAsString()).trim(), '1');
