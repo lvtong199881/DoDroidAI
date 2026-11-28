@@ -1,0 +1,38 @@
+测试环境与产物登记（56kirdkv / 2026-11-28）
+================================================
+
+【设备】
+- 分配设备 ID（AVD 名）：Pixel_3a_API_34_extension_level_7_x86_64
+- adb 实际 serial：emulator-5554（已用 `adb -s emulator-5554 emu avd name` 确认返回上述 AVD 名）
+- Android：14（API 34）
+- 物理分辨率 / 密度：1080x2220 / 440dpi（默认 392.7x807.3dp）
+- 系统 locale：en-US；应用内语言：English / 简体中文（测试中切换）
+- 测试期间系统字体缩放：1.0 / 2.0；夜间模式：no / yes；320dp 通过 `wm density 540` 临时覆盖
+- 测试结束已恢复：wm size reset、wm density reset、font_scale=1.0、uimode night=no
+
+【被测包】
+- 路径：C:\Users\mohanshang\.qq-bot\rsqebdf9y\56kirdkv\flutter_app\build\app\outputs\flutter-apk\app-debug.apk
+- 大小：258,830,128 字节
+- SHA256：363F0ACA50EED4926AFC2FA0B57909760DF919FD82445E05B195F030F4615044
+- 包内版本：versionName=0.1.0 / versionCode=1（安装后 dumpsys 复核）
+- 文档版本：0.1.0.2（技术方案 §13 出包 2，当前有效）
+- 包名：com.mohanlv.dodroidai
+
+【安装/启动】
+- 平台建议命令：adb -s <deviceId> install -r -t <apk>
+- 本机 adb：37.0.3（Windows），`-t`/`-d` 被 install 当作文件路径，报：
+  `adb.exe: filename doesn't end .apk or .apex: -t`（`-d` 同样）
+- 实际成功命令：`adb -s emulator-5554 install -r <apk>` → `Success`（EXIT=0）
+- 启动：`adb -s emulator-5554 shell am start -W -n com.mohanlv.dodroidai/.MainActivity`
+- 冷启动/首次展示前清数据：`adb -s emulator-5554 shell pm clear com.mohanlv.dodroidai`
+- 欢迎标记文件（运行时观察）：`files/welcome/welcome_dialog_shown_v1`（内容 `1`）
+  仅删该文件可保留 AI 配置并复现“未展示过”的状态，用于已配置场景。
+
+【日志过滤】
+- `adb -s emulator-5554 logcat -d -s flutter | findstr welcome_`
+- `welcome_shown` / `welcome_mark` / `welcome_dismissed` / `welcome_check` 均可见。
+
+【测试数据】
+- 为验证“已配置 AI”状态，通过设置页新建 DeepSeek 配置，API Key 使用伪造值
+  `qa-fake-key-000`（不联网、不产生真实请求）；测试结束前执行 pm clear 清除。
+- 未使用真实账号/真实 Key。

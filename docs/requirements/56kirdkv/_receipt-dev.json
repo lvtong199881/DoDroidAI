@@ -1,0 +1,70 @@
+{
+  "status": "done",
+  "summary": "在欢迎弹窗主标题与现有副标题之间新增说明行「随时可以在设置里改 AI 配置」（英文 You can change your AI config anytime in Settings.），13sp/w400/行高 1.4/onSurfaceVariant/居中/自然换行，间距 6dp 与 12dp，沿用 showDialog 整体淡出；补 14 个测试用例，flutter analyze 无 error/warning、flutter test 248 个用例全绿，出 debug 包 0.1.0.1 并在 emulator-5554 冷启动冒烟通过；已提交 38e05ef 并 push 到 feature/56kirdkv。上一轮技术方案被「打回」但未写理由，本轮按 PRD 定稿口径实现，见 decisions。",
+  "artifacts": [
+    {
+      "path": "flutter_app/lib/l10n/app_strings.dart",
+      "action": "modified"
+    },
+    {
+      "path": "flutter_app/lib/widgets/welcome_dialog.dart",
+      "action": "modified"
+    },
+    {
+      "path": "flutter_app/test/welcome_dialog_test.dart",
+      "action": "modified"
+    },
+    {
+      "path": "flutter_app/test/welcome_copy_test.dart",
+      "action": "modified"
+    },
+    {
+      "path": "flutter_app/test/app_strings_test.dart",
+      "action": "modified"
+    },
+    {
+      "path": "flutter_app/test/welcome_app_test.dart",
+      "action": "modified"
+    },
+    {
+      "path": "flutter_app/integration_test/welcome_flow_test.dart",
+      "action": "modified"
+    },
+    {
+      "path": "C:\\Users\\mohanshang\\.qq-bot\\rsqebdf9y\\56kirdkv\\docs\\requirements\\56kirdkv\\技术方案.md",
+      "action": "modified"
+    }
+  ],
+  "selfCheck": "1) 开发内容状态：技术方案 §5 M1～M9、§6 D1～D7 标已完成；D8/D9 标部分完成（设备集成测试与多尺寸手工走查归测试阶段）。2) 编译：cd flutter_app && flutter build apk --debug → √ Built build\\app\\outputs\\flutter-apk\\app-debug.apk（258,830,128 字节）。3) 单测：cd flutter_app && flutter test → 248 个用例全部通过（本需求新增 14：说明行 Widget 11、app 级 2、文案 1）；定向四个文件 80 个用例全通过。4) 未引入新测试框架（沿用 flutter_test）。5) 界面变化已出 debug 包：路径/版本/安装/启动已登记在技术方案 §13 交付产物表（0.1.0.1）。6) 无遗留 TODO。7) 符合 AGENTS.md：文案走 AppStrings 中英两套、颜色取主题 token、未改 versionCode/versionName、未提交 build/。8) 改动文件与 REQ 映射：app_strings.dart→REQ-2/AC-5~7；welcome_dialog.dart→REQ-1/3/4/5/AC-1~17/21；四个测试文件→REQ-1~5。9) 已提交：38e05ef（feature/56kirdkv），fetch 后 origin/main 无新提交，rebase 结果 up to date；push 成功（新建远端分支 feature/56kirdkv）。10) 未切分支、未 merge 到主分支。11) 设备：仅使用 emulator-5554，install -r -t -d → Success，pm clear 后冷启动弹窗含说明行（ui dump 英文文案、截图确认），返回键关闭后重启不再弹（welcome_check result=skip reason=flagged）。12) 未验证项：设备集成测试未跑（归测试阶段）；android 原生单测任务因 JAVA_HOME=JVM 11 未跑通（无原生 test 源码），见 blockers。",
+  "decisionsTitle": "技术方案被打回但未写理由，下一步怎么走？",
+  "decisions": [
+    {
+      "q": "上一轮技术方案被「打回」但没有填写理由；本轮开发已按 PRD 定稿口径完成并出包。请选择下一步：",
+      "options": [
+        {
+          "text": "先按 PRD 现状进入代码评审，打回的具体问题在评审/验收里指出",
+          "recommended": true
+        },
+        {
+          "text": "暂缓评审：我先补充打回原因，再决定改什么"
+        },
+        {
+          "text": "改为完全按设计稿：两按钮间距 10dp、无欢迎图时 64dp 关闭条（与 PRD「不改现有按钮/关闭方式」冲突，需先改 PRD）"
+        }
+      ]
+    }
+  ],
+  "blockers": [
+    {
+      "reason": "cd flutter_app/android && .\\gradlew.bat testDebugUnitTest --console=plain 未跑通：Gradle 要求 JVM 17+，本机 JAVA_HOME 指向 JVM 11；且 android/app/src 下没有 test 源码，该任务本身无用例。Flutter 出包与单测走自带 JDK，均已通过。需要跑原生单测时请把 JAVA_HOME 指到 JDK 17+。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "设计说明与既有实现仍有 4 处不一致（技术方案 §3.2/§11 已按 PRD 收敛，未落地）：① 次/主按钮间距设计 10dp、实现保持 8dp（footer 136/80）；② 无欢迎图时设计 64dp 关闭条、实现沿用半露出角标 + 56dp 额外顶部预留；③ 设计 8 帧未绘主按钮右箭头（既有功能保留）；④ 次按钮设计 15sp/500、1.5dp primary 描边，实现为 w600、outline 1dp。建议需求/设计侧修正文档口径，避免验收按设计稿像素比对；本需求不阻塞。",
+      "severity": "suggestion"
+    }
+  ],
+  "deliverables": {
+    "debugPackage": "flutter_app/build/app/outputs/flutter-apk/app-debug.apk#0.1.0.1"
+  }
+}

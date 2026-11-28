@@ -1,0 +1,795 @@
+{
+  "F01_dialog_zh_light": [
+    {
+      "name": "hero",
+      "type": "frame",
+      "width": 320,
+      "height": 160
+    },
+    {
+      "name": "heroImage",
+      "type": "image",
+      "width": 320,
+      "height": 160
+    },
+    {
+      "name": "closeButton",
+      "type": "frame",
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "closeCircle",
+      "type": "rect",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "name": "closeIcon",
+      "type": "icon",
+      "width": 16,
+      "height": 16
+    },
+    {
+      "name": "body",
+      "type": "frame",
+      "width": 320,
+      "height": 111.2
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 272,
+      "height": 26,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ]
+    },
+    {
+      "name": "note",
+      "type": "text",
+      "width": 272,
+      "height": 18.2,
+      "lines": [
+        "随时可以在设置里改 AI 配置"
+      ]
+    },
+    {
+      "name": "subtitle",
+      "type": "text",
+      "width": 272,
+      "height": 21,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 320,
+      "height": 138
+    },
+    {
+      "name": "secondaryButton",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "secondaryLabel",
+      "type": "text",
+      "width": 61.5,
+      "height": 18,
+      "lines": [
+        "去配置AI"
+      ]
+    },
+    {
+      "name": "primaryButton",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "primaryLabel",
+      "type": "text",
+      "width": 60,
+      "height": 18,
+      "lines": [
+        "开始使用"
+      ]
+    }
+  ],
+  "F02_dialog_zh_dark": [
+    {
+      "name": "hero",
+      "type": "frame",
+      "width": 320,
+      "height": 160
+    },
+    {
+      "name": "heroImage",
+      "type": "image",
+      "width": 320,
+      "height": 160
+    },
+    {
+      "name": "closeButton",
+      "type": "frame",
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "closeCircle",
+      "type": "rect",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "name": "closeIcon",
+      "type": "icon",
+      "width": 16,
+      "height": 16
+    },
+    {
+      "name": "body",
+      "type": "frame",
+      "width": 320,
+      "height": 111.2
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 272,
+      "height": 26,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ]
+    },
+    {
+      "name": "note",
+      "type": "text",
+      "width": 272,
+      "height": 18.2,
+      "lines": [
+        "随时可以在设置里改 AI 配置"
+      ]
+    },
+    {
+      "name": "subtitle",
+      "type": "text",
+      "width": 272,
+      "height": 21,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 320,
+      "height": 138
+    },
+    {
+      "name": "secondaryButton",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "secondaryLabel",
+      "type": "text",
+      "width": 61.5,
+      "height": 18,
+      "lines": [
+        "去配置AI"
+      ]
+    },
+    {
+      "name": "primaryButton",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "primaryLabel",
+      "type": "text",
+      "width": 60,
+      "height": 18,
+      "lines": [
+        "开始使用"
+      ]
+    }
+  ],
+  "F03_dialog_en_light": [
+    {
+      "name": "hero",
+      "type": "frame",
+      "width": 320,
+      "height": 160
+    },
+    {
+      "name": "heroImage",
+      "type": "image",
+      "width": 320,
+      "height": 160
+    },
+    {
+      "name": "closeButton",
+      "type": "frame",
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "closeCircle",
+      "type": "rect",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "name": "closeIcon",
+      "type": "icon",
+      "width": 16,
+      "height": 16
+    },
+    {
+      "name": "body",
+      "type": "frame",
+      "width": 320,
+      "height": 129.4
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 272,
+      "height": 26,
+      "lines": [
+        "Welcome to DoDroidAI"
+      ]
+    },
+    {
+      "name": "note",
+      "type": "text",
+      "width": 272,
+      "height": 36.4,
+      "lines": [
+        "You can change your AI config anytime in ",
+        "Settings."
+      ]
+    },
+    {
+      "name": "subtitle",
+      "type": "text",
+      "width": 272,
+      "height": 21,
+      "lines": [
+        "Say it, and let your phone do it."
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 320,
+      "height": 138
+    },
+    {
+      "name": "secondaryButton",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "secondaryLabel",
+      "type": "text",
+      "width": 66.15,
+      "height": 18,
+      "lines": [
+        "Set up AI"
+      ]
+    },
+    {
+      "name": "primaryButton",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "primaryLabel",
+      "type": "text",
+      "width": 86.7,
+      "height": 18,
+      "lines": [
+        "Get started"
+      ]
+    }
+  ],
+  "F04_dialog_zh_320": [
+    {
+      "name": "hero",
+      "type": "frame",
+      "width": 280,
+      "height": 140
+    },
+    {
+      "name": "heroImage",
+      "type": "image",
+      "width": 280,
+      "height": 140
+    },
+    {
+      "name": "closeButton",
+      "type": "frame",
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "closeCircle",
+      "type": "rect",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "name": "closeIcon",
+      "type": "icon",
+      "width": 16,
+      "height": 16
+    },
+    {
+      "name": "body",
+      "type": "frame",
+      "width": 280,
+      "height": 111.2
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 232,
+      "height": 26,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ]
+    },
+    {
+      "name": "note",
+      "type": "text",
+      "width": 232,
+      "height": 18.2,
+      "lines": [
+        "随时可以在设置里改 AI 配置"
+      ]
+    },
+    {
+      "name": "subtitle",
+      "type": "text",
+      "width": 232,
+      "height": 21,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 280,
+      "height": 138
+    },
+    {
+      "name": "secondaryButton",
+      "type": "frame",
+      "width": 240,
+      "height": 48
+    },
+    {
+      "name": "secondaryLabel",
+      "type": "text",
+      "width": 61.5,
+      "height": 18,
+      "lines": [
+        "去配置AI"
+      ]
+    },
+    {
+      "name": "primaryButton",
+      "type": "frame",
+      "width": 240,
+      "height": 48
+    },
+    {
+      "name": "primaryLabel",
+      "type": "text",
+      "width": 60,
+      "height": 18,
+      "lines": [
+        "开始使用"
+      ]
+    }
+  ],
+  "F05_dialog_zh_2x": [
+    {
+      "name": "hero",
+      "type": "frame",
+      "width": 320,
+      "height": 160
+    },
+    {
+      "name": "heroImage",
+      "type": "image",
+      "width": 320,
+      "height": 160
+    },
+    {
+      "name": "closeButton",
+      "type": "frame",
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "closeCircle",
+      "type": "rect",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "name": "closeIcon",
+      "type": "icon",
+      "width": 16,
+      "height": 16
+    },
+    {
+      "name": "body",
+      "type": "frame",
+      "width": 320,
+      "height": 306.8
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 272,
+      "height": 104,
+      "lines": [
+        "欢迎使用 ",
+        "DoDroidAI"
+      ]
+    },
+    {
+      "name": "note",
+      "type": "text",
+      "width": 272,
+      "height": 72.8,
+      "lines": [
+        "随时可以在设置里改 AI",
+        "配置"
+      ]
+    },
+    {
+      "name": "subtitle",
+      "type": "text",
+      "width": 272,
+      "height": 84,
+      "lines": [
+        "说一句话，让手机替",
+        "你做事。"
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 320,
+      "height": 138
+    },
+    {
+      "name": "secondaryButton",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "secondaryLabel",
+      "type": "text",
+      "width": 123,
+      "height": 36,
+      "lines": [
+        "去配置AI"
+      ]
+    },
+    {
+      "name": "primaryButton",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "primaryLabel",
+      "type": "text",
+      "width": 120,
+      "height": 36,
+      "lines": [
+        "开始使用"
+      ]
+    }
+  ],
+  "F06_dialog_en_320": [
+    {
+      "name": "hero",
+      "type": "frame",
+      "width": 280,
+      "height": 140
+    },
+    {
+      "name": "heroImage",
+      "type": "image",
+      "width": 280,
+      "height": 140
+    },
+    {
+      "name": "closeButton",
+      "type": "frame",
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "closeCircle",
+      "type": "rect",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "name": "closeIcon",
+      "type": "icon",
+      "width": 16,
+      "height": 16
+    },
+    {
+      "name": "body",
+      "type": "frame",
+      "width": 280,
+      "height": 150.4
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 232,
+      "height": 26,
+      "lines": [
+        "Welcome to DoDroidAI"
+      ]
+    },
+    {
+      "name": "note",
+      "type": "text",
+      "width": 232,
+      "height": 36.4,
+      "lines": [
+        "You can change your AI config ",
+        "anytime in Settings."
+      ]
+    },
+    {
+      "name": "subtitle",
+      "type": "text",
+      "width": 232,
+      "height": 42,
+      "lines": [
+        "Say it, and let your phone do ",
+        "it."
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 280,
+      "height": 138
+    },
+    {
+      "name": "secondaryButton",
+      "type": "frame",
+      "width": 240,
+      "height": 48
+    },
+    {
+      "name": "secondaryLabel",
+      "type": "text",
+      "width": 66.15,
+      "height": 18,
+      "lines": [
+        "Set up AI"
+      ]
+    },
+    {
+      "name": "primaryButton",
+      "type": "frame",
+      "width": 240,
+      "height": 48
+    },
+    {
+      "name": "primaryLabel",
+      "type": "text",
+      "width": 86.7,
+      "height": 18,
+      "lines": [
+        "Get started"
+      ]
+    }
+  ],
+  "F07_dialog_zh_light_configured": [
+    {
+      "name": "hero",
+      "type": "frame",
+      "width": 320,
+      "height": 160
+    },
+    {
+      "name": "heroImage",
+      "type": "image",
+      "width": 320,
+      "height": 160
+    },
+    {
+      "name": "closeButton",
+      "type": "frame",
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "closeCircle",
+      "type": "rect",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "name": "closeIcon",
+      "type": "icon",
+      "width": 16,
+      "height": 16
+    },
+    {
+      "name": "body",
+      "type": "frame",
+      "width": 320,
+      "height": 111.2
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 272,
+      "height": 26,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ]
+    },
+    {
+      "name": "note",
+      "type": "text",
+      "width": 272,
+      "height": 18.2,
+      "lines": [
+        "随时可以在设置里改 AI 配置"
+      ]
+    },
+    {
+      "name": "subtitle",
+      "type": "text",
+      "width": 272,
+      "height": 21,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 320,
+      "height": 80
+    },
+    {
+      "name": "primaryButton",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "primaryLabel",
+      "type": "text",
+      "width": 60,
+      "height": 18,
+      "lines": [
+        "开始使用"
+      ]
+    }
+  ],
+  "F08_dialog_zh_light_no_hero": [
+    {
+      "name": "topBar",
+      "type": "frame",
+      "width": 320,
+      "height": 64
+    },
+    {
+      "name": "closeButton",
+      "type": "frame",
+      "width": 48,
+      "height": 48
+    },
+    {
+      "name": "closeCircle",
+      "type": "rect",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "name": "closeIcon",
+      "type": "icon",
+      "width": 16,
+      "height": 16
+    },
+    {
+      "name": "body",
+      "type": "frame",
+      "width": 320,
+      "height": 95.2
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "width": 272,
+      "height": 26,
+      "lines": [
+        "欢迎使用 DoDroidAI"
+      ]
+    },
+    {
+      "name": "note",
+      "type": "text",
+      "width": 272,
+      "height": 18.2,
+      "lines": [
+        "随时可以在设置里改 AI 配置"
+      ]
+    },
+    {
+      "name": "subtitle",
+      "type": "text",
+      "width": 272,
+      "height": 21,
+      "lines": [
+        "说一句话，让手机替你做事。"
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "frame",
+      "width": 320,
+      "height": 138
+    },
+    {
+      "name": "secondaryButton",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "secondaryLabel",
+      "type": "text",
+      "width": 61.5,
+      "height": 18,
+      "lines": [
+        "去配置AI"
+      ]
+    },
+    {
+      "name": "primaryButton",
+      "type": "frame",
+      "width": 280,
+      "height": 48
+    },
+    {
+      "name": "primaryLabel",
+      "type": "text",
+      "width": 60,
+      "height": 18,
+      "lines": [
+        "开始使用"
+      ]
+    }
+  ]
+}

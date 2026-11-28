@@ -1,0 +1,31 @@
+﻿检索说明：在 C:\Users\mohanshang\.qq-bot\rsqebdf9y\56kirdkv\docs\requirements\56kirdkv\evidence 下所有 uiautomator dump（*.xml）中检索说明行中/英文案。
+模式：随时可以在设置里改 AI 配置|You can change your AI config anytime in Settings
+
+匹配文件（均为欢迎弹窗 dump）：
+  - 01-first-launch-en-light.xml
+  - 07-configured-ai-en-light.xml
+  - 13-first-show-zh-light.xml
+  - 13b-first-show-zh-light.xml
+  - 14-first-show-zh-dark.xml
+  - 15-first-show-zh-light-2x.xml
+  - 15b-first-show-zh-light-2x.xml
+  - 16b-first-show-zh-light-320dp.xml
+  - 21-first-show-en-320dp-2x.xml
+  - 23-lowheight-after-scroll.xml
+  - 32-zh-hant-welcome.xml
+
+匹配文件数：11
+未匹配的页面 dump（设置页/配置页/首页等）：
+  - 02-close-back-home.xml
+  - 05-close-configure-ai.xml
+  - 08-second-launch-no-dialog.xml
+  - 10-drawer.xml
+  - 11-settings.xml
+  - 12-language-sheet.xml
+  - 18-drawer-320dp.xml
+  - 19-settings-320dp.xml
+  - 20-language-320dp.xml
+  - 22-home-en-320dp-2x.xml
+  - 23-lowheight-before-scroll.xml
+  - 24b-restored-normal.xml
+  - 34-final-home-en.xml

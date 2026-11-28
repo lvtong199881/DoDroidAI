@@ -6,6 +6,7 @@ import 'package:dodroidai/l10n/app_strings.dart';
 /// PRD 6.1 中文定稿（逐字，不得改写）。
 const Map<String, String> _zhCopy = {
   'welcomeTitle': '欢迎使用 DoDroidAI',
+  'welcomeAiHint': '随时可以在设置里改 AI 配置',
   'welcomeIntro': '说一句话，让手机替你做事。',
   'welcomeFeat1Title': '按住说话就行',
   'welcomeFeat1Desc':
@@ -20,6 +21,7 @@ const Map<String, String> _zhCopy = {
 /// PRD 6.2 English 定稿（逐字，不得改写）。
 const Map<String, String> _enCopy = {
   'welcomeTitle': 'Welcome to DoDroidAI',
+  'welcomeAiHint': 'You can change your AI config anytime in Settings.',
   'welcomeIntro': 'Say it, and let your phone do it.',
   'welcomeFeat1Title': 'Just hold to talk',
   'welcomeFeat1Desc':
@@ -34,14 +36,14 @@ const Map<String, String> _enCopy = {
 };
 
 void main() {
-  test('中文 9 条欢迎文案与 PRD 6.1 逐字一致', () {
+  test('中文 10 条欢迎文案与 PRD 6.1 逐字一致', () {
     final strings = AppStrings(const Locale('zh'));
     _zhCopy.forEach((key, value) {
       expect(strings.t(key), value, reason: key);
     });
   });
 
-  test('英文 9 条欢迎文案与 PRD 6.2 逐字一致', () {
+  test('英文 10 条欢迎文案与 PRD 6.2 逐字一致', () {
     final strings = AppStrings(const Locale('en'));
     _enCopy.forEach((key, value) {
       expect(strings.t(key), value, reason: key);
@@ -69,6 +71,7 @@ void main() {
   test('非中英语言回退中文', () {
     final strings = AppStrings(const Locale('fr'));
     expect(strings.t('welcomeTitle'), _zhCopy['welcomeTitle']);
+    expect(strings.t('welcomeAiHint'), _zhCopy['welcomeAiHint']);
     expect(strings.t('welcomeStart'), _zhCopy['welcomeStart']);
   });
 

@@ -1,0 +1,330 @@
+{
+  "hero-320": [
+    {
+      "name": "wave",
+      "type": "frame",
+      "width": 220,
+      "height": 64
+    },
+    {
+      "name": "wave.halo",
+      "type": "rect",
+      "width": 120,
+      "height": 120
+    },
+    {
+      "name": "wave.bar0",
+      "type": "rect",
+      "width": 4,
+      "height": 12
+    },
+    {
+      "name": "wave.bar1",
+      "type": "rect",
+      "width": 4,
+      "height": 18
+    },
+    {
+      "name": "wave.bar2",
+      "type": "rect",
+      "width": 4,
+      "height": 28
+    },
+    {
+      "name": "wave.bar3",
+      "type": "rect",
+      "width": 4,
+      "height": 42
+    },
+    {
+      "name": "wave.bar4",
+      "type": "rect",
+      "width": 4,
+      "height": 34
+    },
+    {
+      "name": "wave.bar5",
+      "type": "rect",
+      "width": 4,
+      "height": 24
+    },
+    {
+      "name": "wave.bar6",
+      "type": "rect",
+      "width": 4,
+      "height": 16
+    },
+    {
+      "name": "wave.bar7",
+      "type": "rect",
+      "width": 4,
+      "height": 26
+    },
+    {
+      "name": "wave.bar8",
+      "type": "rect",
+      "width": 4,
+      "height": 40
+    },
+    {
+      "name": "wave.bar9",
+      "type": "rect",
+      "width": 4,
+      "height": 54
+    },
+    {
+      "name": "wave.bar10",
+      "type": "rect",
+      "width": 4,
+      "height": 44
+    },
+    {
+      "name": "wave.bar11",
+      "type": "rect",
+      "width": 4,
+      "height": 30
+    },
+    {
+      "name": "wave.bar12",
+      "type": "rect",
+      "width": 4,
+      "height": 20
+    },
+    {
+      "name": "wave.bar13",
+      "type": "rect",
+      "width": 4,
+      "height": 32
+    },
+    {
+      "name": "wave.bar14",
+      "type": "rect",
+      "width": 4,
+      "height": 48
+    },
+    {
+      "name": "wave.bar15",
+      "type": "rect",
+      "width": 4,
+      "height": 58
+    },
+    {
+      "name": "wave.bar16",
+      "type": "rect",
+      "width": 4,
+      "height": 46
+    },
+    {
+      "name": "wave.bar17",
+      "type": "rect",
+      "width": 4,
+      "height": 34
+    },
+    {
+      "name": "wave.bar18",
+      "type": "rect",
+      "width": 4,
+      "height": 24
+    },
+    {
+      "name": "wave.bar19",
+      "type": "rect",
+      "width": 4,
+      "height": 36
+    },
+    {
+      "name": "wave.bar20",
+      "type": "rect",
+      "width": 4,
+      "height": 50
+    },
+    {
+      "name": "wave.bar21",
+      "type": "rect",
+      "width": 4,
+      "height": 38
+    },
+    {
+      "name": "wave.bar22",
+      "type": "rect",
+      "width": 4,
+      "height": 26
+    },
+    {
+      "name": "wave.bar23",
+      "type": "rect",
+      "width": 4,
+      "height": 18
+    },
+    {
+      "name": "wave.bar24",
+      "type": "rect",
+      "width": 4,
+      "height": 12
+    }
+  ],
+  "hero-280": [
+    {
+      "name": "wave",
+      "type": "frame",
+      "width": 196,
+      "height": 56
+    },
+    {
+      "name": "wave.halo",
+      "type": "rect",
+      "width": 120,
+      "height": 120
+    },
+    {
+      "name": "wave.bar0",
+      "type": "rect",
+      "width": 4,
+      "height": 11
+    },
+    {
+      "name": "wave.bar1",
+      "type": "rect",
+      "width": 4,
+      "height": 16
+    },
+    {
+      "name": "wave.bar2",
+      "type": "rect",
+      "width": 4,
+      "height": 25
+    },
+    {
+      "name": "wave.bar3",
+      "type": "rect",
+      "width": 4,
+      "height": 37
+    },
+    {
+      "name": "wave.bar4",
+      "type": "rect",
+      "width": 4,
+      "height": 30
+    },
+    {
+      "name": "wave.bar5",
+      "type": "rect",
+      "width": 4,
+      "height": 21
+    },
+    {
+      "name": "wave.bar6",
+      "type": "rect",
+      "width": 4,
+      "height": 14
+    },
+    {
+      "name": "wave.bar7",
+      "type": "rect",
+      "width": 4,
+      "height": 23
+    },
+    {
+      "name": "wave.bar8",
+      "type": "rect",
+      "width": 4,
+      "height": 35
+    },
+    {
+      "name": "wave.bar9",
+      "type": "rect",
+      "width": 4,
+      "height": 47
+    },
+    {
+      "name": "wave.bar10",
+      "type": "rect",
+      "width": 4,
+      "height": 39
+    },
+    {
+      "name": "wave.bar11",
+      "type": "rect",
+      "width": 4,
+      "height": 26
+    },
+    {
+      "name": "wave.bar12",
+      "type": "rect",
+      "width": 4,
+      "height": 18
+    },
+    {
+      "name": "wave.bar13",
+      "type": "rect",
+      "width": 4,
+      "height": 28
+    },
+    {
+      "name": "wave.bar14",
+      "type": "rect",
+      "width": 4,
+      "height": 42
+    },
+    {
+      "name": "wave.bar15",
+      "type": "rect",
+      "width": 4,
+      "height": 51
+    },
+    {
+      "name": "wave.bar16",
+      "type": "rect",
+      "width": 4,
+      "height": 40
+    },
+    {
+      "name": "wave.bar17",
+      "type": "rect",
+      "width": 4,
+      "height": 30
+    },
+    {
+      "name": "wave.bar18",
+      "type": "rect",
+      "width": 4,
+      "height": 21
+    },
+    {
+      "name": "wave.bar19",
+      "type": "rect",
+      "width": 4,
+      "height": 32
+    },
+    {
+      "name": "wave.bar20",
+      "type": "rect",
+      "width": 4,
+      "height": 44
+    },
+    {
+      "name": "wave.bar21",
+      "type": "rect",
+      "width": 4,
+      "height": 33
+    },
+    {
+      "name": "wave.bar22",
+      "type": "rect",
+      "width": 4,
+      "height": 23
+    },
+    {
+      "name": "wave.bar23",
+      "type": "rect",
+      "width": 4,
+      "height": 16
+    },
+    {
+      "name": "wave.bar24",
+      "type": "rect",
+      "width": 4,
+      "height": 11
+    }
+  ]
+}

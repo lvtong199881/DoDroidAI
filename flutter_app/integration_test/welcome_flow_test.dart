@@ -46,6 +46,9 @@ void main() {
     await tester.pumpAndSettle(const Duration(seconds: 1));
 
     expect(find.byType(WelcomeDialog), findsOneWidget);
+    // 说明行随欢迎弹窗一起展示（REQ-1 / AC-19）；文案逐字由
+    // welcome_copy_test.dart / app_strings_test.dart 锁定，这里不依赖设备语言。
+    expect(find.byKey(welcomeDialogAiHintKey), findsOneWidget);
     // 先写标记再展示（AC-6）
     expect(await flag.exists(), isTrue);
     expect((await flag.readAsString()).trim(), '1');

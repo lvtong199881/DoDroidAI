@@ -1,0 +1,56 @@
+{
+  "status": "done",
+  "summary": "黑盒执行 23 条用例：通过 22、部分通过 1、失败 0；未覆盖 5 项、未量化 2 项；未发现本需求引入的回归；另列 2 项范围外/口径问题（首页 320dp+2x OVERFLOW、welcome locale 字段）。",
+  "artifacts": [
+    {
+      "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/56kirdkv/docs/requirements/56kirdkv/测试报告.md",
+      "action": "created"
+    },
+    {
+      "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/56kirdkv/docs/requirements/56kirdkv/ui-screenshots/welcome/first-show-zh-light.png",
+      "action": "created"
+    },
+    {
+      "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/56kirdkv/docs/requirements/56kirdkv/ui-screenshots/welcome/first-show-zh-dark.png",
+      "action": "created"
+    },
+    {
+      "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/56kirdkv/docs/requirements/56kirdkv/ui-screenshots/welcome/first-show-en-320dp-2x.png",
+      "action": "created"
+    },
+    {
+      "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/56kirdkv/docs/requirements/56kirdkv/ui-screenshots/welcome/close-fade-frame.png",
+      "action": "created"
+    },
+    {
+      "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/56kirdkv/docs/requirements/56kirdkv/evidence/33-welcome-log-summary.txt",
+      "action": "created"
+    },
+    {
+      "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/56kirdkv/docs/requirements/56kirdkv/evidence/29-close-methods-matrix.txt",
+      "action": "created"
+    },
+    {
+      "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/56kirdkv/docs/requirements/56kirdkv/evidence/30-close-methods-matrix2.txt",
+      "action": "created"
+    },
+    {
+      "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/56kirdkv/docs/requirements/56kirdkv/evidence/25-close-fade.mp4",
+      "action": "created"
+    }
+  ],
+  "selfCheck": "未读源码/未构建/未跑单测；关键 adb 交互均带超时（含四出口矩阵）；包路径/版本/安装启动命令与开发交付一致（本机 adb 37.0.3 不识别 -t，实际用 -r 成功）；23 条用例均有截图/UI dump/logcat 证据；AC 21 条对照表填全，AC-4/AC-7(fr)/AC-21 与 welcome_error 未覆盖已写原因；四出口 method 实测 back/close_button/button/configure_ai；浅/深色 #5B6270/#A6ADBB 与对比度 6.13/7.80 实测；2x/320dp/低高度滚动实测；截图按页面归档；未发现本需求缺陷；平台能力类首页 OVERFLOW 单列口径待确认；未起子 agent。",
+  "decisionsTitle": "",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "范围外（非本需求引入）：320dp+2 倍字号下首页底部操作行出现 Flutter OVERFLOWED BY 42 PIXELS，欢迎弹窗本身无溢出，关闭弹窗后仍复现。建议另立需求，不计入本次验收。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "监测口径待确认：应用内切中文后 welcome_shown/welcome_check 仍输出 locale=en（系统 en-US），非本需求改动；若按 locale 分组统计中文曝光会失真，需产品/数据确认 locale 取系统还是应用显示语言。",
+      "severity": "suggestion"
+    }
+  ],
+  "deliverables": {}
+}

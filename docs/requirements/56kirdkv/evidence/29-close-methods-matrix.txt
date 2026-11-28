@@ -1,0 +1,30 @@
+﻿close-method matrix on 2026-11-28T17:44:55
+
+===== CASE back =====
+shown=True
+dismissed=True
+11-28 17:45:06.934  8105  8105 I flutter : [welcome] welcome_check result=show reason=no_flag entry=cold_start locale=en
+11-28 17:45:08.283  8105  8105 I flutter : [welcome] welcome_mark result=success
+11-28 17:45:08.347  8105  8105 I flutter : [welcome] welcome_shown entry=cold_start locale=en
+11-28 17:45:11.786  8105  8105 I flutter : [welcome] welcome_dismissed method=back visible_ms=3500
+
+===== CASE close_button =====
+shown=True
+dismissed=False
+11-28 17:45:27.129  8265  8265 I flutter : [welcome] welcome_check result=show reason=no_flag entry=other locale=en
+11-28 17:45:28.293  8265  8265 I flutter : [welcome] welcome_mark result=success
+11-28 17:45:28.328  8265  8265 I flutter : [welcome] welcome_shown entry=other locale=en
+
+===== CASE button =====
+shown=True
+dismissed=False
+11-28 17:46:00.457  8479  8479 I flutter : [welcome] welcome_check result=show reason=no_flag entry=cold_start locale=en
+11-28 17:46:00.640  8479  8479 I flutter : [welcome] welcome_mark result=success
+11-28 17:46:00.670  8479  8479 I flutter : [welcome] welcome_shown entry=cold_start locale=en
+
+===== CASE configure_ai =====
+shown=True
+dismissed=False
+11-28 17:46:32.873  8686  8686 I flutter : [welcome] welcome_check result=show reason=no_flag entry=other locale=en
+11-28 17:46:33.037  8686  8686 I flutter : [welcome] welcome_mark result=success
+11-28 17:46:33.066  8686  8686 I flutter : [welcome] welcome_shown entry=other locale=en

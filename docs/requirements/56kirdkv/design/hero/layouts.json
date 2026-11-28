@@ -1,0 +1,626 @@
+{
+  "requirement": "欢迎弹窗 2:1 主视觉占位（现有欢迎图资源的替代示意）",
+  "designTokens": {
+    "colors": {
+      "light": {
+        "bg": "#26306E",
+        "line": "rgba(255,255,255,0.90)",
+        "edge": "rgba(255,255,255,0.10)",
+        "halo": "rgba(255,255,255,0.06)"
+      }
+    },
+    "radius": {
+      "card": 16
+    }
+  },
+  "frames": [
+    {
+      "id": "hero-320",
+      "name": "320×160 欢迎图占位",
+      "theme": "light",
+      "locale": "zh",
+      "canvas": {
+        "width": 320,
+        "height": 160,
+        "deviceScale": 3
+      },
+      "background": {
+        "type": "color",
+        "fill": "transparent"
+      },
+      "content": {
+        "type": "frame",
+        "name": "hero",
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 160,
+        "radius": 16,
+        "fill": "bg",
+        "stroke": "edge",
+        "strokeWidth": 1,
+        "layout": {
+          "mode": "vertical",
+          "padding": 0,
+          "align": "center",
+          "justify": "center"
+        },
+        "children": [
+          {
+            "type": "frame",
+            "name": "wave",
+            "width": 220,
+            "height": 64,
+            "children": [
+              {
+                "type": "rect",
+                "name": "wave.halo",
+                "x": 50,
+                "y": -28,
+                "width": 120,
+                "height": 120,
+                "radius": 999,
+                "fill": "halo"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar0",
+                "x": 0,
+                "y": 26,
+                "width": 4,
+                "height": 12,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar1",
+                "x": 9,
+                "y": 23,
+                "width": 4,
+                "height": 18,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar2",
+                "x": 18,
+                "y": 18,
+                "width": 4,
+                "height": 28,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar3",
+                "x": 27,
+                "y": 11,
+                "width": 4,
+                "height": 42,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar4",
+                "x": 36,
+                "y": 15,
+                "width": 4,
+                "height": 34,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar5",
+                "x": 45,
+                "y": 20,
+                "width": 4,
+                "height": 24,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar6",
+                "x": 54,
+                "y": 24,
+                "width": 4,
+                "height": 16,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar7",
+                "x": 63,
+                "y": 19,
+                "width": 4,
+                "height": 26,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar8",
+                "x": 72,
+                "y": 12,
+                "width": 4,
+                "height": 40,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar9",
+                "x": 81,
+                "y": 5,
+                "width": 4,
+                "height": 54,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar10",
+                "x": 90,
+                "y": 10,
+                "width": 4,
+                "height": 44,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar11",
+                "x": 99,
+                "y": 17,
+                "width": 4,
+                "height": 30,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar12",
+                "x": 108,
+                "y": 22,
+                "width": 4,
+                "height": 20,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar13",
+                "x": 117,
+                "y": 16,
+                "width": 4,
+                "height": 32,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar14",
+                "x": 126,
+                "y": 8,
+                "width": 4,
+                "height": 48,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar15",
+                "x": 135,
+                "y": 3,
+                "width": 4,
+                "height": 58,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar16",
+                "x": 144,
+                "y": 9,
+                "width": 4,
+                "height": 46,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar17",
+                "x": 153,
+                "y": 15,
+                "width": 4,
+                "height": 34,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar18",
+                "x": 162,
+                "y": 20,
+                "width": 4,
+                "height": 24,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar19",
+                "x": 171,
+                "y": 14,
+                "width": 4,
+                "height": 36,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar20",
+                "x": 180,
+                "y": 7,
+                "width": 4,
+                "height": 50,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar21",
+                "x": 189,
+                "y": 13,
+                "width": 4,
+                "height": 38,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar22",
+                "x": 198,
+                "y": 19,
+                "width": 4,
+                "height": 26,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar23",
+                "x": 207,
+                "y": 23,
+                "width": 4,
+                "height": 18,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar24",
+                "x": 216,
+                "y": 26,
+                "width": 4,
+                "height": 12,
+                "radius": 999,
+                "fill": "line"
+              }
+            ]
+          }
+        ]
+      },
+      "notes": "欢迎弹窗 2:1 主视觉占位；圆角 16，透明四角，叠在弹窗白色底上。"
+    },
+    {
+      "id": "hero-280",
+      "name": "280×140 欢迎图占位",
+      "theme": "light",
+      "locale": "zh",
+      "canvas": {
+        "width": 280,
+        "height": 140,
+        "deviceScale": 3
+      },
+      "background": {
+        "type": "color",
+        "fill": "transparent"
+      },
+      "content": {
+        "type": "frame",
+        "name": "hero",
+        "x": 0,
+        "y": 0,
+        "width": 280,
+        "height": 140,
+        "radius": 16,
+        "fill": "bg",
+        "stroke": "edge",
+        "strokeWidth": 1,
+        "layout": {
+          "mode": "vertical",
+          "padding": 0,
+          "align": "center",
+          "justify": "center"
+        },
+        "children": [
+          {
+            "type": "frame",
+            "name": "wave",
+            "width": 196,
+            "height": 56,
+            "children": [
+              {
+                "type": "rect",
+                "name": "wave.halo",
+                "x": 38,
+                "y": -28,
+                "width": 120,
+                "height": 120,
+                "radius": 999,
+                "fill": "halo"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar0",
+                "x": 0,
+                "y": 22.5,
+                "width": 4,
+                "height": 11,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar1",
+                "x": 8,
+                "y": 20,
+                "width": 4,
+                "height": 16,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar2",
+                "x": 16,
+                "y": 15.5,
+                "width": 4,
+                "height": 25,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar3",
+                "x": 24,
+                "y": 9.5,
+                "width": 4,
+                "height": 37,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar4",
+                "x": 32,
+                "y": 13,
+                "width": 4,
+                "height": 30,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar5",
+                "x": 40,
+                "y": 17.5,
+                "width": 4,
+                "height": 21,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar6",
+                "x": 48,
+                "y": 21,
+                "width": 4,
+                "height": 14,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar7",
+                "x": 56,
+                "y": 16.5,
+                "width": 4,
+                "height": 23,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar8",
+                "x": 64,
+                "y": 10.5,
+                "width": 4,
+                "height": 35,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar9",
+                "x": 72,
+                "y": 4.5,
+                "width": 4,
+                "height": 47,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar10",
+                "x": 80,
+                "y": 8.5,
+                "width": 4,
+                "height": 39,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar11",
+                "x": 88,
+                "y": 15,
+                "width": 4,
+                "height": 26,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar12",
+                "x": 96,
+                "y": 19,
+                "width": 4,
+                "height": 18,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar13",
+                "x": 104,
+                "y": 14,
+                "width": 4,
+                "height": 28,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar14",
+                "x": 112,
+                "y": 7,
+                "width": 4,
+                "height": 42,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar15",
+                "x": 120,
+                "y": 2.5,
+                "width": 4,
+                "height": 51,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar16",
+                "x": 128,
+                "y": 8,
+                "width": 4,
+                "height": 40,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar17",
+                "x": 136,
+                "y": 13,
+                "width": 4,
+                "height": 30,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar18",
+                "x": 144,
+                "y": 17.5,
+                "width": 4,
+                "height": 21,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar19",
+                "x": 152,
+                "y": 12,
+                "width": 4,
+                "height": 32,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar20",
+                "x": 160,
+                "y": 6,
+                "width": 4,
+                "height": 44,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar21",
+                "x": 168,
+                "y": 11.5,
+                "width": 4,
+                "height": 33,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar22",
+                "x": 176,
+                "y": 16.5,
+                "width": 4,
+                "height": 23,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar23",
+                "x": 184,
+                "y": 20,
+                "width": 4,
+                "height": 16,
+                "radius": 999,
+                "fill": "line"
+              },
+              {
+                "type": "rect",
+                "name": "wave.bar24",
+                "x": 192,
+                "y": 22.5,
+                "width": 4,
+                "height": 11,
+                "radius": 999,
+                "fill": "line"
+              }
+            ]
+          }
+        ]
+      },
+      "notes": "欢迎弹窗 2:1 主视觉占位；圆角 16，透明四角，叠在弹窗白色底上。"
+    }
+  ]
+}

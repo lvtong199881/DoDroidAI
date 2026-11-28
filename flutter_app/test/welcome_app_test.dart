@@ -24,6 +24,7 @@ class _NoopChatController extends ChatController {
 
 const Key _configureAiKey = Key('welcome_dialog_configure_ai');
 const Key _startKey = Key('welcome_dialog_start');
+const Key _hintKey = Key('welcome_dialog_ai_hint');
 
 ProviderScope appWith({
   required WelcomeController controller,
@@ -193,6 +194,7 @@ void main() {
     expect(find.byType(WelcomeDialog), findsOneWidget);
     expect(find.byKey(_configureAiKey), findsOneWidget);
     expect(find.byKey(_startKey), findsOneWidget);
+    expect(find.byKey(_hintKey), findsOneWidget);
     expect(gateCalls, 1);
   });
 
@@ -214,7 +216,57 @@ void main() {
     expect(find.byType(WelcomeDialog), findsOneWidget);
     expect(find.byKey(_configureAiKey), findsNothing);
     expect(find.byKey(_startKey), findsOneWidget);
+    expect(find.byKey(_hintKey), findsOneWidget);
     expect(gateCalls, 1);
+  });
+
+  testWidgets('配置读取异常：按未配置处理，说明行仍显示', (tester) async {
+    final gate = WelcomeAiGate(
+      loadActive: () async => throw StateError('config read failed'),
+    );
+    final store = FakeWelcomeFlagStore();
+    final controller = WelcomeController(
+      store: store,
+      log: RecordingWelcomeLog(),
+      entryResolver: fixedEntryResolver(WelcomeEntry.coldStart),
+    );
+
+    await tester.pumpWidget(appWith(controller: controller, gate: gate));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(WelcomeDialog), findsOneWidget);
+    expect(find.byKey(_hintKey), findsOneWidget);
+    expect(find.byKey(_configureAiKey), findsOneWidget);
+    expect(find.byKey(_startKey), findsOneWidget);
+  });
+
+  testWidgets('系统返回键关闭：日志 dismissed:back', (tester) async {
+    final store = FakeWelcomeFlagStore();
+    final log = RecordingWelcomeLog();
+    final controller = WelcomeController(
+      store: store,
+      log: log,
+      entryResolver: fixedEntryResolver(WelcomeEntry.coldStart),
+    );
+
+    await tester.pumpWidget(appWith(controller: controller));
+    await tester.pump();
+    await tester.pumpAndSettle();
+    expect(find.byType(WelcomeDialog), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(WelcomeDialog), findsNothing);
+    expect(find.byType(ChatScreen), findsOneWidget);
+    expect(store.writeCount, 1);
+
+    final dismissed =
+        log.events.where((event) => event.startsWith('dismissed:')).toList();
+    expect(dismissed, hasLength(1));
+    expect(dismissed.single, startsWith('dismissed:back:'));
   });
 
   testWidgets('已展示标记：不弹窗也不读 AI 配置', (tester) async {
