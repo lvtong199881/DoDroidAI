@@ -1,0 +1,27 @@
+{
+  "status": "done",
+  "summary": "完成欢迎弹窗底部版本号的首次代码评审：阻断 0 条、应修 0 条、建议 3 条，建议项不阻塞进入测试。",
+  "artifacts": [
+    {
+      "path": "C:/Users/mohanshang/.qq-bot/rsqebdf9y/d8sfkp2v/docs/requirements/d8sfkp2v/代码评审报告.md",
+      "action": "created"
+    }
+  ],
+  "selfCheck": "准出清单逐项：1) 覆盖 commit df7e13c（父 00d8bac）的 8 个代码/测试文件、直接调用方（生产仅 chat_screen.dart；WelcomeDialog 测试 helper 已同步必填 versionLabel）与项目规范（AGENTS.md、analysis_options.yaml）——已覆盖；2) 未以 PRD 为评审依据、未做需求覆盖核对——是；3) 未运行 flutter analyze/test/build，未写代码——是；4) 每条问题均有位置、证据、风险——是（3 条建议）；5) 阻断/应修的具体改法——本轮无阻断/应修；6) 范围外问题只记录——本次未发现；7) 复审仅判定本轮编号——本轮为首次评审，无复审项。未验证：构建、单测、真机表现以测试阶段为准。",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "建议 S1（welcome_dialog.dart:89-92）：showConfigureAi 注释仍写「footer 高度与改动前一致」，但版本行无条件追加后 false 为 107.6dp、true 为 163.6dp，建议更新注释以免维护者误判 27.6dp 增高为回归。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "建议 S2（app_version.dart:16）：formatVersionLabel 无条件加 v 前缀，若 versionName 本身以 v 开头会显示 vv...；建议剥离已有前缀或明确禁止并补测试。",
+      "severity": "suggestion"
+    },
+    {
+      "reason": "建议 S3（app_version.dart:38-45）：resolve() 的 catch (_) 连 Error 一并吞掉，loader 的编程错误会静默变成 v1.0.0 且无日志；建议收窄到 Exception 或保留 debug 可观测性。",
+      "severity": "suggestion"
+    }
+  ],
+  "deliverables": {}
+}

@@ -1,0 +1,31 @@
+{
+  "status": "done",
+  "summary": "按技术方案实现欢迎弹窗底部版本号：新增可注入的 AppVersionResolver（失败/空值/500ms 超时回退 v1.0.0）、appVersionProvider、AppTypography.version，WelcomeDialog 新增必填 versionLabel 与固定 footer 版本行，ChatScreen 在 showDialog 前并行解析版本；analyze 0 error、flutter test 275 全绿、debug APK 已出包并在 emulator-5554 验证首启显示 v0.1.0、二次启动不弹。",
+  "artifacts": [
+    { "path": "flutter_app/lib/app_version.dart", "action": "created" },
+    { "path": "flutter_app/lib/settings/welcome_providers.dart", "action": "modified" },
+    { "path": "flutter_app/lib/theme/app_theme.dart", "action": "modified" },
+    { "path": "flutter_app/lib/widgets/welcome_dialog.dart", "action": "modified" },
+    { "path": "flutter_app/lib/screens/chat/chat_screen.dart", "action": "modified" },
+    { "path": "flutter_app/test/app_version_test.dart", "action": "created" },
+    { "path": "flutter_app/test/welcome_dialog_test.dart", "action": "modified" },
+    { "path": "flutter_app/test/welcome_app_test.dart", "action": "modified" },
+    { "path": "docs/requirements/d8sfkp2v/技术方案.md", "action": "modified" },
+    { "path": "docs/requirements/d8sfkp2v/screenshots/F01_welcome_en_light_1x.png", "action": "created" },
+    { "path": "docs/requirements/d8sfkp2v/screenshots/F02_welcome_en_dark_1x.png", "action": "created" },
+    { "path": "docs/requirements/d8sfkp2v/screenshots/F05_welcome_en_light_2x.png", "action": "created" },
+    { "path": "docs/requirements/d8sfkp2v/screenshots/F04_second_launch_no_dialog_dark.png", "action": "created" }
+  ],
+  "selfCheck": "REQ 映射：REQ-1→lib/app_version.dart + welcome_providers.dart + chat_screen.dart（AC-1/2/3/9）；REQ-2→welcome_dialog.dart footer 版本行（AC-4/5/10/15）；REQ-3→AppTypography.version + 单行省略（AC-6/7/8）；REQ-4→versionLabel 必填、展示前解析（AC-3/9/10/15/16/17）；REQ-5→未新增任何淡出节点（AC-11/12）；REQ-6→纯 Text 无手势（AC-13/14）；REQ-7→未触碰 controller/flag store/日志（AC-2/16/17）。\n1) 开发内容状态：技术方案 §7 T1–T6 已全部标为已完成。\n2) 编译：`flutter analyze` → 49 issues 全部为 info（既有 deprecated_member_use / prefer_initializing_formals），无 error、无 warning；`flutter build apk --debug` → √ Built build\\app\\outputs\\flutter-apk\\app-debug.apk（增量构建 363.1s）。\n3) 单测：`flutter test` → All tests passed，275 个用例（基线 262）；其中 `flutter test test/app_version_test.dart` 10 用例、`test/welcome_dialog_test.dart` 71 用例、`test/welcome_app_test.dart` 14 用例。覆盖格式化/空值/同步异步异常/超时回退、AC-1～AC-15 组件断言、首帧就绪、读取失败仍展示、已看标记不读版本。\n4) 未引入新测试框架：沿用 flutter_test。\n5) 界面变化 → 已出 debug 包并登记在技术方案 §15：路径 flutter_app/build/app/outputs/flutter-apk/app-debug.apk，版本 0.1.0.1，安装 `adb -s emulator-5554 install -r -t <apk>`，启动 `adb -s emulator-5554 shell am start -n com.mohanlv.dodroidai/.MainActivity`。\n6) 设备验证（emulator-5554）：install Success → pm clear → 冷启动，日志 `welcome_check result=show reason=no_flag` / `welcome_shown`，对话框底部显示 v0.1.0（浅色 1x、深色 1x、2.0 倍字号各一张截图）；点击后 `welcome_dismissed` 正常；force-stop 后二次启动 `welcome_check result=skip reason=flagged` 且无弹窗。设备系统字号已复位 1.0、深色已关闭。\n7) 未改 versionCode/versionName（pubspec.yaml 仍 0.1.0+1）；出包序号仅登记在技术方案。\n8) 无遗留 TODO；代码内无 TODO/FIXME 新增。\n9) 提交：df7e13c（feat: 欢迎弹窗底部显示版本号（d8sfkp2v）），分支 feature/d8sfkp2v；提交前 `git fetch origin` + 对比 origin/main（00d8bac），feature 起点即 origin/main，0 ahead/0 behind，无需 rebase；`git push origin feature/d8sfkp2v` 成功（新建远端分支）。\n10) 未切分支、未 merge 到主分支；`.gitignore` 保证 build/ 未入库。",
+  "decisionsTitle": "本回合无需拍板事项",
+  "decisions": [],
+  "blockers": [
+    {
+      "reason": "范围外观察（不影响本需求验收，供测试/验收参考）：emulator-5554 上冷启动首帧较慢（pm clear 后约 10s 才出现首帧，期间截图为纯白），欢迎弹窗随首帧一起出现；日志 welcome_shown 到画面可见之间存在数秒差。版本行随弹窗首帧即完整显示（AC-9 不受影响），疑似启动期语音模型准备等初始化造成掉帧，属既有启动性能问题，本回合未改动。",
+      "severity": "suggestion"
+    }
+  ],
+  "deliverables": {
+    "debugPackage": "flutter_app/build/app/outputs/flutter-apk/app-debug.apk#0.1.0.1"
+  }
+}
